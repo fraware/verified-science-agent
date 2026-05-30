@@ -1,42 +1,68 @@
 {
+  "_template_description": {
+    "purpose": "Structured evidence record for AI-generated scientific outputs.",
+    "design_goals": [
+      "Human-readable structure",
+      "Explicit provenance",
+      "Simple local validation",
+      "Compatibility with external AI systems",
+      "Reproducible report generation"
+    ],
+    "recommended_usage": [
+      "Scientific literature synthesis",
+      "Research copilots",
+      "Evidence-backed summaries",
+      "AI-assisted analysis pipelines",
+      "Experimental agent workflows"
+    ]
+  },
   "ledger_id": "example-ledger-id",
-  "ledger_version": "0.1.0",
+  "ledger_version": "0.2.0",
   "created_at_utc": "YYYY-MM-DDTHH:MM:SSZ",
   "generated_by": {
-    "system_name": "Verified Science Agent",
-    "model_or_agent_stack": "Gemini / Managed Agents / Science Skills or compatible stack",
-    "human_operator": "optional-human-name",
-    "run_id": "optional-run-id"
+    "system_name": "Name of the system or application",
+    "model_or_agent_stack": "Optional description of the model or orchestration stack",
+    "human_operator": "Optional reviewer or operator name",
+    "run_id": "Optional execution identifier"
   },
   "subject": {
-    "entity_type": "gene | variant | protein | disease | target",
-    "gene_symbol": "GENE"
+    "entity_type": "gene | protein | disease | paper | material | molecule | target | experiment",
+    "display_name": "Human-readable subject name",
+    "description": "Optional short description"
   },
   "claims": [
     {
       "claim_id": "C001",
-      "claim_type": "identity | classification | mechanism",
-      "claim_text": "Atomic scientific claim written as one checkable sentence.",
+      "claim_type": "summary | classification | observation | mechanism | comparison | hypothesis",
+      "claim_text": "Single scientific statement that can be inspected independently.",
       "support_level": "high | medium | low | insufficient",
       "confidence": 0.0,
       "evidence": [
         {
           "evidence_id": "E001",
-          "source_name": "ClinVar | UniProt | AlphaFold DB | OpenAlex",
-          "source_type": "database | publication | guideline",
-          "retrieval_path": "URL or accession",
+          "source_name": "Name of the source system or publication",
+          "source_type": "database | publication | benchmark | guideline | experiment",
+          "retrieval_path": "URL, accession identifier, DOI, or reproducible retrieval path",
           "accessed_at_utc": "YYYY-MM-DDTHH:MM:SSZ",
-          "quoted_or_structured_evidence": "Short source-grounded evidence excerpt.",
+          "quoted_or_structured_evidence": "Short evidence excerpt or structured summary",
           "evidence_role": "supports | contradicts | contextualizes",
           "reliability": "high | medium | low"
         }
       ],
       "verification": {
-        "status": "supported | partially_supported | human_review_required",
-        "checks_performed": ["source_present", "claim_is_atomic"],
+        "status": "supported | partially_supported | unsupported | human_review_required",
+        "checks_performed": [
+          "source_present",
+          "claim_specificity_check"
+        ],
         "issues": [],
-        "verifier_notes": "What the verifier concluded."
+        "verifier_notes": "Short explanation of the review result"
       }
     }
-  ]
+  ],
+  "report_level_assessment": {
+    "overall_status": "supported | mixed | failed | review_required",
+    "human_review_required": true,
+    "blocking_issues": []
+  }
 }
