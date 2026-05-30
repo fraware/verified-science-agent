@@ -1,0 +1,36 @@
+{
+  "ledger_id": "vsa-brca1-demo-001",
+  "ledger_version": "0.1.0",
+  "subject": {
+    "entity_type": "variant",
+    "gene_symbol": "BRCA1",
+    "variant_hgvs_c": "NM_007294.4:c.68_69del"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "identity",
+      "claim_text": "BRCA1 c.68_69del is an early frameshift variant.",
+      "support_level": "high",
+      "confidence": 0.96,
+      "evidence": [
+        {
+          "evidence_id": "E001",
+          "source_name": "ClinVar",
+          "source_type": "database",
+          "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/17662/",
+          "accessed_at_utc": "2026-05-30T12:00:00Z",
+          "quoted_or_structured_evidence": "ClinVar frameshift record",
+          "evidence_role": "supports",
+          "reliability": "high"
+        }
+      ],
+      "verification": {
+        "status": "supported",
+        "checks_performed": ["source_present", "claim_is_atomic"],
+        "issues": [],
+        "verifier_notes": "Source grounded."
+      }
+    }
+  ]
+}
