@@ -1,0 +1,17 @@
+GitHub Actions workflow example:
+
+name: demo
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - checkout repository
+      - setup python
+      - run make demo
+      - ensure invalid example fails validation
