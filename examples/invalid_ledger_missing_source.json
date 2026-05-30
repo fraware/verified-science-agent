@@ -1,0 +1,36 @@
+{
+  "ledger_id": "invalid-demo-001",
+  "ledger_version": "0.2.0",
+  "created_at_utc": "2026-05-30T12:00:00Z",
+  "generated_by": {
+    "system_name": "example",
+    "model_or_agent_stack": "manual",
+    "run_id": "invalid-demo"
+  },
+  "subject": {
+    "entity_type": "variant",
+    "gene_symbol": "GENE",
+    "variant_hgvs_c": "example"
+  },
+  "claims": [
+    {
+      "claim_id": "X001",
+      "claim_type": "summary",
+      "claim_text": "This example claim is intentionally missing source evidence.",
+      "support_level": "high",
+      "confidence": 0.99,
+      "evidence": [],
+      "verification": {
+        "status": "unsupported",
+        "checks_performed": ["source_present"],
+        "issues": ["no evidence item supplied"],
+        "verifier_notes": "This example should fail validation."
+      }
+    }
+  ],
+  "report_level_assessment": {
+    "overall_status": "failed",
+    "human_review_required": true,
+    "blocking_issues": ["missing evidence"]
+  }
+}
