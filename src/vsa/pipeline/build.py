@@ -11,9 +11,10 @@ from typing import Any
 from vsa.claims.llm_extraction import extract_claims
 from vsa.claims.extraction import PROMPT_TEMPLATE_VERSION
 from vsa.connectors.cache import EvidenceCache
-from vsa.pipeline.retrieval import retrieve_evidence
+from vsa.pipeline.retrieval import retrieve_evidence_with_meta
 from vsa.pipeline.subject_parser import parse_input
 from vsa.provenance.hashchain import now_utc_iso, stamp_report
+from vsa.safety import disclaimer_for_subject
 from vsa.scoring.evidence_quality import apply_quality_scores
 from vsa.validate.contradictions import detect_contradictions
 from vsa.validate.engine import run_validation
@@ -22,6 +23,21 @@ from vsa.version import RENDERER_VERSION, SCHEMA_VERSION, VALIDATION_VERSION
 
 def _input_hash(data: dict[str, Any]) -> str:
     return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()
+
+
+def _domain_from_subject(subject: dict[str, Any]) -> str:
+    entity = subject.get("entity_type", "experiment")
+    mapping = {
+        "variant": "genomics",
+        "gene": "genomics",
+        "protein": "protein",
+        "paper": "literature",
+        "material": "materials",
+        "molecule": "chemistry",
+        "target": "drug_target",
+        "chemical": "chemistry",
+    }
+    return mapping.get(entity, entity)
 
 
 def build_report(
@@ -34,15 +50,43 @@ def build_report(
     llm_model: str | None = None,
 ) -> dict[str, Any]:
     """Build a complete ScientificReport from input JSON."""
+    from vsa.telemetry import span
+
+    with span("build_report", claim_mode=claim_mode):
+        return _build_report_impl(
+            input_data,
+            cache_dir=cache_dir,
+            offline_evidence=offline_evidence,
+            claim_mode=claim_mode,
+            llm_provider=llm_provider,
+            llm_model=llm_model,
+        )
+
+
+def _build_report_impl(
+    input_data: dict[str, Any],
+    *,
+    cache_dir: str = ".vsa_cache",
+    offline_evidence: list[dict[str, Any]] | None = None,
+    claim_mode: str = "auto",
+    llm_provider: str | None = None,
+    llm_model: str | None = None,
+) -> dict[str, Any]:
     subject = parse_input(input_data)
     cache = EvidenceCache(cache_dir)
+    input_question = input_data.get("question") or subject.get("display_name", "")
+    retrieval_warnings: list[str] = list(input_data.get("retrieval_warnings") or [])
+    retrieval_plan: list[str] = list(input_data.get("retrieval_plan") or [])
 
     if offline_evidence is not None:
         evidence = offline_evidence
     elif input_data.get("evidence"):
         evidence = input_data["evidence"]
     else:
-        evidence = retrieve_evidence(subject, cache=cache)
+        result = retrieve_evidence_with_meta(subject, cache=cache)
+        evidence = result.evidence
+        retrieval_warnings.extend(result.warnings)
+        retrieval_plan = result.retrieval_plan or retrieval_plan
 
     evidence = apply_quality_scores({"evidence": evidence})["evidence"]
 
@@ -63,19 +107,33 @@ def build_report(
     clinical_present = any(c.get("review_boundary") == "requires_clinical_review" for c in claims)
     review_required = clinical_present or speculative or domain_review or bool(contradictions)
 
+    limitations = [
+        disclaimer_for_subject(subject),
+        "Claims are generated from retrieved metadata only unless full text is explicitly provided.",
+        "Connector retrieval may be ambiguous; inspect retrieval_warnings and evidence reliability.",
+    ]
+
     report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "report_id": input_data.get("report_id") or f"vsa-{uuid.uuid4().hex[:12]}",
         "created_at": now_utc_iso(),
+        "input_question": input_question,
+        "domain": input_data.get("domain") or _domain_from_subject(subject),
         "subject": subject,
         "claims": claims,
         "evidence": evidence,
+        "retrieval_plan": retrieval_plan,
+        "retrieval_warnings": retrieval_warnings,
+        "evidence_selection_method": "connector_ranking_by_quality_score",
+        "claim_generation_method": claim_stack,
+        "review_policy": "human_review_required_for_clinical_and_speculative_claims",
+        "limitations": limitations,
         "methods": [
             {
                 "method_id": "M001",
                 "name": "evidence_retrieval_pipeline",
-                "version": "1.0.0",
-                "description": "Subject parser → connector queries → evidence ranking",
+                "version": "1.1.0",
+                "description": "Subject parser → connector queries → deduplication → quality ranking",
             },
             {
                 "method_id": "M002",
@@ -109,7 +167,7 @@ def build_report(
     }
 
     inp_hash = _input_hash(input_data)
-    report = stamp_report(report, input_hash=inp_hash)
+    report = stamp_report(report, input_hash=inp_hash, cache_dir=cache_dir)
     report = run_validation(report, verify_hashes=True)
     return report
 

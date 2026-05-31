@@ -39,7 +39,7 @@ class CrossrefConnector(Connector):
             f"{a.get('given', '')} {a.get('family', '')}".strip()
             for a in message.get("author", [])[:5]
         )
-        abstract = (message.get("abstract") or "")[:500]
+        abstract = (message.get("abstract") or "")[:800]
 
         return [
             NormalizedEvidence(
@@ -53,6 +53,15 @@ class CrossrefConnector(Connector):
                     ["title", "authors", "abstract"],
                 ),
                 raw_record=message,
-                domain_metadata={"doi": doi_clean, "publisher": message.get("publisher")},
+                domain_metadata={
+                    "doi": doi_clean,
+                    "title": title,
+                    "publisher": message.get("publisher"),
+                    "year": (message.get("published-print") or message.get("published-online") or {}).get(
+                        "date-parts", [[None]]
+                    )[0][0],
+                    "content_level": "abstract" if abstract.strip() else "metadata",
+                    "abstract_snippet": abstract[:220] if abstract else "",
+                },
             )
         ]

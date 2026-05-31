@@ -1,7 +1,9 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "report_id": "vsa-brca1-demo-001",
-  "created_at": "2026-05-31T04:17:30Z",
+  "created_at": "2026-05-31T05:03:30Z",
+  "input_question": "BRCA1 c.68_69del",
+  "domain": "genomics",
   "subject": {
     "entity_type": "variant",
     "display_name": "BRCA1 c.68_69del",
@@ -11,8 +13,20 @@
   "claims": [
     {
       "claim_id": "C001",
+      "claim_type": "identity",
+      "claim_text": "Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (retrieval strategy: unknown).",
+      "evidence_ids": [
+        "E001"
+      ],
+      "confidence": 0.88,
+      "review_boundary": "requires_domain_review",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    },
+    {
+      "claim_id": "C002",
       "claim_type": "classification",
-      "claim_text": "BRCA1 c.68_69del is recorded in ClinVar with significance: pathogenic.",
+      "claim_text": "BRCA1 c.68_69del is recorded in ClinVar with clinical significance: pathogenic.",
       "evidence_ids": [
         "E001"
       ],
@@ -22,16 +36,16 @@
       "support_level": "high"
     },
     {
-      "claim_id": "C002",
+      "claim_id": "C003",
       "claim_type": "identity",
-      "claim_text": "BRCA1 protein record is available in UniProt (P38398).",
+      "claim_text": "BRCA1 protein record is available in UniProt (P38398); entry type: unknown.",
       "evidence_ids": [
         "E002"
       ],
-      "confidence": 0.92,
+      "confidence": 0.78,
       "review_boundary": "safe_summary",
       "uncertainty_level": "low",
-      "support_level": "high"
+      "support_level": "medium"
     }
   ],
   "evidence": [
@@ -91,12 +105,22 @@
       }
     }
   ],
+  "retrieval_plan": [],
+  "retrieval_warnings": [],
+  "evidence_selection_method": "connector_ranking_by_quality_score",
+  "claim_generation_method": "rule-based",
+  "review_policy": "human_review_required_for_clinical_and_speculative_claims",
+  "limitations": [
+    "Research infrastructure output. Not for diagnosis, treatment, or clinical decision-making without qualified expert review. Variant classifications require qualified genetics expert review before any clinical use.",
+    "Claims are generated from retrieved metadata only unless full text is explicitly provided.",
+    "Connector retrieval may be ambiguous; inspect retrieval_warnings and evidence reliability."
+  ],
   "methods": [
     {
       "method_id": "M001",
       "name": "evidence_retrieval_pipeline",
-      "version": "1.0.0",
-      "description": "Subject parser → connector queries → evidence ranking"
+      "version": "1.1.0",
+      "description": "Subject parser → connector queries → deduplication → quality ranking"
     },
     {
       "method_id": "M002",
@@ -111,13 +135,15 @@
       "E002": "15b569edcf873ef082ea0ad08fe16ad1d6e2cfa64cc9d14a8b962dbcc45cbfe8"
     },
     "evidence_bundle_hash": "21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc",
+    "evidence_content_hash": "eb43b91a556901f822fd18d03f1b682ff623ba516287702b1db8d38714d00b82",
     "claim_hashes": {
-      "C001": "da473ac285d511188986e3d533aa7af01ac2b3892bcc7b114feb582d548d2783",
-      "C002": "9c30ade4e147698ab7009ec49d296e1c88127aa316ed8a0250abeb7ff3f71b75"
+      "C001": "98e5c05ee6e28d5bbd56f2ccd9bba549f74ef44e5ec7b426d7c27b5ed15c8ba8",
+      "C002": "de0576a23914593a816ae96d51baf196d6f76d1f65e3f8f75ed0752aa161aaac",
+      "C003": "a8bbd6e4b84450233e1f3e8054701e94995baa87d3fced23867f56db00e8c49b"
     },
-    "report_hash": "8857e21b2202890e9ba4c20fe60a7cb261ffde40971afdca7256eb40c91ac456",
-    "validation_version": "1.1.0",
-    "renderer_version": "1.1.0",
+    "report_hash": "a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c",
+    "validation_version": "1.2.0",
+    "renderer_version": "1.2.0",
     "generated_by": {
       "system_name": "verified-science-agent",
       "model_or_agent_stack": "rule-based",
@@ -184,7 +210,7 @@
         "check_id": "human_review",
         "name": "Human review requirements explicit",
         "status": "pass",
-        "message": "human_review.required=True; clinical claims: ['C001']"
+        "message": "human_review.required=True; clinical claims: ['C002']"
       },
       {
         "check_id": "review_boundary",
@@ -211,7 +237,7 @@
         "message": "hashes verified"
       }
     ],
-    "validated_at": "2026-05-31T04:17:30Z"
+    "validated_at": "2026-05-31T05:03:30Z"
   },
   "human_review": {
     "required": true,

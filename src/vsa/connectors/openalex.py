@@ -64,8 +64,11 @@ class OpenAlexConnector(Connector):
                 raw_record=record,
                 domain_metadata={
                     "doi": doi_clean,
+                    "title": title,
                     "publication_year": record.get("publication_year"),
                     "type": record.get("type"),
+                    "content_level": "abstract" if abstract_text.strip() else "metadata",
+                    "abstract_snippet": abstract_text[:220] if abstract_text else "",
                 },
             )
         ]

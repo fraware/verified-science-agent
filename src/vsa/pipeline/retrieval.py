@@ -7,7 +7,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from vsa.connectors import Connector, EvidenceCache, default_connectors
+from vsa.connectors.base import NormalizedEvidence
+from vsa.connectors.dedup import collect_ambiguity_warnings, dedupe_evidence
 from vsa.pipeline.subject_parser import parse_input, parse_question
+from vsa.telemetry import span
 from vsa.scoring.evidence_quality import score_evidence
 
 logger = logging.getLogger(__name__)
@@ -28,6 +31,7 @@ CONNECTOR_ROUTING: dict[str, list[str]] = {
 class RetrievalResult:
     evidence: list[dict[str, Any]]
     warnings: list[str] = field(default_factory=list)
+    retrieval_plan: list[str] = field(default_factory=list)
 
 
 def _rank_evidence(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -77,34 +81,35 @@ def retrieve_evidence_with_meta(
     else:
         subject = subject_or_question
 
-    cache = cache or EvidenceCache()
-    selected = select_connectors(subject, connectors, cache=cache)
-    query = dict(subject)
-    evidence_items: list[dict[str, Any]] = []
-    seen_keys: set[str] = set()
-    warnings: list[str] = []
+    with span("retrieve_evidence", entity_type=subject.get("entity_type")):
+        cache = cache or EvidenceCache()
+        selected = select_connectors(subject, connectors, cache=cache)
+        query = dict(subject)
+        normalized: list[NormalizedEvidence] = []
+        warnings: list[str] = []
+        plan = [c.name for c in selected]
 
-    for idx, connector in enumerate(selected, start=1):
-        try:
-            results = connector.fetch(query)
-        except Exception as exc:
-            msg = f"{connector.name}: {exc}"
-            warnings.append(msg)
-            logger.warning("Connector failed: %s", msg)
-            continue
-        if not results:
-            warnings.append(f"{connector.name}: no results for query")
-        for item in results:
-            key = f"{item.source_name}:{item.identifier}"
-            if key in seen_keys:
+        for connector in selected:
+            try:
+                results = connector.fetch(query)
+            except Exception as exc:
+                msg = f"{connector.name}: {exc}"
+                warnings.append(msg)
+                logger.warning("Connector failed: %s", msg)
                 continue
-            seen_keys.add(key)
-            eid = f"E{idx:03d}" if len(evidence_items) < 999 else f"E{len(evidence_items)+1}"
-            while any(e["evidence_id"] == eid for e in evidence_items):
-                eid = f"E{len(evidence_items)+1:03d}"
+            if not results:
+                warnings.append(f"{connector.name}: no results for query")
+            normalized.extend(results)
+
+        normalized = dedupe_evidence(normalized)
+        evidence_items: list[dict[str, Any]] = []
+        for idx, item in enumerate(normalized, start=1):
+            eid = f"E{idx:03d}"
             evidence_items.append(item.to_dict(eid))
 
-    return RetrievalResult(evidence=_rank_evidence(evidence_items), warnings=warnings)
+        ranked = _rank_evidence(evidence_items)
+        warnings.extend(collect_ambiguity_warnings(ranked))
+        return RetrievalResult(evidence=ranked, warnings=warnings, retrieval_plan=plan)
 
 
 def retrieve(question: str, *, cache_dir: str = ".vsa_cache") -> dict[str, Any]:
@@ -112,4 +117,9 @@ def retrieve(question: str, *, cache_dir: str = ".vsa_cache") -> dict[str, Any]:
     cache = EvidenceCache(cache_dir)
     subject = parse_question(question)
     result = retrieve_evidence_with_meta(subject, cache=cache)
-    return {"subject": subject, "evidence": result.evidence, "warnings": result.warnings}
+    return {
+        "subject": subject,
+        "evidence": result.evidence,
+        "warnings": result.warnings,
+        "retrieval_plan": result.retrieval_plan,
+    }

@@ -1,12 +1,12 @@
 # Scientific Report: BRCA1 c.68_69del
 
-> Research infrastructure artifact. Human expert review required before clinical use.
+> Research infrastructure output. Not for diagnosis, treatment, or clinical decision-making without qualified expert review. Variant classifications require qualified genetics expert review before any clinical use.
 
 ## Executive summary
 
 - **Validation status:** pass
 - **Human review:** pending (required: True)
-- **Claims:** 2
+- **Claims:** 3
 - **Evidence items:** 2
 - **Contradictions:** 0
 
@@ -28,8 +28,9 @@
 
 | ID | Type | Boundary | Confidence | Claim | Evidence |
 |---|---|---|---|---|---|
-| C001 | classification | requires_clinical_review | 0.85 | BRCA1 c.68_69del is recorded in ClinVar with significance: pathogenic. | E001 |
-| C002 | identity | safe_summary | 0.92 | BRCA1 protein record is available in UniProt (P38398). | E002 |
+| C001 | identity | requires_domain_review | 0.88 | Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (retrieval strategy: unknown). | E001 |
+| C002 | classification | requires_clinical_review | 0.85 | BRCA1 c.68_69del is recorded in ClinVar with clinical significance: pathogenic. | E001 |
+| C003 | identity | safe_summary | 0.78 | BRCA1 protein record is available in UniProt (P38398); entry type: unknown. | E002 |
 
 ## Contradictions
 
@@ -42,10 +43,10 @@ _No contradictions detected._
 
 ## Provenance
 
-- Report hash: `42634ea96c7d3056fc4a64f7ae1e6b8bebfa0000603999d0729320fdff051ebe`
+- Report hash: `a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c`
 - Evidence bundle hash: `21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc`
-- Validation version: 1.0.0
-- Renderer version: 1.0.0
+- Validation version: 1.2.0
+- Renderer version: 1.2.0
 
 ## Reproducibility instructions
 
@@ -63,7 +64,7 @@ _No contradictions detected._
 - [PASS] Confidence bounded [0,1]: all confidence values valid
 - [PASS] Unsupported claims flagged: no unsupported claims
 - [PASS] Speculative claims labeled: no speculative claims
-- [PASS] Human review requirements explicit: human_review.required=True; clinical claims: ['C001']
+- [PASS] Human review requirements explicit: human_review.required=True; clinical claims: ['C002']
 - [PASS] Review boundary labels valid: all boundaries valid
 - [PASS] Evidence quality scoring: evidence quality acceptable
 - [PASS] Contradiction detection: no contradictions

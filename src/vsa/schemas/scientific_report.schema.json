@@ -64,6 +64,23 @@
     "contradictions": {
       "type": "array",
       "items": { "$ref": "#/$defs/Contradiction" }
+    },
+    "input_question": { "type": "string" },
+    "domain": { "type": "string" },
+    "retrieval_plan": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "retrieval_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_selection_method": { "type": "string" },
+    "claim_generation_method": { "type": "string" },
+    "review_policy": { "type": "string" },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
     }
   },
   "$defs": {
@@ -256,11 +273,13 @@
           "additionalProperties": { "type": "string" }
         },
         "evidence_bundle_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "evidence_content_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "claim_hashes": {
           "type": "object",
           "additionalProperties": { "type": "string" }
         },
         "report_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "validation_run_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "validation_version": { "type": "string" },
         "renderer_version": { "type": "string" },
         "generated_by": {

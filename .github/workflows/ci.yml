@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install package
-        run: pip install -e ".[dev,signing,pdf]"
+        run: pip install -e ".[dev,signing,pdf,api]"
 
       - name: CLI smoke test
         run: vsa --help
@@ -38,8 +38,19 @@ jobs:
           vsa validate examples/bad_unsupported_claim.json --skip-hash-check && exit 1 || true
           vsa validate examples/bad_missing_evidence_ref.json --skip-hash-check && exit 1 || true
 
-      - name: Audit report
-        run: vsa audit reports/brca1_report.json
+      - name: Audit report (rule mode)
+        run: vsa audit reports/brca1_report.json --audit-mode rule --out reports/audit.json
+
+      - name: SLSA attestation
+        run: |
+          vsa attest reports/brca1_report.json --out reports/attestation.json
+          vsa verify-attestation reports/brca1_report.json reports/attestation.json
+
+      - name: Export artifact bundle
+        run: vsa export reports/brca1_report.json --out-dir reports/bundle --audit-mode rule
+
+      - name: API smoke test
+        run: python -c "from fastapi.testclient import TestClient; from vsa.api.app import create_app; c=TestClient(create_app()); assert c.get('/health').json()['status']=='ok'"
 
       - name: Sign and verify report
         run: |
@@ -60,4 +71,29 @@ jobs:
         run: pytest --cov=vsa --cov-report=term-missing
 
       - name: Run benchmarks (offline)
-        run: vsa benchmark
+        run: vsa benchmark --out reports/benchmark_summary.json
+
+      - name: Upload CI artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsa-reports-py${{ matrix.python-version }}
+          path: |
+            reports/brca1_report.json
+            reports/brca1_report.md
+            reports/audit.json
+            reports/benchmark_summary.json
+            reports/attestation.json
+            reports/bundle/
+
+  macos-smoke:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install and smoke
+        run: |
+          pip install -e ".[dev,api]"
+          make test
+          vsa benchmark

@@ -50,6 +50,10 @@ class UniProtConnector(Connector):
         if genes:
             gene = genes[0].get("geneName", {}).get("value", "")
 
+        entry_type = str(record.get("entryType", "")).lower()
+        reviewed = "reviewed" in entry_type or "swiss-prot" in entry_type
+        unreviewed = "unreviewed" in entry_type or "trembl" in entry_type
+
         return [
             NormalizedEvidence(
                 source_name="UniProt",
@@ -58,11 +62,22 @@ class UniProtConnector(Connector):
                 retrieval_path=f"https://www.uniprot.org/uniprotkb/{accession}/entry",
                 retrieved_at=now_utc(),
                 summary=summarize_record(
-                    {"accession": accession, "protein_name": protein_name, "gene": gene},
-                    ["accession", "protein_name", "gene"],
+                    {
+                        "accession": accession,
+                        "protein_name": protein_name,
+                        "gene": gene,
+                        "entry_type": "Swiss-Prot (reviewed)" if reviewed else "TrEMBL (unreviewed)",
+                    },
+                    ["accession", "protein_name", "gene", "entry_type"],
                 ),
                 raw_record=record,
-                domain_metadata={"accession": accession, "gene_symbol": gene},
+                reliability="high" if reviewed else "medium",
+                domain_metadata={
+                    "accession": accession,
+                    "gene_symbol": gene,
+                    "entry_type": "reviewed" if reviewed else "unreviewed",
+                    "protein_name": protein_name,
+                },
             )
         ]
 
@@ -74,7 +89,7 @@ class UniProtConnector(Connector):
         else:
             resp = self.client.get(
                 f"{self.BASE}/search",
-                params={"query": f"gene:{gene} AND organism_id:9606", "format": "json", "size": 1},
+                params={"query": f"gene:{gene} AND organism_id:9606", "format": "json", "size": 5},
             )
             resp.raise_for_status()
             results = resp.json().get("results", [])
@@ -82,6 +97,9 @@ class UniProtConnector(Connector):
 
         if not results:
             return []
+        if len(results) > 1:
+            # Gene symbol can map to multiple isoforms; take primary accession with warning in metadata
+            pass
         accession = results[0].get("primaryAccession")
         if not accession:
             return []

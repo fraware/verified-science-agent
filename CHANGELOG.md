@@ -10,6 +10,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
+## [0.6.0] - 2026-05-30
+
+### Added
+
+- Publication **content levels** (`metadata`, `abstract`, `fulltext`) on OpenAlex, Crossref, and Europe PMC connectors
+- Paper claim templates: bibliographic identity, abstract-derived observation, full-text availability flag
+- Export bundle **manifest.json** with SHA-256 hashes for all artifacts; attestation included by default
+- `vsa compare-audit` for diffing audit artifacts across runs
+- Validation check: warn when all publication evidence is metadata-only
+- Streamlit: export bundle download and attestation generation in Provenance tab
+- E2E pipeline test (build → validate → audit → attest → export)
+- Expanded benchmark gold labels (paper_doi, tp53, egfr)
+
+## [0.5.0] - 2026-05-30
+
+### Added
+
+- REST API (`vsa serve`, `[api]` extra): `/v1/build`, `/validate`, `/audit`, `/attest`, `/retrieve`, `/health`
+- SLSA Provenance v1 / in-toto Statement attestation (`vsa attest`, `vsa verify-attestation`)
+- OpenTelemetry hooks (`VSA_OTEL_ENABLED=1`, `[otel]` extra) with httpx instrumentation
+- Schema migration CLI (`vsa migrate-schema`) for 1.0.0/1.1.0 → 1.2.0
+- Benchmark gold label scoring (`gold_labels` in tasks.json)
+- Live connector tests (`pytest -m live`) and weekly GitHub Actions workflow
+- macOS CI smoke job
+
+## [0.4.0] - 2026-05-30
+
+### Added
+
+- Schema **1.2.0** lifecycle fields: `input_question`, `retrieval_plan`, `retrieval_warnings`, `limitations`, `domain`, etc.
+- Provenance: `evidence_content_hash`, `validation_run_hash`
+- ClinVar candidate ranking (up to 10 search hits, ambiguity flags, reliability scoring)
+- Paper deduplication across OpenAlex/Crossref/PubMed/Europe PMC/Semantic Scholar
+- UniProt Swiss-Prot vs TrEMBL labeling; AlphaFold predicted-structure warnings
+- 25-task offline benchmark with adversarial cases and expanded scoring
+- Audit artifacts: `vsa audit --out`, `vsa export --out-dir`
+- Docs: `docs/architecture.md`, `docs/schema.md`, `docs/connectors.md`, `docs/release_checklist.md`
+- `RELEASE_STATUS.md`, README badges, known limitations
+- Connector tests under `tests/connectors/`
+- Expanded variant claim templates (identity, classification, ambiguity)
+
+### Changed
+
+- CI uploads report/audit/benchmark artifacts
+- `make demo` uses `--audit-mode rule` for deterministic output
+
 ## [0.3.1] - 2026-05-30
 
 ### Added

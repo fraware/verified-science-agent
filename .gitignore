@@ -18,6 +18,8 @@ reports/*
 !reports/protein_report.json
 !reports/paper_report.json
 !reports/materials_report.json
+!reports/audit.json
+!reports/attestation.json
 
 # Environment
 .env

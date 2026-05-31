@@ -35,6 +35,23 @@ def hash_review_chain(events: list[dict[str, Any]]) -> str:
     return sha256_hex(canonical_json(events))
 
 
+def hash_evidence_content(evidence: list[dict[str, Any]]) -> str:
+    """Hash evidence summaries and domain metadata (content layer, not raw records)."""
+    content = [
+        {
+            "evidence_id": e.get("evidence_id"),
+            "summary": e.get("summary"),
+            "domain_metadata": e.get("domain_metadata", {}),
+        }
+        for e in sorted(evidence, key=lambda x: x.get("evidence_id", ""))
+    ]
+    return sha256_hex(canonical_json(content))
+
+
+def hash_validation_run(validation_results: dict[str, Any]) -> str:
+    return sha256_hex(canonical_json(validation_results))
+
+
 def build_provenance(
     report: dict[str, Any],
     *,
@@ -67,6 +84,7 @@ def build_provenance(
     provenance: dict[str, Any] = {
         "source_record_hashes": source_record_hashes,
         "evidence_bundle_hash": evidence_bundle_hash,
+        "evidence_content_hash": hash_evidence_content(evidence),
         "claim_hashes": claim_hashes,
         "report_hash": report_hash,
         "validation_version": VALIDATION_VERSION,
@@ -89,6 +107,10 @@ def build_provenance(
 
     if prev.get("signature"):
         provenance["signature"] = prev["signature"]
+
+    validation_results = report.get("validation_results") or {}
+    if validation_results.get("checks"):
+        provenance["validation_run_hash"] = hash_validation_run(validation_results)
 
     return provenance
 
@@ -137,10 +159,15 @@ def verify_provenance_hashes(report: dict[str, Any]) -> list[str]:
     return errors
 
 
-def stamp_report(report: dict[str, Any], *, input_hash: str | None = None) -> dict[str, Any]:
+def stamp_report(
+    report: dict[str, Any],
+    *,
+    input_hash: str | None = None,
+    cache_dir: str | None = None,
+) -> dict[str, Any]:
     """Attach or refresh provenance on a report, preserving review/signature metadata."""
     report = dict(report)
-    cache_dir = report.get("provenance", {}).get("reproducibility", {}).get("cache_dir")
+    cache_dir = cache_dir or report.get("provenance", {}).get("reproducibility", {}).get("cache_dir")
     report["provenance"] = build_provenance(report, input_hash=input_hash, cache_dir=cache_dir)
     return report
 

@@ -40,7 +40,14 @@ class EuropePMCConnector(Connector):
         record = results[0]
         title = record.get("title", "Unknown")
         authors = record.get("authorString", "")
-        abstract = (record.get("abstractText") or "")[:500]
+        abstract = (record.get("abstractText") or "")[:800]
+        has_fulltext = str(record.get("hasFullText", "")).upper() == "Y"
+        if has_fulltext:
+            content_level = "fulltext"
+        elif abstract.strip():
+            content_level = "abstract"
+        else:
+            content_level = "metadata"
 
         return [
             NormalizedEvidence(
@@ -54,6 +61,15 @@ class EuropePMCConnector(Connector):
                     ["title", "authors", "abstract"],
                 ),
                 raw_record=record,
-                domain_metadata={"pmid": record.get("pmid"), "doi": record.get("doi")},
+                domain_metadata={
+                    "pmid": record.get("pmid"),
+                    "doi": record.get("doi"),
+                    "title": title,
+                    "year": record.get("pubYear"),
+                    "content_level": content_level,
+                    "abstract_snippet": abstract[:220] if abstract else "",
+                    "has_fulltext": has_fulltext,
+                    "is_open_access": str(record.get("isOpenAccess", "")).upper() == "Y",
+                },
             )
         ]

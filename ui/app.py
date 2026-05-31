@@ -29,6 +29,10 @@ if "audit_result" not in st.session_state:
     st.session_state.audit_result = None
 if "sign_message" not in st.session_state:
     st.session_state.sign_message = None
+if "export_paths" not in st.session_state:
+    st.session_state.export_paths = None
+if "attestation" not in st.session_state:
+    st.session_state.attestation = None
 
 # --- Sidebar: Build pipeline ---
 with st.sidebar:
@@ -162,9 +166,29 @@ with tab_overview:
 
 with tab_claims:
     evidence_by_id = {e["evidence_id"]: e for e in report.get("evidence", [])}
+    unsupported = [c for c in report.get("claims", []) if c.get("review_boundary") == "unsupported"]
+    if unsupported:
+        st.error(f"{len(unsupported)} unsupported claim(s) — requires correction before use")
+    rows = []
     for claim in report.get("claims", []):
         boundary = claim.get("review_boundary", "")
-        with st.expander(f"{claim['claim_id']} — {boundary}", expanded=False):
+        rows.append(
+            {
+                "claim_id": claim["claim_id"],
+                "type": claim.get("claim_type"),
+                "boundary": boundary,
+                "confidence": claim.get("confidence"),
+                "evidence": ", ".join(claim.get("evidence_ids", [])),
+            }
+        )
+    st.dataframe(rows, use_container_width=True, hide_index=True)
+
+    for claim in report.get("claims", []):
+        boundary = claim.get("review_boundary", "")
+        is_bad = boundary == "unsupported"
+        with st.expander(f"{claim['claim_id']} — {boundary}", expanded=is_bad):
+            if is_bad:
+                st.error("Unsupported — evidence linkage invalid or missing")
             st.write(claim.get("claim_text"))
             st.write(
                 f"Type: `{claim.get('claim_type')}` | "
@@ -174,7 +198,7 @@ with tab_claims:
             for eid in claim.get("evidence_ids", []):
                 ev = evidence_by_id.get(eid, {})
                 st.markdown(
-                    f"- **{eid}** ({ev.get('source_name', '?')}): "
+                    f"- [{eid}](#) ({ev.get('source_name', '?')}): "
                     f"{ev.get('summary', '')[:180]}"
                 )
 
@@ -278,7 +302,64 @@ with tab_provenance:
         st.caption(st.session_state.sign_message)
     if st.session_state.get("audit_result"):
         st.subheader("Audit result")
-        st.json(st.session_state.audit_result)
+        audit = st.session_state.audit_result
+        st.caption(f"Method: {audit.get('verifier_method')} | Status: {audit.get('overall_status')}")
+        st.json(audit)
+        if st.download_button(
+            "Download audit JSON",
+            json.dumps(audit, indent=2),
+            file_name="audit.json",
+            mime="application/json",
+        ):
+            pass
+
+    st.subheader("Artifact bundle")
+    col_export, col_attest = st.columns(2)
+    with col_export:
+        if st.button("Generate export bundle", use_container_width=True):
+            import tempfile
+
+            from vsa.artifacts.export import export_report_bundle
+
+            tmp = Path(tempfile.mkdtemp(prefix="vsa_export_"))
+            paths = export_report_bundle(report, tmp, audit_mode="rule")
+            st.session_state.export_bundle_dir = tmp
+            st.session_state.export_paths = paths
+            st.rerun()
+    with col_attest:
+        if st.button("Generate attestation", use_container_width=True):
+            from vsa.provenance.attestation import build_slsa_attestation, verify_attestation
+
+            attestation = build_slsa_attestation(report, subject_name="report.json")
+            ok, msg = verify_attestation(attestation, report, subject_name="report.json")
+            st.session_state.attestation = attestation
+            st.session_state.attestation_msg = f"{'PASS' if ok else 'FAIL'}: {msg}"
+            st.rerun()
+
+    if st.session_state.get("export_paths"):
+        st.caption("Bundle files written to temp directory (download individually):")
+        for name, path in st.session_state.export_paths.items():
+            p = Path(path)
+            if p.exists():
+                st.download_button(
+                    f"Download {p.name}",
+                    p.read_text(encoding="utf-8"),
+                    file_name=p.name,
+                    mime="application/json",
+                    key=f"dl_{name}",
+                )
+        manifest_path = st.session_state.export_paths.get("manifest")
+        if manifest_path and Path(manifest_path).exists():
+            st.json(json.loads(Path(manifest_path).read_text(encoding="utf-8")))
+
+    if st.session_state.get("attestation"):
+        st.caption(st.session_state.get("attestation_msg", ""))
+        st.download_button(
+            "Download attestation.json",
+            json.dumps(st.session_state.attestation, indent=2),
+            file_name="attestation.json",
+            mime="application/json",
+        )
 
     st.subheader("Validation checks")
     for check in report.get("validation_results", {}).get("checks", []):

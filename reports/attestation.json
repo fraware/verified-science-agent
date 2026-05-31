@@ -1,0 +1,71 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "scientific_report.json",
+      "digest": {
+        "sha256": "a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c"
+      }
+    }
+  ],
+  "predicateType": "https://slsa.dev/provenance/v1",
+  "predicate": {
+    "buildDefinition": {
+      "buildType": "https://verified-science-agent.dev/build/v1",
+      "externalParameters": {
+        "input_question": "BRCA1 c.68_69del",
+        "domain": "genomics",
+        "claim_generation_method": "rule-based",
+        "schema_version": "1.2.0",
+        "report_id": "vsa-brca1-demo-001"
+      },
+      "internalParameters": {
+        "validation_version": "1.2.0",
+        "renderer_version": "1.2.0",
+        "cache_dir": ".vsa_cache"
+      },
+      "resolvedDependencies": [
+        {
+          "uri": "evidence:E001",
+          "digest": {
+            "sha256": "b7305412c6836c10db83f8fb0d22a3cde20ac6d1729fe3305b9a86184111fcaa"
+          }
+        },
+        {
+          "uri": "evidence:E002",
+          "digest": {
+            "sha256": "15b569edcf873ef082ea0ad08fe16ad1d6e2cfa64cc9d14a8b962dbcc45cbfe8"
+          }
+        }
+      ]
+    },
+    "runDetails": {
+      "builder": {
+        "id": "https://verified-science-agent.dev/vsa@0.5.0",
+        "version": {
+          "vsa": "0.5.0"
+        }
+      },
+      "metadata": {
+        "invocationId": "vsa-brca1-demo-001",
+        "startedOn": "2026-05-31T05:03:30Z",
+        "finishedOn": "2026-05-31T05:03:30Z",
+        "input_hash": "17038c201a8976e0c46f79dfec6c01eee4c03e3f5edac741340dbce83366b003"
+      },
+      "byproducts": [
+        {
+          "name": "evidence_bundle_hash",
+          "digest": {
+            "sha256": "21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc"
+          }
+        },
+        {
+          "name": "evidence_content_hash",
+          "digest": {
+            "sha256": "eb43b91a556901f822fd18d03f1b682ff623ba516287702b1db8d38714d00b82"
+          }
+        }
+      ]
+    }
+  }
+}

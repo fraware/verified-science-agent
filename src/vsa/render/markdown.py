@@ -5,13 +5,16 @@ from __future__ import annotations
 from typing import Any
 
 
+from vsa.safety import disclaimer_for_subject
+
+
 def render_markdown(report: dict[str, Any]) -> str:
     subject = report.get("subject", {})
     lines: list[str] = []
 
     lines.append(f"# Scientific Report: {subject.get('display_name', 'Unknown subject')}")
     lines.append("")
-    lines.append("> Research infrastructure artifact. Human expert review required before clinical use.")
+    lines.append(f"> {disclaimer_for_subject(subject)}")
     lines.append("")
 
     # Executive summary

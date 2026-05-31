@@ -1,0 +1,18 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "AlphaFold DB",
+    "source_type": "structure",
+    "identifier": "P38398",
+    "retrieval_path": "https://alphafold.ebi.ac.uk/entry/P38398",
+    "retrieved_at": "2026-01-01T00:00:00Z",
+    "summary": "Predicted structure for P38398; AlphaFold model — not experimental structure.",
+    "raw_record_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "evidence_role": "supports",
+    "reliability": "medium",
+    "domain_metadata": {
+      "structure_type": "predicted",
+      "uniprot_accession": "P38398"
+    }
+  }
+]

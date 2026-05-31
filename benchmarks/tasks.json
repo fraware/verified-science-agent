@@ -5,21 +5,32 @@
       "input_question": "BRCA1 c.68_69del",
       "expected_evidence_sources": ["ClinVar", "UniProt"],
       "expected_claim_types": ["classification", "identity"],
-      "required_review_flags": ["requires_clinical_review"]
+      "required_review_flags": ["requires_clinical_review"],
+      "gold_labels": {
+        "min_claims": 2,
+        "min_evidence": 2,
+        "required_claim_ids": ["C001"]
+      }
     },
     {
       "task_id": "tp53_variant",
       "input_question": "TP53 c.524G>A",
       "expected_evidence_sources": ["ClinVar"],
       "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review", "requires_domain_review"]
+      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "gold_labels": {
+        "min_claims": 1,
+        "min_evidence": 1,
+        "required_claim_ids": ["C001"]
+      }
     },
     {
       "task_id": "egfr_target",
       "input_question": "EGFR",
       "expected_evidence_sources": ["UniProt"],
       "expected_claim_types": ["summary", "observation"],
-      "required_review_flags": ["requires_domain_review"]
+      "required_review_flags": ["requires_domain_review"],
+      "gold_labels": {"min_claims": 1, "min_evidence": 1}
     },
     {
       "task_id": "protein_structure",
@@ -32,8 +43,13 @@
       "task_id": "paper_doi",
       "input_question": "10.1038/nature12373",
       "expected_evidence_sources": ["OpenAlex", "Crossref"],
-      "expected_claim_types": ["summary"],
-      "required_review_flags": ["safe_summary"]
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary", "requires_domain_review"],
+      "gold_labels": {
+        "min_claims": 2,
+        "min_evidence": 2,
+        "required_claim_ids": ["C001", "C002"]
+      }
     },
     {
       "task_id": "materials_candidate",
@@ -41,6 +57,164 @@
       "expected_evidence_sources": ["Materials Project", "OpenAlex"],
       "expected_claim_types": ["property", "observation"],
       "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "conflicting_clinical",
+      "input_question": "BRCA1 c.68_69del",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification", "identity", "observation"],
+      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "expect_contradictions": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "no_evidence",
+      "input_question": "ZZZZZ unknown entity probe",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "expect_pass": false
+    },
+    {
+      "task_id": "alphafold_only",
+      "input_question": "P38398",
+      "expected_evidence_sources": ["AlphaFold DB"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "brca1_hash_stable",
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "brca1_variant",
+      "expected_evidence_sources": ["ClinVar", "UniProt"],
+      "expected_claim_types": ["classification", "identity"],
+      "required_review_flags": ["requires_clinical_review"],
+      "check_hash_stable": true
+    },
+    {
+      "task_id": "paper_pmid",
+      "input_question": "PMID:12345678",
+      "fixture_task_id": "paper_doi",
+      "expected_evidence_sources": ["OpenAlex", "Crossref"],
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary", "requires_domain_review"]
+    },
+    {
+      "task_id": "clinvar_exact",
+      "input_question": "TP53 c.524G>A",
+      "fixture_task_id": "tp53_variant",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"]
+    },
+    {
+      "task_id": "uniprot_accession",
+      "input_question": "P38398",
+      "fixture_task_id": "protein_structure",
+      "expected_evidence_sources": ["UniProt"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "material_offline",
+      "input_question": "LiFePO4 cathode material",
+      "fixture_task_id": "materials_candidate",
+      "expected_evidence_sources": ["Materials Project"],
+      "expected_claim_types": ["property"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "variant_ambiguous",
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["identity", "classification", "observation"],
+      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "expect_contradictions": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "metadata_paper",
+      "input_question": "10.1038/nature12373",
+      "fixture_task_id": "paper_doi",
+      "expected_evidence_sources": ["OpenAlex", "Crossref"],
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary", "requires_domain_review"],
+      "expect_no_contradictions": true
+    },
+    {
+      "task_id": "low_quality",
+      "input_question": "TP53 c.524G>A",
+      "fixture_task_id": "tp53_variant",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification", "observation"],
+      "required_review_flags": ["requires_clinical_review"]
+    },
+    {
+      "task_id": "egfr_gene",
+      "input_question": "EGFR",
+      "fixture_task_id": "egfr_target",
+      "expected_evidence_sources": ["UniProt"],
+      "expected_claim_types": ["observation"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "tp53_clinical",
+      "input_question": "TP53 c.524G>A",
+      "fixture_task_id": "tp53_variant",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"]
+    },
+    {
+      "task_id": "protein_alphafold",
+      "input_question": "P38398",
+      "fixture_task_id": "protein_structure",
+      "expected_evidence_sources": ["UniProt", "AlphaFold DB"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_no_contradictions": true
+    },
+    {
+      "task_id": "brca1_identity",
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "brca1_variant",
+      "expected_evidence_sources": ["ClinVar", "UniProt"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["requires_domain_review", "safe_summary"]
+    },
+    {
+      "task_id": "brca1_classification",
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "brca1_variant",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"]
+    },
+    {
+      "task_id": "paper_openalex",
+      "input_question": "10.1038/nature12373",
+      "fixture_task_id": "paper_doi",
+      "expected_evidence_sources": ["OpenAlex"],
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary", "requires_domain_review"]
+    },
+    {
+      "task_id": "materials_property",
+      "input_question": "LiFePO4 cathode material",
+      "fixture_task_id": "materials_candidate",
+      "expected_evidence_sources": ["Materials Project"],
+      "expected_claim_types": ["property"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "adversarial_empty_claims",
+      "input_question": "adversarial probe with no supporting evidence",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "fixture_task_id": "no_evidence",
+      "expect_pass": false
     }
   ]
 }

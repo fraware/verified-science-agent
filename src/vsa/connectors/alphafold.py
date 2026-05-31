@@ -50,18 +50,16 @@ class AlphaFoldConnector(Connector):
                 identifier=uniprot,
                 retrieval_path=model_url,
                 retrieved_at=now_utc(),
-                summary=summarize_record(
-                    {
-                        "uniprot": uniprot,
-                        "organism": organism,
-                        "model_version": record.get("latestVersion"),
-                    },
-                    ["uniprot", "organism", "model_version"],
+                summary=(
+                    f"Predicted structure for {uniprot} ({organism}); "
+                    "AlphaFold model — not experimental structure."
                 ),
                 raw_record=record,
+                reliability="medium",
                 domain_metadata={
                     "uniprot_accession": uniprot,
                     "model_version": record.get("latestVersion"),
+                    "structure_type": "predicted",
                 },
             )
         ]

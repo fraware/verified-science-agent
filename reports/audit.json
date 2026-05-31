@@ -1,0 +1,37 @@
+{
+  "report_id": "vsa-brca1-demo-001",
+  "report_hash": "a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c",
+  "audited_at": "2026-05-31T05:03:30Z",
+  "overall_status": "passed",
+  "verifier_version": "verifier_prompt_v1",
+  "verifier_method": "rule-based",
+  "claim_audits": [
+    {
+      "claim_id": "C001",
+      "status": "supported",
+      "issues": [],
+      "missing_evidence": [],
+      "confidence_concerns": [
+        "high confidence with cautious review boundary"
+      ],
+      "notes": ""
+    },
+    {
+      "claim_id": "C002",
+      "status": "supported",
+      "issues": [],
+      "missing_evidence": [],
+      "confidence_concerns": [],
+      "notes": ""
+    },
+    {
+      "claim_id": "C003",
+      "status": "supported",
+      "issues": [],
+      "missing_evidence": [],
+      "confidence_concerns": [],
+      "notes": ""
+    }
+  ],
+  "report_issues": []
+}

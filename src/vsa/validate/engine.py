@@ -249,6 +249,25 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
         )
         errors.extend(hash_errors)
 
+    # Publication content depth (warn when only bibliographic metadata)
+    from vsa.connectors.content_level import infer_content_level
+
+    pub_evidence = [e for e in evidence if e.get("source_type") == "publication"]
+    metadata_only = [
+        e.get("evidence_id", "?")
+        for e in pub_evidence
+        if infer_content_level(e) == "metadata"
+    ]
+    if pub_evidence and len(metadata_only) == len(pub_evidence):
+        _add(
+            checks,
+            "publication_content",
+            "Publication content depth",
+            True,
+            f"all {len(metadata_only)} publication evidence item(s) are metadata-only",
+            warn=True,
+        )
+
     fail_count = sum(1 for c in checks if c.status == "fail")
     warn_count = sum(1 for c in checks if c.status == "warn")
     if fail_count:

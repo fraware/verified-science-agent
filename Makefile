@@ -6,7 +6,7 @@ install:
 demo: install
 	vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
 	vsa validate reports/brca1_report.json
-	vsa audit reports/brca1_report.json
+	vsa audit reports/brca1_report.json --audit-mode rule --out reports/audit.json
 	vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
 	vsa hash reports/brca1_report.json
 
@@ -26,7 +26,13 @@ benchmark:
 	vsa benchmark
 
 audit:
-	vsa audit reports/brca1_report.json
+	vsa audit reports/brca1_report.json --audit-mode rule
+
+attest:
+	vsa attest reports/brca1_report.json --out reports/attestation.json
+
+serve:
+	vsa serve --port 8000
 
 sign:
 	vsa sign reports/brca1_report.json

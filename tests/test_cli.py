@@ -52,5 +52,5 @@ def test_build_command(tmp_path, brca1_input_path):
     code = main(["build", str(brca1_input_path), "--out", str(out)])
     assert code == 0
     report = json.loads(out.read_text(encoding="utf-8"))
-    assert report["schema_version"] == "1.1.0"
+    assert report["schema_version"] == "1.2.0"
     assert len(report["evidence"]) >= 1

@@ -1,6 +1,13 @@
 # Verified Science Agent
 
+[![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/badge/package-v0.6.0-orange)
+
 Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
+
+**Release status:** see [RELEASE_STATUS.md](RELEASE_STATUS.md) · **Docs:** [architecture](docs/architecture.md) · [schema](docs/schema.md) · [connectors](docs/connectors.md)
 
 ## North star
 
@@ -12,6 +19,30 @@ A scientific AI report should be inspectable by engineers, readable by scientist
 git clone https://github.com/fraware/verified-science-agent.git
 cd verified-science-agent
 pip install -e ".[dev,ui,pdf,signing]"
+```
+
+### v0.6.0 workflow (CI-verified)
+
+```bash
+pip install -e ".[dev,ui,pdf,signing,api]"
+make demo && make test && vsa benchmark
+vsa serve --port 8000          # REST API at http://127.0.0.1:8000
+vsa attest reports/brca1_report.json --out reports/attestation.json
+pytest -m live                 # optional live connector tests
+```
+
+### v0.4.0 workflow (CI-verified)
+
+```bash
+vsa retrieve "BRCA1 c.68_69del"
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+vsa validate reports/brca1_report.json
+vsa audit reports/brca1_report.json --audit-mode rule --out reports/audit.json
+vsa export reports/brca1_report.json --out-dir reports/bundle/
+vsa compare-audit reports/audit.json reports/audit.json
+vsa sign reports/brca1_report.json
+vsa benchmark
+make demo && make test
 ```
 
 ### v0.3.0 workflow
@@ -71,6 +102,12 @@ streamlit run ui/app.py
 | `vsa sign report.json` | Ed25519-sign report provenance hash |
 | `vsa verify-signature report.json` | Verify Ed25519 signature |
 | `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
+| `vsa export report.json --out-dir dir/` | Export bundle: report, audit, provenance, review, attestation, manifest |
+| `vsa compare-audit audit_a.json audit_b.json` | Diff audit artifacts across runs |
+| `vsa attest report.json --out attestation.json` | SLSA/in-toto provenance attestation |
+| `vsa verify-attestation report.json attestation.json` | Verify attestation digest |
+| `vsa migrate-schema report.json --out migrated.json` | Upgrade schema version |
+| `vsa serve --port 8000` | Start REST API (requires `[api]` extra) |
 | `vsa benchmark` | Run benchmark task suite (offline or `--live`) |
 | `vsa compare report_a.json report_b.json --strict` | Diff reports (exit 1 if hashes differ) |
 
@@ -208,13 +245,21 @@ Checks include:
 
 ## Benchmarks
 
-Six domain tasks with offline fixtures (genomics, protein, paper, materials):
+25 offline tasks (genomics, protein, paper, materials, adversarial cases):
 
 ```bash
 vsa benchmark
-# or
-python benchmarks/run_benchmark.py
 ```
+
+Scoring includes source coverage, claim validity, citation integrity, contradiction detection, and hash reproducibility. See `benchmarks/tasks.json`.
+
+## Known limitations
+
+- **Connectors**: Live retrieval can be ambiguous; inspect `retrieval_warnings` and evidence `domain_metadata.retrieval_ambiguity`.
+- **Claims**: Rule extraction uses domain templates — not deep variant interpretation.
+- **Benchmark**: Heuristic gold labels, not curator-verified clinical truth.
+- **Audit**: Hybrid LLM audit is experimental; use `--audit-mode rule` for deterministic CI.
+- **Platform**: CI canonical environment is Ubuntu; see [RELEASE_STATUS.md](RELEASE_STATUS.md).
 
 ## Development
 
@@ -225,7 +270,13 @@ pytest
 
 ## Safety notice
 
-Research infrastructure only. Not a medical device, clinical decision system, or diagnostic platform. Human expert review is required before any clinical use.
+Research infrastructure only. Not a medical device, clinical decision system, or diagnostic platform.
+
+Every variant report includes:
+
+> Research infrastructure output. Not for diagnosis, treatment, or clinical decision-making without qualified expert review.
+
+Human expert review is required before any clinical use.
 
 ## License
 

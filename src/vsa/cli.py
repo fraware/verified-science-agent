@@ -211,6 +211,7 @@ def cmd_verify_signature(args: argparse.Namespace) -> int:
 
 
 def cmd_audit(args: argparse.Namespace) -> int:
+    from vsa.artifacts.export import write_audit_artifact
     from vsa.llm.verifier import audit_report
 
     report = _load_report(args.report)
@@ -220,9 +221,109 @@ def cmd_audit(args: argparse.Namespace) -> int:
         provider=args.llm_provider,
         model=args.llm_model,
     )
+    if args.export_dir:
+        from vsa.artifacts.export import export_report_bundle
+
+        paths = export_report_bundle(report, args.export_dir, audit_mode=args.audit_mode)
+        print(json.dumps(paths, indent=2))
+        return 0 if result.overall_status in ("passed", "partial") else 1
+
+    if args.out:
+        write_audit_artifact(
+            report,
+            args.out,
+            mode=args.audit_mode,
+            provider=args.llm_provider,
+            model=args.llm_model,
+            result=result,
+        )
+        print(f"wrote {args.out}")
+        return 0 if result.overall_status in ("passed", "partial") else 1
+
     text = json.dumps(result.to_dict(), indent=2, ensure_ascii=False) + "\n"
-    _write_output(text, args.out)
+    _write_output(text, None)
     return 0 if result.overall_status in ("passed", "partial") else 1
+
+
+def cmd_export(args: argparse.Namespace) -> int:
+    from vsa.artifacts.export import export_report_bundle
+
+    report = _load_report(args.report)
+    paths = export_report_bundle(
+        report,
+        args.out_dir,
+        audit_mode=args.audit_mode,
+        include_attestation=not args.no_attestation,
+    )
+    print(json.dumps(paths, indent=2))
+    return 0
+
+
+def cmd_compare_audit(args: argparse.Namespace) -> int:
+    from vsa.compare_audit import compare_audits, format_compare_audits
+
+    audit_a = json.loads(args.audit_a.read_text(encoding="utf-8"))
+    audit_b = json.loads(args.audit_b.read_text(encoding="utf-8"))
+    diff = compare_audits(audit_a, audit_b)
+    text = format_compare_audits(diff) + "\n"
+    if args.json:
+        text = json.dumps(diff, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    if args.strict and diff.get("overall_changed"):
+        return 1
+    return 0
+
+
+def cmd_attest(args: argparse.Namespace) -> int:
+    from vsa.provenance.attestation import build_slsa_attestation
+
+    report = _load_report(args.report)
+    attestation = build_slsa_attestation(report, subject_name=args.subject_name)
+    text = json.dumps(attestation, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    return 0
+
+
+def cmd_verify_attestation(args: argparse.Namespace) -> int:
+    from vsa.provenance.attestation import verify_attestation
+
+    report = _load_report(args.report)
+    attestation = json.loads(args.attestation.read_text(encoding="utf-8"))
+    ok, msg = verify_attestation(attestation, report, subject_name=args.subject_name)
+    print("PASS" if ok else "FAIL", msg)
+    return 0 if ok else 1
+
+
+def cmd_migrate_schema(args: argparse.Namespace) -> int:
+    from vsa.migrate.schema import migrate_schema
+    from vsa.provenance.hashchain import stamp_report
+    from vsa.validate.engine import run_validation
+
+    report = json.loads(args.input.read_text(encoding="utf-8"))
+    migrated = migrate_schema(report, target=args.target)
+    migrated = stamp_report(migrated)
+    migrated = run_validation(migrated, verify_hashes=True)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(migrated, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {args.out}")
+    print(f"schema_version: {migrated.get('schema_version')}")
+    print(f"validation: {migrated['validation_results']['status']}")
+    return 0
+
+
+def cmd_serve(args: argparse.Namespace) -> int:
+    try:
+        import uvicorn
+    except ImportError:
+        print("ERROR: uvicorn not installed. pip install verified-science-agent[api]", file=sys.stderr)
+        return 1
+    from vsa.api.app import create_app
+    from vsa.telemetry import setup_telemetry
+
+    setup_telemetry("vsa-api")
+    app = create_app()
+    uvicorn.run(app, host=args.host, port=args.port, log_level="info")
+    return 0
 
 
 def cmd_migrate(args: argparse.Namespace) -> int:
@@ -344,10 +445,26 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit = sub.add_parser("audit", help="Scientific audit (rule + optional LLM verifier)")
     p_audit.add_argument("report", type=Path)
     p_audit.add_argument("--out", "-o", type=Path, default=None)
+    p_audit.add_argument("--export-dir", type=Path, default=None, help="Export report bundle with audit.json")
     p_audit.add_argument("--audit-mode", default="auto", choices=["auto", "rule", "llm"])
     p_audit.add_argument("--llm-provider", choices=["openai", "anthropic"], default=None)
     p_audit.add_argument("--llm-model", default=None)
     p_audit.set_defaults(func=cmd_audit)
+
+    p_export = sub.add_parser("export", help="Export report artifact bundle (report, audit, provenance, review)")
+    p_export.add_argument("report", type=Path)
+    p_export.add_argument("--out-dir", "-o", type=Path, required=True)
+    p_export.add_argument("--audit-mode", default="rule", choices=["auto", "rule", "llm"])
+    p_export.add_argument("--no-attestation", action="store_true", help="Skip attestation.json in bundle")
+    p_export.set_defaults(func=cmd_export)
+
+    p_compare_audit = sub.add_parser("compare-audit", help="Compare two audit JSON artifacts")
+    p_compare_audit.add_argument("audit_a", type=Path)
+    p_compare_audit.add_argument("audit_b", type=Path)
+    p_compare_audit.add_argument("--out", "-o", type=Path, default=None)
+    p_compare_audit.add_argument("--json", action="store_true")
+    p_compare_audit.add_argument("--strict", action="store_true", help="Exit 1 if overall audit status changed")
+    p_compare_audit.set_defaults(func=cmd_compare_audit)
 
     p_migrate = sub.add_parser("migrate", help="Migrate legacy claim-ledger JSON to ScientificReport")
     p_migrate.add_argument("input", type=Path)
@@ -359,6 +476,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench.add_argument("--cache-dir", default=".vsa_cache")
     p_bench.add_argument("--out", "-o", type=Path, default=None)
     p_bench.set_defaults(func=cmd_benchmark)
+
+    p_attest = sub.add_parser("attest", help="Generate SLSA/in-toto provenance attestation")
+    p_attest.add_argument("report", type=Path)
+    p_attest.add_argument("--out", "-o", type=Path, default=None)
+    p_attest.add_argument("--subject-name", default="scientific_report.json")
+    p_attest.set_defaults(func=cmd_attest)
+
+    p_vattest = sub.add_parser("verify-attestation", help="Verify attestation matches report hash")
+    p_vattest.add_argument("report", type=Path)
+    p_vattest.add_argument("attestation", type=Path)
+    p_vattest.add_argument("--subject-name", default="scientific_report.json")
+    p_vattest.set_defaults(func=cmd_verify_attestation)
+
+    p_mschema = sub.add_parser("migrate-schema", help="Migrate report to newer schema version")
+    p_mschema.add_argument("input", type=Path)
+    p_mschema.add_argument("--out", "-o", type=Path, required=True)
+    p_mschema.add_argument("--target", default=None, help="Target schema version (default: current)")
+    p_mschema.set_defaults(func=cmd_migrate_schema)
+
+    p_serve = sub.add_parser("serve", help="Start REST API server (requires [api] extra)")
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--port", type=int, default=8000)
+    p_serve.set_defaults(func=cmd_serve)
 
     return parser
 
