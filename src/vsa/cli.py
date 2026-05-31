@@ -465,6 +465,14 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
             print(f"FAIL: benchmark category gaps: {gap_msg}", file=sys.stderr)
         print("FAIL: benchmark regression detected", file=sys.stderr)
         return 1
+    cov = summary.get("category_coverage") or {}
+    print(
+        f"Benchmark OK: {summary['passed']}/{summary['total']} tasks | "
+        f"adversarial={cov.get('adversarial', 0)} ambiguity={cov.get('ambiguity', 0)} "
+        f"contradiction={cov.get('contradiction', 0)} metadata_only_paper={cov.get('metadata_only_paper', 0)} "
+        f"no_evidence={cov.get('no_evidence', 0)}",
+        file=sys.stderr,
+    )
     return 0 if summary["failed"] == 0 else 1
 
 

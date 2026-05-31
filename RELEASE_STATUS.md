@@ -1,8 +1,17 @@
 # Release status
 
-Package **v0.7.2** on `main`. CI is the source of truth for verification.
+Package **v0.7.2** — tagged and on `main`.
 
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
+
+## Verified release
+
+| Field | Value |
+|-------|--------|
+| Version | **v0.7.2** |
+| Commit | `903d834` |
+| Tag | `v0.7.2` (pushed) |
+| Focus | Scientific credibility hardening + 50-task benchmark with category minimums |
 
 ## Verification
 
@@ -11,7 +20,7 @@ Package **v0.7.2** on `main`. CI is the source of truth for verification.
 | Acceptance bar | `make acceptance` (= `scripts/acceptance.sh`) |
 | Ubuntu CI | Python 3.10, 3.11, 3.12 — build, validate, audit, export, verify-bundle, review smoke, API smoke, sign, pytest, benchmark |
 | macOS smoke | Python 3.12 — `make test`, benchmark |
-| Acceptance job | Full acceptance script after matrix jobs pass |
+| Benchmark gate | 50 tasks, 100% pass rate, zero `category_gaps` |
 | Artifacts | `report.json`, `report.md`, `audit.json`, `attestation.json`, `benchmark_summary.json`, `bundle/` |
 
 Verify locally:
@@ -22,25 +31,16 @@ cd verified-science-agent
 make acceptance
 ```
 
-## Tagging a release
-
-After green CI on the commit you intend to ship:
-
-```bash
-git tag v0.7.2
-git push origin v0.7.2
-```
-
-The [release workflow](.github/workflows/release.yml) runs the acceptance bar, builds a bundle zip, and attaches artifacts to the GitHub Release.
-
 ## Production-ready (CI-evidence-backed)
 
 - JSON Schema validation, provenance hashes, rule-based claims
-- Offline benchmark (50 tasks) with category minimums and 100% regression gate
+- Scientific credibility policies: ClinVar ambiguity, metadata-only warnings, AlphaFold labeling, ambiguity reliability caps
+- Offline benchmark (50 tasks) with category minimums and core metrics
 - Export bundle + `vsa verify-bundle`
 - Human review workflow + `vsa verify-review`
 - SLSA/in-toto attestation
 - REST API with optional `VSA_API_KEY` auth
+- Credibility warnings in CLI render, markdown, HTML, and Streamlit UI
 
 ## Experimental
 

@@ -14,6 +14,7 @@ from vsa.pipeline.retrieval import retrieve_evidence_with_meta
 from vsa.pipeline.subject_parser import parse_question
 from vsa.render import render
 from vsa.render.graph import evidence_graph_mermaid
+from vsa.render.markdown import _credibility_warning_lines
 from vsa.review.workflow import apply_review
 from vsa.validate.engine import run_validation, validate_report
 
@@ -80,7 +81,11 @@ with st.sidebar:
                         offline_evidence=retrieval.evidence if retrieval.evidence else None,
                     )
                     st.session_state.report = report
-                    st.session_state.build_warnings = retrieval.warnings
+                    st.session_state.build_warnings = list(
+                        dict.fromkeys(
+                            retrieval.warnings + list(report.get("retrieval_warnings") or [])
+                        )
+                    )
                     st.success("Report built")
                 except Exception as exc:
                     st.error(f"Build failed: {exc}")
@@ -92,8 +97,13 @@ with st.sidebar:
 
     if st.session_state.build_warnings:
         st.warning("Retrieval warnings")
-        for w in st.session_state.build_warnings[:5]:
+        for w in st.session_state.build_warnings[:8]:
             st.caption(w)
+
+    report_preview = st.session_state.report
+    if report_preview:
+        for w in _credibility_warning_lines(report_preview)[:4]:
+            st.error(w[:200] + ("…" if len(w) > 200 else ""))
 
     st.divider()
     if st.session_state.report and st.download_button(
@@ -138,6 +148,21 @@ elif validation.status == "warn":
     st.warning("Validation passed with warnings")
 else:
     st.success("Validation passed")
+
+credibility_warnings = _credibility_warning_lines(report)
+if credibility_warnings:
+    st.subheader("Scientific credibility warnings")
+    for warning in credibility_warnings:
+        st.error(warning)
+
+limitations = report.get("limitations") or []
+retrieval_warnings = report.get("retrieval_warnings") or []
+if limitations or retrieval_warnings:
+    with st.expander("Limitations and retrieval warnings", expanded=bool(credibility_warnings)):
+        for item in limitations:
+            st.markdown(f"- {item}")
+        for item in retrieval_warnings:
+            st.markdown(f"- {item}")
 
 (
     tab_overview,
@@ -204,9 +229,22 @@ with tab_claims:
 
 with tab_evidence:
     for ev in report.get("evidence", []):
+        meta = ev.get("domain_metadata") or {}
+        reliability = ev.get("reliability", "—")
+        ambiguous = meta.get("retrieval_ambiguity") or meta.get("gene_search_ambiguous")
         cols = st.columns([1, 3])
         cols[0].markdown(f"**{ev.get('evidence_id')}**")
-        cols[1].markdown(f"{ev.get('source_name')} ({ev.get('source_type')})")
+        label = f"{ev.get('source_name')} ({ev.get('source_type')}) · reliability: {reliability}"
+        if ambiguous:
+            label += " · **AMBIGUOUS**"
+        if meta.get("structure_type") == "predicted":
+            label += " · **PREDICTED STRUCTURE**"
+        cols[1].markdown(label)
+        if ambiguous:
+            st.warning(
+                f"Ambiguous retrieval (match_score={meta.get('match_score', '?')}, "
+                f"rank={meta.get('candidate_rank', '?')})"
+            )
         st.write(ev.get("summary"))
         qs = ev.get("quality_score", {})
         if qs:

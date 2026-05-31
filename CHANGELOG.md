@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scientific credibility warnings in markdown and HTML render output
 - Retrieval pipeline applies credibility hardening before evidence is returned
 - Acceptance bar and CI assert benchmark category minimums (50 tasks)
+- Streamlit UI surfaces scientific credibility warnings and evidence reliability/ambiguity flags
+- `vsa benchmark` prints category coverage summary on success
 
 ## [0.7.1] - 2026-05-31
 
