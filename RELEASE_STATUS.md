@@ -9,7 +9,7 @@ Package **v0.7.2** — tagged and on `main`.
 | Field | Value |
 |-------|--------|
 | Version | **v0.7.2** |
-| Commit | `903d834` |
+| Commit | `903d834` (tag `v0.7.2`); latest `main`: `16b9a5e` |
 | Tag | `v0.7.2` (pushed) |
 | Focus | Scientific credibility hardening + 50-task benchmark with category minimums |
 
