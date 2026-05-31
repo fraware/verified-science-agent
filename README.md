@@ -3,7 +3,7 @@
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/package-v0.7.0-orange)
+![Version](https://img.shields.io/badge/package-v0.7.1-orange)
 
 Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
 
@@ -109,6 +109,7 @@ streamlit run ui/app.py
 | `vsa verify-signature report.json` | Verify Ed25519 signature |
 | `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
 | `vsa export report.json --out-dir dir/` | Export bundle: report, report.md, audit, provenance, review, attestation, sources/, manifest |
+| `vsa verify-review report.json` | Verify review chain hashes |
 | `vsa verify-bundle reports/bundle` | Verify bundle manifest hashes and attestation |
 | `vsa compare-audit audit_a.json audit_b.json` | Diff audit artifacts across runs |
 | `vsa attest report.json --out attestation.json` | SLSA/in-toto provenance attestation |

@@ -28,7 +28,7 @@ def create_app():
             "FastAPI not installed. Install with: pip install verified-science-agent[api]"
         ) from exc
 
-    from vsa.api.middleware import RateLimitMiddleware, deterministic_mode, rate_limit_enabled
+    from vsa.api.middleware import ApiKeyMiddleware, RateLimitMiddleware, api_key_required, deterministic_mode, rate_limit_enabled
     from vsa.api.schemas import (
         HealthResponse,
         RenderResponse,
@@ -55,6 +55,8 @@ def create_app():
         description="Evidence-backed scientific report infrastructure",
     )
 
+    if api_key_required():
+        app.add_middleware(ApiKeyMiddleware, api_key=os.environ["VSA_API_KEY"].strip())
     if rate_limit_enabled():
         limit = int(os.environ.get("VSA_API_RATE_LIMIT", "120"))
         app.add_middleware(RateLimitMiddleware, max_requests=limit)

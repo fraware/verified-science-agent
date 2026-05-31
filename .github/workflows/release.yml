@@ -16,18 +16,17 @@ jobs:
           python-version: "3.12"
 
       - name: Install
-        run: pip install -e ".[dev,pdf,signing]"
+        run: pip install -e ".[dev,pdf,signing,api]"
 
-      - name: Run tests
-        run: pytest
+      - name: Run acceptance bar
+        run: bash scripts/acceptance.sh
 
-      - name: Build pinned snapshots
+      - name: Build release bundle
         run: |
-          vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
-          vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
-          vsa validate reports/brca1_report.json
-          vsa audit reports/brca1_report.json
-          vsa benchmark
+          vsa export reports/brca1_report.json --out-dir reports/bundle --audit-mode rule
+          vsa verify-bundle reports/bundle
+          vsa attest reports/brca1_report.json --out reports/attestation.json --subject-name report.json
+          cd reports/bundle && zip -r ../vsa-bundle.zip .
 
       - name: Create GitHub Release
         env:
@@ -35,7 +34,11 @@ jobs:
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
-            --notes-file CHANGELOG.md \
+            --generate-notes \
             reports/brca1_report.json \
             reports/brca1_report.md \
+            reports/audit.json \
+            reports/attestation.json \
+            reports/benchmark_summary.json \
+            reports/vsa-bundle.zip \
             schemas/scientific_report.schema.json

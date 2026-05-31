@@ -14,6 +14,7 @@ OpenAPI docs: http://127.0.0.1:8000/docs
 
 | Variable | Purpose |
 |----------|---------|
+| `VSA_API_KEY` | Require `X-API-Key` header on non-public API routes |
 | `VSA_API_DETERMINISTIC=1` | Force `claim_mode=rule` and `audit_mode=rule` on build/audit/export |
 | `VSA_API_RATE_LIMIT=120` | Enable in-memory rate limiting (requests per 60s per client IP) |
 | `VSA_OTEL_ENABLED=1` | OpenTelemetry spans (requires `[otel]` extra) |

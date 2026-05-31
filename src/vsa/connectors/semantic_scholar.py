@@ -39,7 +39,8 @@ class SemanticScholarConnector(Connector):
 
         title = record.get("title", "Unknown")
         authors = ", ".join(a.get("name", "") for a in record.get("authors", [])[:5])
-        abstract = (record.get("abstract") or "")[:500]
+        abstract = (record.get("abstract") or "")[:800]
+        content_level = "abstract" if abstract.strip() else "metadata"
 
         return [
             NormalizedEvidence(
@@ -53,6 +54,12 @@ class SemanticScholarConnector(Connector):
                     ["title", "authors", "abstract"],
                 ),
                 raw_record=record,
-                domain_metadata={"doi": doi_clean, "year": record.get("year")},
+                domain_metadata={
+                    "doi": doi_clean,
+                    "title": title,
+                    "year": record.get("year"),
+                    "content_level": content_level,
+                    "abstract_snippet": abstract[:220] if abstract else "",
+                },
             )
         ]

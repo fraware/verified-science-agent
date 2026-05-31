@@ -346,6 +346,10 @@ def cmd_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify_review(args: argparse.Namespace) -> int:
+    return cmd_review_verify(args)
+
+
 def cmd_verify_bundle(args: argparse.Namespace) -> int:
     from vsa.artifacts.verify import verify_bundle
 
@@ -611,6 +615,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_verify_bundle.add_argument("bundle_dir", type=Path)
     p_verify_bundle.add_argument("--skip-attestation", action="store_true")
     p_verify_bundle.set_defaults(func=cmd_verify_bundle)
+
+    p_verify_review = sub.add_parser("verify-review", help="Verify review event chain hashes on a report")
+    p_verify_review.add_argument("report", type=Path)
+    p_verify_review.set_defaults(func=cmd_verify_review)
 
     p_compare_audit = sub.add_parser("compare-audit", help="Compare two audit JSON artifacts")
     p_compare_audit.add_argument("audit_a", type=Path)

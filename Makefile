@@ -1,4 +1,4 @@
-.PHONY: demo validate render hash test ui install benchmark audit sign verify
+.PHONY: demo validate render hash test ui install benchmark audit sign verify acceptance
 
 install:
 	pip install -e ".[dev,ui,pdf,signing,api]"
@@ -11,6 +11,9 @@ demo: install
 	vsa verify-bundle reports/bundle
 	vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
 	vsa hash reports/brca1_report.json
+
+acceptance: install
+	bash scripts/acceptance.sh
 
 validate:
 	vsa validate examples/*.json reports/*.json

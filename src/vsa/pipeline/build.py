@@ -112,6 +112,13 @@ def _build_report_impl(
         "Claims are generated from retrieved metadata only unless full text is explicitly provided.",
         "Connector retrieval may be ambiguous; inspect retrieval_warnings and evidence reliability.",
     ]
+    from vsa.connectors.content_level import infer_content_level
+
+    pub_evidence = [e for e in evidence if e.get("source_type") == "publication"]
+    if pub_evidence and all(infer_content_level(e) == "metadata" for e in pub_evidence):
+        limitations.append(
+            "CONTENT WARNING: All publication evidence is metadata-only; claims cannot exceed bibliographic facts."
+        )
 
     report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,

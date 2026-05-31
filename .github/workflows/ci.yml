@@ -117,8 +117,4 @@ jobs:
         with:
           python-version: "3.12"
       - name: Clean-clone acceptance bar
-        run: |
-          pip install -e ".[dev,ui,pdf,signing,api]"
-          make demo
-          make test
-          vsa benchmark --out reports/benchmark_summary.json
+        run: bash scripts/acceptance.sh

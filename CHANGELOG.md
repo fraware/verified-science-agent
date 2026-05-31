@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
+## [0.7.1] - 2026-05-31
+
+### Added
+
+- Optional API key auth (`VSA_API_KEY`, `X-API-Key` header)
+- `vsa verify-review` top-level command
+- `scripts/acceptance.sh` and `make acceptance` (CI parity)
+- Mocked connector tests: Semantic Scholar, Europe PMC
+- Release workflow attaches full artifact bundle zip
+
+### Changed
+
+- Semantic Scholar connector sets `content_level` metadata
+- Build pipeline adds metadata-only CONTENT WARNING to limitations
+- Acceptance CI job uses shared acceptance script
+
 ## [0.7.0] - 2026-05-30
 
 ### Added

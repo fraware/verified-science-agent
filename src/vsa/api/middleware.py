@@ -50,3 +50,27 @@ def rate_limit_enabled() -> bool:
 
 def deterministic_mode() -> bool:
     return os.environ.get("VSA_API_DETERMINISTIC", "").strip() in ("1", "true", "True")
+
+
+def api_key_required() -> bool:
+    return bool(os.environ.get("VSA_API_KEY", "").strip())
+
+
+class ApiKeyMiddleware(BaseHTTPMiddleware):
+    """Optional shared-secret gate for non-public API routes."""
+
+    def __init__(self, app, *, api_key: str) -> None:
+        super().__init__(app)
+        self.api_key = api_key
+
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        public_paths = {"/health", "/v1/version", "/docs", "/openapi.json", "/redoc"}
+        if request.url.path in public_paths:
+            return await call_next(request)
+        provided = request.headers.get("X-API-Key") or request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+        if provided != self.api_key:
+            return JSONResponse(
+                status_code=401,
+                content={"error": {"code": "UNAUTHORIZED", "message": "Invalid or missing API key"}},
+            )
+        return await call_next(request)
