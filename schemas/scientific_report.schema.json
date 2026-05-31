@@ -1,0 +1,391 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-science-agent.org/schemas/scientific_report/v1.0.0",
+  "title": "ScientificReport",
+  "description": "Canonical artifact model for evidence-backed scientific AI reports.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_id",
+    "created_at",
+    "subject",
+    "claims",
+    "evidence",
+    "methods",
+    "provenance",
+    "validation_results",
+    "human_review",
+    "generated_outputs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of this schema (e.g. 1.0.0)."
+    },
+    "report_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "subject": {
+      "$ref": "#/$defs/Subject"
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/Claim" }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/Evidence" }
+    },
+    "methods": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Method" }
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "validation_results": {
+      "$ref": "#/$defs/ValidationResults"
+    },
+    "human_review": {
+      "$ref": "#/$defs/HumanReview"
+    },
+    "generated_outputs": {
+      "$ref": "#/$defs/GeneratedOutputs"
+    },
+    "contradictions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Contradiction" }
+    }
+  },
+  "$defs": {
+    "Subject": {
+      "type": "object",
+      "required": ["entity_type", "display_name"],
+      "additionalProperties": true,
+      "properties": {
+        "entity_type": {
+          "type": "string",
+          "enum": [
+            "variant",
+            "gene",
+            "protein",
+            "disease",
+            "paper",
+            "material",
+            "molecule",
+            "target",
+            "experiment",
+            "chemical"
+          ]
+        },
+        "display_name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "gene_symbol": { "type": "string" },
+        "variant_hgvs_c": { "type": "string" },
+        "variant_hgvs_p": { "type": "string" },
+        "transcript": { "type": "string" },
+        "protein_accession": { "type": "string" },
+        "doi": { "type": "string" },
+        "pmid": { "type": "string" },
+        "material_id": { "type": "string" },
+        "condition_or_context": { "type": "string" },
+        "identifiers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "Evidence": {
+      "type": "object",
+      "required": [
+        "evidence_id",
+        "source_name",
+        "source_type",
+        "identifier",
+        "retrieval_path",
+        "retrieved_at",
+        "summary",
+        "raw_record_hash"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "source_name": { "type": "string", "minLength": 1 },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "database",
+            "publication",
+            "structure",
+            "benchmark",
+            "guideline",
+            "experiment",
+            "preprint"
+          ]
+        },
+        "identifier": { "type": "string", "minLength": 1 },
+        "retrieval_path": { "type": "string", "minLength": 1 },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "summary": { "type": "string", "minLength": 1 },
+        "raw_record_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "evidence_role": {
+          "type": "string",
+          "enum": ["supports", "contradicts", "contextualizes"]
+        },
+        "reliability": {
+          "type": "string",
+          "enum": ["high", "medium", "low"]
+        },
+        "quality_score": { "$ref": "#/$defs/QualityScore" },
+        "domain_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "QualityScore": {
+      "type": "object",
+      "required": ["score", "reasons"],
+      "additionalProperties": false,
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "Claim": {
+      "type": "object",
+      "required": [
+        "claim_id",
+        "claim_type",
+        "claim_text",
+        "evidence_ids",
+        "confidence",
+        "review_boundary",
+        "uncertainty_level"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": { "type": "string", "minLength": 1 },
+        "claim_type": {
+          "type": "string",
+          "enum": [
+            "identity",
+            "classification",
+            "observation",
+            "mechanism",
+            "comparison",
+            "hypothesis",
+            "summary",
+            "structure",
+            "property"
+          ]
+        },
+        "claim_text": { "type": "string", "minLength": 10 },
+        "evidence_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "review_boundary": {
+          "type": "string",
+          "enum": [
+            "safe_summary",
+            "requires_domain_review",
+            "requires_clinical_review",
+            "speculative",
+            "unsupported"
+          ]
+        },
+        "uncertainty_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "unknown"]
+        },
+        "support_level": {
+          "type": "string",
+          "enum": ["high", "medium", "low", "insufficient"]
+        }
+      }
+    },
+    "Method": {
+      "type": "object",
+      "required": ["method_id", "name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "method_id": { "type": "string" },
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "description": { "type": "string" },
+        "parameters": { "type": "object" }
+      }
+    },
+    "Provenance": {
+      "type": "object",
+      "required": [
+        "source_record_hashes",
+        "evidence_bundle_hash",
+        "claim_hashes",
+        "report_hash",
+        "validation_version",
+        "renderer_version"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source_record_hashes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "evidence_bundle_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claim_hashes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "report_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "validation_version": { "type": "string" },
+        "renderer_version": { "type": "string" },
+        "generated_by": {
+          "type": "object",
+          "properties": {
+            "system_name": { "type": "string" },
+            "model_or_agent_stack": { "type": "string" },
+            "run_id": { "type": "string" },
+            "prompt_template_version": { "type": "string" },
+            "human_reviewer": { "type": "string" },
+            "llm_provider": { "type": "string" },
+            "llm_model": { "type": "string" }
+          }
+        },
+        "review_chain_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "review_event_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "signature": {
+          "type": "object",
+          "required": ["algorithm", "public_key_b64", "signature_b64", "signed_at", "payload"],
+          "properties": {
+            "algorithm": { "type": "string", "enum": ["ed25519"] },
+            "public_key_b64": { "type": "string" },
+            "signature_b64": { "type": "string" },
+            "signed_at": { "type": "string", "format": "date-time" },
+            "payload": { "type": "string" }
+          }
+        },
+        "reproducibility": {
+          "type": "object",
+          "properties": {
+            "input_hash": { "type": "string" },
+            "cache_dir": { "type": "string" },
+            "instructions": { "type": "string" }
+          }
+        }
+      }
+    },
+    "ValidationResults": {
+      "type": "object",
+      "required": ["status", "checks"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["pass", "warn", "fail"]
+        },
+        "checks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ValidationCheck" }
+        },
+        "validated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ValidationCheck": {
+      "type": "object",
+      "required": ["check_id", "name", "status", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "check_id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["pass", "warn", "fail"] },
+        "message": { "type": "string" }
+      }
+    },
+    "HumanReview": {
+      "type": "object",
+      "required": ["required", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "required": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "approved", "rejected", "not_required"]
+        },
+        "reviewer_identity": { "type": "string" },
+        "review_timestamp": { "type": "string", "format": "date-time" },
+        "review_decision": { "type": "string" },
+        "required_corrections": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approved_claim_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "review_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": { "type": "string" },
+              "reviewer": { "type": "string" },
+              "action": { "type": "string" },
+              "claim_ids": { "type": "array", "items": { "type": "string" } },
+              "notes": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "GeneratedOutputs": {
+      "type": "object",
+      "required": ["formats_available"],
+      "additionalProperties": false,
+      "properties": {
+        "formats_available": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["json", "markdown", "html", "pdf"] }
+        },
+        "markdown_path": { "type": "string" },
+        "html_path": { "type": "string" },
+        "pdf_path": { "type": "string" }
+      }
+    },
+    "Contradiction": {
+      "type": "object",
+      "required": ["contradiction_id", "claim_ids", "evidence_ids", "description", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "contradiction_id": { "type": "string" },
+        "claim_ids": { "type": "array", "items": { "type": "string" } },
+        "evidence_ids": { "type": "array", "items": { "type": "string" } },
+        "description": { "type": "string" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high"] }
+      }
+    }
+  }
+}

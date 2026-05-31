@@ -1,0 +1,26 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.vsa_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Reports (keep pinned snapshots)
+reports/*
+!reports/.gitkeep
+!reports/brca1_report.json
+!reports/brca1_report.md
+!reports/tp53_report.json
+!reports/protein_report.json
+!reports/paper_report.json
+!reports/materials_report.json
+
+# Environment
+.env
+.venv/
+venv/
+.vsa_signing_key

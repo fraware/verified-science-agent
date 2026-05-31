@@ -1,0 +1,46 @@
+{
+  "tasks": [
+    {
+      "task_id": "brca1_variant",
+      "input_question": "BRCA1 c.68_69del",
+      "expected_evidence_sources": ["ClinVar", "UniProt"],
+      "expected_claim_types": ["classification", "identity"],
+      "required_review_flags": ["requires_clinical_review"]
+    },
+    {
+      "task_id": "tp53_variant",
+      "input_question": "TP53 c.524G>A",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review", "requires_domain_review"]
+    },
+    {
+      "task_id": "egfr_target",
+      "input_question": "EGFR",
+      "expected_evidence_sources": ["UniProt"],
+      "expected_claim_types": ["summary", "observation"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "protein_structure",
+      "input_question": "P38398",
+      "expected_evidence_sources": ["UniProt", "AlphaFold DB"],
+      "expected_claim_types": ["structure", "summary"],
+      "required_review_flags": ["requires_domain_review"]
+    },
+    {
+      "task_id": "paper_doi",
+      "input_question": "10.1038/nature12373",
+      "expected_evidence_sources": ["OpenAlex", "Crossref"],
+      "expected_claim_types": ["summary"],
+      "required_review_flags": ["safe_summary"]
+    },
+    {
+      "task_id": "materials_candidate",
+      "input_question": "LiFePO4 cathode material",
+      "expected_evidence_sources": ["Materials Project", "OpenAlex"],
+      "expected_claim_types": ["property", "observation"],
+      "required_review_flags": ["requires_domain_review"]
+    }
+  ]
+}

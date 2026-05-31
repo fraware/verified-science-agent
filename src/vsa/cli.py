@@ -1,0 +1,373 @@
+"""Verified Science Agent CLI."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+from vsa import __version__
+from vsa.compare import compare_reports, format_compare
+from vsa.inspect import format_inspect, inspect_report
+from vsa.pipeline.build import build_from_file
+from vsa.pipeline.retrieval import retrieve
+from vsa.provenance.hashchain import build_provenance, stamp_report
+from vsa.render import render
+from vsa.validate.engine import validate_report, run_validation
+from vsa.review.workflow import apply_review
+from vsa.claims.llm_extraction import extract_claims as extract_claims_auto
+from vsa.pipeline.subject_parser import parse_input
+from vsa.connectors.cache import EvidenceCache
+from vsa.pipeline.retrieval import retrieve_evidence
+from vsa.scoring.evidence_quality import apply_quality_scores
+
+
+def _load_report(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        print(f"ERROR: could not load {path}: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
+
+
+def _write_output(text: str | bytes, out: Path | None) -> None:
+    if out:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(text, bytes):
+            out.write_bytes(text)
+        else:
+            out.write_text(text, encoding="utf-8")
+        print(f"wrote {out}")
+    elif isinstance(text, bytes):
+        sys.stdout.buffer.write(text)
+    else:
+        print(text)
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    paths = args.reports if hasattr(args, "reports") else [args.report]
+    exit_code = 0
+    for path in paths:
+        report = _load_report(path)
+        result = validate_report(report, verify_hashes=not args.skip_hash_check)
+        status = "PASS" if result.passed else "FAIL"
+        print(f"{status}: {path} [{result.status}]")
+        for check in result.checks:
+            prefix = check.status.upper()
+            print(f"  [{prefix}] {check.name}: {check.message}")
+        if not result.passed:
+            exit_code = 1
+    return exit_code
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    report = _load_report(args.report)
+    output = render(report, args.format)
+    _write_output(output, args.out)
+    return 0
+
+
+def cmd_hash(args: argparse.Namespace) -> int:
+    report = _load_report(args.report)
+    provenance = build_provenance(report)
+    if args.json:
+        text = json.dumps(provenance, indent=2, ensure_ascii=False) + "\n"
+    else:
+        text = "\n".join(
+            [
+                f"report_hash: {provenance.get('report_hash')}",
+                f"evidence_bundle_hash: {provenance.get('evidence_bundle_hash')}",
+                f"claim_hashes: {len(provenance.get('claim_hashes', {}))} claims",
+                f"validation_version: {provenance.get('validation_version')}",
+            ]
+        ) + "\n"
+    _write_output(text, args.out)
+    return 0
+
+
+def cmd_inspect(args: argparse.Namespace) -> int:
+    report = _load_report(args.report)
+    summary = inspect_report(report)
+    if args.json:
+        text = json.dumps(summary, indent=2, ensure_ascii=False) + "\n"
+    else:
+        text = format_inspect(summary)
+    _write_output(text, args.out)
+    return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    a = _load_report(args.report_a)
+    b = _load_report(args.report_b)
+    diff = compare_reports(a, b)
+    _write_output(format_compare(diff), args.out)
+    if args.strict and not diff.get("hash_match"):
+        return 1
+    return 0
+
+
+def cmd_retrieve(args: argparse.Namespace) -> int:
+    result = retrieve(args.question, cache_dir=args.cache_dir)
+    if result.get("warnings") and not args.quiet:
+        for w in result["warnings"]:
+            print(f"WARN: {w}", file=sys.stderr)
+    text = json.dumps(result, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    return 0
+
+
+def cmd_extract(args: argparse.Namespace) -> int:
+    data = json.loads(args.input.read_text(encoding="utf-8"))
+    subject = parse_input(data)
+    cache = EvidenceCache(args.cache_dir)
+    evidence = data.get("evidence") or retrieve_evidence(subject, cache=cache)
+    evidence = apply_quality_scores({"evidence": evidence})["evidence"]
+    claims, stack = extract_claims_auto(
+        subject,
+        evidence,
+        mode=args.claim_mode,
+        provider=args.llm_provider,
+        model=args.llm_model,
+    )
+    out = {"subject": subject, "evidence": evidence, "claims": claims, "extraction_method": stack}
+    text = json.dumps(out, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    return 0
+
+
+def cmd_review(args: argparse.Namespace) -> int:
+    from vsa.validate.engine import run_validation
+
+    report = _load_report(args.report)
+    approved = [c.strip() for c in args.approve.split(",") if c.strip()] if args.approve else []
+    report = apply_review(
+        report,
+        reviewer_identity=args.reviewer,
+        review_decision=args.decision,
+        approved_claim_ids=approved,
+        required_corrections=args.corrections or [],
+        reject=args.reject,
+        review_notes=args.notes,
+    )
+    report = run_validation(report, verify_hashes=True)
+    out_path = args.out or args.report
+    out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"updated {out_path}")
+    print(f"review status: {report['human_review']['status']}")
+    return 0
+
+
+def cmd_build(args: argparse.Namespace) -> int:
+    report = build_from_file(
+        args.input,
+        cache_dir=args.cache_dir,
+        claim_mode=args.claim_mode,
+        llm_provider=args.llm_provider,
+        llm_model=args.llm_model,
+    )
+    out = args.out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {out}")
+    vr = report.get("validation_results", {})
+    print(f"validation: {vr.get('status')}")
+    print(f"report_hash: {report.get('provenance', {}).get('report_hash')}")
+    print(f"claim extraction: {report.get('provenance', {}).get('generated_by', {}).get('model_or_agent_stack', '?')}")
+    return 0 if vr.get("status") != "fail" else 1
+
+
+def cmd_sign(args: argparse.Namespace) -> int:
+    from vsa.provenance.signing import generate_keypair, sign_report, verify_signature
+
+    if args.generate_key:
+        info = generate_keypair(args.key_file)
+        print(f"Generated signing key: {info['private_key_path']}")
+        print(f"Public key (b64): {info['public_key_b64']}")
+        return 0
+
+    if not args.report:
+        print("ERROR: report path required (unless --generate-key)", file=sys.stderr)
+        return 1
+
+    report = _load_report(args.report)
+    signed = sign_report(report, key_path=args.key_file)
+    out = args.out or args.report
+    out.write_text(json.dumps(signed, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    ok, msg = verify_signature(signed)
+    print(f"wrote {out}")
+    print(f"signature: {msg}" if ok else f"signature FAILED: {msg}", file=sys.stderr if not ok else sys.stdout)
+    return 0 if ok else 1
+
+
+def cmd_verify_signature(args: argparse.Namespace) -> int:
+    from vsa.provenance.signing import verify_signature
+
+    report = _load_report(args.report)
+    ok, msg = verify_signature(report)
+    print("PASS" if ok else "FAIL", msg)
+    return 0 if ok else 1
+
+
+def cmd_audit(args: argparse.Namespace) -> int:
+    from vsa.llm.verifier import audit_report
+
+    report = _load_report(args.report)
+    result = audit_report(
+        report,
+        mode=args.audit_mode,
+        provider=args.llm_provider,
+        model=args.llm_model,
+    )
+    text = json.dumps(result.to_dict(), indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    return 0 if result.overall_status in ("passed", "partial") else 1
+
+
+def cmd_migrate(args: argparse.Namespace) -> int:
+    from vsa.migrate.ledger import is_ledger, migrate_ledger
+    from vsa.provenance.hashchain import stamp_report
+
+    data = json.loads(args.input.read_text(encoding="utf-8"))
+    if not is_ledger(data):
+        print("ERROR: input is not a legacy claim ledger", file=sys.stderr)
+        return 1
+    report = migrate_ledger(data)
+    if not report.get("evidence"):
+        print("ERROR: migrated report has no evidence", file=sys.stderr)
+        return 1
+    report = stamp_report(report)
+    report = run_validation(report, verify_hashes=True)
+    out = args.out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {out}")
+    print(f"validation: {report['validation_results']['status']}")
+    return 0
+
+
+def cmd_benchmark(args: argparse.Namespace) -> int:
+    from vsa.benchmark.runner import run_benchmark
+
+    summary = run_benchmark(offline=not args.live, cache_dir=args.cache_dir)
+    text = json.dumps(summary, indent=2) + "\n"
+    _write_output(text, args.out)
+    return 0 if summary["failed"] == 0 else 1
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="vsa",
+        description="Verified Science Agent — evidence-backed scientific report infrastructure.",
+    )
+    parser.add_argument("--version", action="version", version=f"vsa {__version__}")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_validate = sub.add_parser("validate", help="Validate report JSON against schema and rules")
+    p_validate.add_argument("reports", nargs="+", type=Path, help="Report JSON file(s)")
+    p_validate.add_argument("--skip-hash-check", action="store_true")
+    p_validate.set_defaults(func=cmd_validate)
+
+    p_render = sub.add_parser("render", help="Render report to markdown, html, or json")
+    p_render.add_argument("report", type=Path)
+    p_render.add_argument("--format", "-f", default="markdown", choices=["markdown", "md", "html", "json", "pdf"])
+    p_render.add_argument("--out", "-o", type=Path, default=None)
+    p_render.set_defaults(func=cmd_render)
+
+    p_hash = sub.add_parser("hash", help="Compute provenance hashes for a report")
+    p_hash.add_argument("report", type=Path)
+    p_hash.add_argument("--out", "-o", type=Path, default=None)
+    p_hash.add_argument("--json", action="store_true")
+    p_hash.set_defaults(func=cmd_hash)
+
+    p_inspect = sub.add_parser("inspect", help="Summarize report structure and validation status")
+    p_inspect.add_argument("report", type=Path)
+    p_inspect.add_argument("--out", "-o", type=Path, default=None)
+    p_inspect.add_argument("--json", action="store_true")
+    p_inspect.set_defaults(func=cmd_inspect)
+
+    p_compare = sub.add_parser("compare", help="Compare two report artifacts")
+    p_compare.add_argument("report_a", type=Path)
+    p_compare.add_argument("report_b", type=Path)
+    p_compare.add_argument("--out", "-o", type=Path, default=None)
+    p_compare.add_argument("--strict", action="store_true", help="Exit 1 if report hashes differ")
+    p_compare.set_defaults(func=cmd_compare)
+
+    p_retrieve = sub.add_parser("retrieve", help="Retrieve evidence for a scientific question")
+    p_retrieve.add_argument("question", type=str)
+    p_retrieve.add_argument("--cache-dir", default=".vsa_cache")
+    p_retrieve.add_argument("--out", "-o", type=Path, default=None)
+    p_retrieve.add_argument("--quiet", "-q", action="store_true")
+    p_retrieve.set_defaults(func=cmd_retrieve)
+
+    p_build = sub.add_parser("build", help="Build a report from input JSON")
+    p_build.add_argument("input", type=Path)
+    p_build.add_argument("--out", "-o", type=Path, required=True)
+    p_build.add_argument("--cache-dir", default=".vsa_cache")
+    p_build.add_argument("--claim-mode", default="auto", choices=["auto", "rule", "llm"])
+    p_build.add_argument("--llm-provider", choices=["openai", "anthropic"], default=None)
+    p_build.add_argument("--llm-model", default=None)
+    p_build.set_defaults(func=cmd_build)
+
+    p_extract = sub.add_parser("extract", help="Extract claims from input JSON (rule or LLM)")
+    p_extract.add_argument("input", type=Path)
+    p_extract.add_argument("--out", "-o", type=Path, default=None)
+    p_extract.add_argument("--cache-dir", default=".vsa_cache")
+    p_extract.add_argument("--claim-mode", default="auto", choices=["auto", "rule", "llm"])
+    p_extract.add_argument("--llm-provider", choices=["openai", "anthropic"], default=None)
+    p_extract.add_argument("--llm-model", default=None)
+    p_extract.set_defaults(func=cmd_extract)
+
+    p_review = sub.add_parser("review", help="Apply human review to a report")
+    p_review.add_argument("report", type=Path)
+    p_review.add_argument("--reviewer", required=True, help="Reviewer identity")
+    p_review.add_argument("--decision", default="approved", help="Review decision label")
+    p_review.add_argument("--approve", default="", help="Comma-separated claim IDs to approve")
+    p_review.add_argument("--corrections", nargs="*", default=[])
+    p_review.add_argument("--notes", default=None, help="Reviewer notes")
+    p_review.add_argument("--out", "-o", type=Path, default=None, help="Output path (default: update report in place)")
+    p_review.add_argument("--reject", action="store_true")
+    p_review.set_defaults(func=cmd_review)
+
+    p_sign = sub.add_parser("sign", help="Ed25519-sign report provenance hash")
+    p_sign.add_argument("report", type=Path, nargs="?", default=None)
+    p_sign.add_argument("--out", "-o", type=Path, default=None)
+    p_sign.add_argument("--key-file", default=".vsa_signing_key")
+    p_sign.add_argument("--generate-key", action="store_true")
+    p_sign.set_defaults(func=cmd_sign)
+
+    p_vsig = sub.add_parser("verify-signature", help="Verify Ed25519 signature on report")
+    p_vsig.add_argument("report", type=Path)
+    p_vsig.set_defaults(func=cmd_verify_signature)
+
+    p_audit = sub.add_parser("audit", help="Scientific audit (rule + optional LLM verifier)")
+    p_audit.add_argument("report", type=Path)
+    p_audit.add_argument("--out", "-o", type=Path, default=None)
+    p_audit.add_argument("--audit-mode", default="auto", choices=["auto", "rule", "llm"])
+    p_audit.add_argument("--llm-provider", choices=["openai", "anthropic"], default=None)
+    p_audit.add_argument("--llm-model", default=None)
+    p_audit.set_defaults(func=cmd_audit)
+
+    p_migrate = sub.add_parser("migrate", help="Migrate legacy claim-ledger JSON to ScientificReport")
+    p_migrate.add_argument("input", type=Path)
+    p_migrate.add_argument("--out", "-o", type=Path, required=True)
+    p_migrate.set_defaults(func=cmd_migrate)
+
+    p_bench = sub.add_parser("benchmark", help="Run benchmark task suite")
+    p_bench.add_argument("--live", action="store_true")
+    p_bench.add_argument("--cache-dir", default=".vsa_cache")
+    p_bench.add_argument("--out", "-o", type=Path, default=None)
+    p_bench.set_defaults(func=cmd_benchmark)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

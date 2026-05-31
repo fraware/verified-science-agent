@@ -1,28 +1,39 @@
-.PHONY: demo validate render hash test invalid-ledger ui
+.PHONY: demo validate render hash test ui install benchmark audit sign
 
-LEDGER=examples/brca1_c68_69del_ledger.json
-INVALID_LEDGER=examples/invalid_ledger_missing_source.json
-REPORT=reports/generated_brca1_report.md
-HASH_CHAIN=reports/provenance_hash_chain.json
+install:
+	pip install -e ".[dev,ui,pdf,signing]"
+
+demo: install
+	vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+	vsa validate reports/brca1_report.json
+	vsa audit reports/brca1_report.json
+	vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
+	vsa hash reports/brca1_report.json
 
 validate:
-	python scripts/validate_ledger.py $(LEDGER)
+	vsa validate examples/*.json reports/*.json
 
 render:
-	python scripts/render_report.py $(LEDGER) --out $(REPORT)
+	vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
 
 hash:
-	python scripts/provenance_hash.py $(LEDGER) --out $(HASH_CHAIN)
+	vsa hash reports/brca1_report.json --json
 
-demo: validate render hash
-	@echo "Demo ready: $(REPORT)"
-	@echo "Provenance chain ready: $(HASH_CHAIN)"
+test:
+	pytest
 
-invalid-ledger:
-	python scripts/validate_ledger.py $(INVALID_LEDGER)
+benchmark:
+	vsa benchmark
 
-test: demo
-	@if python scripts/validate_ledger.py $(INVALID_LEDGER); then echo "invalid ledger unexpectedly passed"; exit 1; else echo "invalid ledger failed as expected"; fi
+audit:
+	vsa audit reports/brca1_report.json
+
+sign:
+	vsa sign reports/brca1_report.json
 
 ui:
 	streamlit run ui/app.py
+
+invalid:
+	vsa validate examples/bad_unsupported_claim.json --skip-hash-check || true
+	vsa validate examples/bad_missing_evidence_ref.json --skip-hash-check || true

@@ -1,0 +1,231 @@
+{
+  "schema_version": "1.1.0",
+  "report_id": "vsa-brca1-demo-001",
+  "created_at": "2026-05-31T04:17:30Z",
+  "subject": {
+    "entity_type": "variant",
+    "display_name": "BRCA1 c.68_69del",
+    "gene_symbol": "BRCA1",
+    "variant_hgvs_c": "c.68_69del"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "BRCA1 c.68_69del is recorded in ClinVar with significance: pathogenic.",
+      "evidence_ids": [
+        "E001"
+      ],
+      "confidence": 0.85,
+      "review_boundary": "requires_clinical_review",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    },
+    {
+      "claim_id": "C002",
+      "claim_type": "identity",
+      "claim_text": "BRCA1 protein record is available in UniProt (P38398).",
+      "evidence_ids": [
+        "E002"
+      ],
+      "confidence": 0.92,
+      "review_boundary": "safe_summary",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000017662",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/17662/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: BRCA1 c.68_69del; clinical_significance: pathogenic",
+      "raw_record_hash": "b7305412c6836c10db83f8fb0d22a3cde20ac6d1729fe3305b9a86184111fcaa",
+      "evidence_role": "supports",
+      "reliability": "high",
+      "domain_metadata": {
+        "clinical_significance": "pathogenic"
+      },
+      "quality_score": {
+        "score": 1.0,
+        "reasons": [
+          "source authority for ClinVar: 0.95",
+          "source type database: 0.95",
+          "identifier is specific",
+          "retrieval path is a reproducible URL",
+          "raw record hash enables reproducibility",
+          "retrieved recently (0 days ago)"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "evidence_id": "E002",
+      "source_name": "UniProt",
+      "source_type": "database",
+      "identifier": "P38398",
+      "retrieval_path": "https://www.uniprot.org/uniprotkb/P38398/entry",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "accession: P38398; protein_name: Breast cancer type 1 susceptibility protein; gene: BRCA1",
+      "raw_record_hash": "15b569edcf873ef082ea0ad08fe16ad1d6e2cfa64cc9d14a8b962dbcc45cbfe8",
+      "evidence_role": "supports",
+      "reliability": "high",
+      "domain_metadata": {
+        "accession": "P38398",
+        "gene_symbol": "BRCA1"
+      },
+      "quality_score": {
+        "score": 1.0,
+        "reasons": [
+          "source authority for UniProt: 0.92",
+          "source type database: 0.95",
+          "identifier is specific",
+          "retrieval path is a reproducible URL",
+          "raw record hash enables reproducibility",
+          "retrieved recently (0 days ago)"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "M001",
+      "name": "evidence_retrieval_pipeline",
+      "version": "1.0.0",
+      "description": "Subject parser → connector queries → evidence ranking"
+    },
+    {
+      "method_id": "M002",
+      "name": "claim_extraction",
+      "version": "claim_extraction_v1",
+      "description": "Claim extraction (rule-based) from retrieved evidence IDs"
+    }
+  ],
+  "provenance": {
+    "source_record_hashes": {
+      "E001": "b7305412c6836c10db83f8fb0d22a3cde20ac6d1729fe3305b9a86184111fcaa",
+      "E002": "15b569edcf873ef082ea0ad08fe16ad1d6e2cfa64cc9d14a8b962dbcc45cbfe8"
+    },
+    "evidence_bundle_hash": "21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc",
+    "claim_hashes": {
+      "C001": "da473ac285d511188986e3d533aa7af01ac2b3892bcc7b114feb582d548d2783",
+      "C002": "9c30ade4e147698ab7009ec49d296e1c88127aa316ed8a0250abeb7ff3f71b75"
+    },
+    "report_hash": "8857e21b2202890e9ba4c20fe60a7cb261ffde40971afdca7256eb40c91ac456",
+    "validation_version": "1.1.0",
+    "renderer_version": "1.1.0",
+    "generated_by": {
+      "system_name": "verified-science-agent",
+      "model_or_agent_stack": "rule-based",
+      "prompt_template_version": "claim_extraction_v1"
+    },
+    "reproducibility": {
+      "input_hash": "17038c201a8976e0c46f79dfec6c01eee4c03e3f5edac741340dbce83366b003",
+      "cache_dir": ".vsa_cache",
+      "instructions": "Re-run `vsa build <input.json> --out <report.json>` with the same input and connector cache to reproduce evidence retrieval and hashes."
+    }
+  },
+  "validation_results": {
+    "status": "pass",
+    "checks": [
+      {
+        "check_id": "schema",
+        "name": "JSON Schema conformance",
+        "status": "pass",
+        "message": "valid"
+      },
+      {
+        "check_id": "schema_version",
+        "name": "Schema version",
+        "status": "pass",
+        "message": "matches"
+      },
+      {
+        "check_id": "claim_evidence",
+        "name": "Every claim has evidence",
+        "status": "pass",
+        "message": "all claims cite evidence"
+      },
+      {
+        "check_id": "evidence_refs",
+        "name": "Claim evidence IDs resolve",
+        "status": "pass",
+        "message": "all evidence IDs resolve"
+      },
+      {
+        "check_id": "evidence_metadata",
+        "name": "Evidence source type and retrieval path",
+        "status": "pass",
+        "message": "all evidence items complete"
+      },
+      {
+        "check_id": "confidence",
+        "name": "Confidence bounded [0,1]",
+        "status": "pass",
+        "message": "all confidence values valid"
+      },
+      {
+        "check_id": "unsupported",
+        "name": "Unsupported claims flagged",
+        "status": "pass",
+        "message": "no unsupported claims"
+      },
+      {
+        "check_id": "speculative",
+        "name": "Speculative claims labeled",
+        "status": "pass",
+        "message": "no speculative claims"
+      },
+      {
+        "check_id": "human_review",
+        "name": "Human review requirements explicit",
+        "status": "pass",
+        "message": "human_review.required=True; clinical claims: ['C001']"
+      },
+      {
+        "check_id": "review_boundary",
+        "name": "Review boundary labels valid",
+        "status": "pass",
+        "message": "all boundaries valid"
+      },
+      {
+        "check_id": "evidence_quality",
+        "name": "Evidence quality scoring",
+        "status": "pass",
+        "message": "evidence quality acceptable"
+      },
+      {
+        "check_id": "contradictions",
+        "name": "Contradiction detection",
+        "status": "pass",
+        "message": "no contradictions"
+      },
+      {
+        "check_id": "provenance",
+        "name": "Provenance hashes match",
+        "status": "pass",
+        "message": "hashes verified"
+      }
+    ],
+    "validated_at": "2026-05-31T04:17:30Z"
+  },
+  "human_review": {
+    "required": true,
+    "status": "pending",
+    "required_corrections": [],
+    "approved_claim_ids": []
+  },
+  "generated_outputs": {
+    "formats_available": [
+      "json",
+      "markdown",
+      "html",
+      "pdf"
+    ]
+  },
+  "contradictions": []
+}

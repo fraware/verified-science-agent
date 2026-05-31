@@ -1,0 +1,37 @@
+{
+  "report_id": "vsa-brca1-demo-001",
+  "question": "BRCA1 c.68_69del",
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000017662",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/17662/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: BRCA1 c.68_69del; clinical_significance: pathogenic",
+      "raw_record_hash": "b7305412c6836c10db83f8fb0d22a3cde20ac6d1729fe3305b9a86184111fcaa",
+      "evidence_role": "supports",
+      "reliability": "high",
+      "domain_metadata": {
+        "clinical_significance": "pathogenic"
+      }
+    },
+    {
+      "evidence_id": "E002",
+      "source_name": "UniProt",
+      "source_type": "database",
+      "identifier": "P38398",
+      "retrieval_path": "https://www.uniprot.org/uniprotkb/P38398/entry",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "accession: P38398; protein_name: Breast cancer type 1 susceptibility protein; gene: BRCA1",
+      "raw_record_hash": "15b569edcf873ef082ea0ad08fe16ad1d6e2cfa64cc9d14a8b962dbcc45cbfe8",
+      "evidence_role": "supports",
+      "reliability": "high",
+      "domain_metadata": {
+        "accession": "P38398",
+        "gene_symbol": "BRCA1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        run: pip install -e ".[dev,signing,pdf]"
+
+      - name: CLI smoke test
+        run: vsa --help
+
+      - name: Build example report
+        run: vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+
+      - name: Validate good examples
+        run: vsa validate reports/brca1_report.json
+
+      - name: Validate bad examples fail
+        run: |
+          vsa validate examples/bad_unsupported_claim.json --skip-hash-check && exit 1 || true
+          vsa validate examples/bad_missing_evidence_ref.json --skip-hash-check && exit 1 || true
+
+      - name: Audit report
+        run: vsa audit reports/brca1_report.json
+
+      - name: Sign and verify report
+        run: |
+          vsa sign --generate-key --key-file /tmp/vsa_test_key
+          vsa sign reports/brca1_report.json --key-file /tmp/vsa_test_key --out /tmp/signed_report.json
+          vsa verify-signature /tmp/signed_report.json
+
+      - name: Render test
+        run: vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
+
+      - name: Hash reproducibility test
+        run: |
+          vsa hash reports/brca1_report.json --json > /tmp/hash1.json
+          vsa hash reports/brca1_report.json --json > /tmp/hash2.json
+          diff /tmp/hash1.json /tmp/hash2.json
+
+      - name: Run pytest
+        run: pytest --cov=vsa --cov-report=term-missing
+
+      - name: Run benchmarks (offline)
+        run: vsa benchmark

@@ -1,0 +1,16 @@
+{
+  "question": "LiFePO4 cathode material",
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "Materials Project",
+      "source_type": "database",
+      "identifier": "mp-19017",
+      "retrieval_path": "https://materialsproject.org/materials/mp-19017",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "material_id: mp-19017; formula: LiFePO4; crystal_system: Orthorhombic; energy_above_hull: 0.0",
+      "raw_record_hash": "afba1a0ce1c8af744d1951b94989616cd777a1e709b570c717f957784835dd88",
+      "domain_metadata": {"material_id": "mp-19017", "formula": "LiFePO4"}
+    }
+  ]
+}

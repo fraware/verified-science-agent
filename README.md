@@ -1,248 +1,231 @@
 # Verified Science Agent
 
-<p align="center">
-  <strong>Evidence-backed AI research workflows.</strong>
-</p>
+Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
 
-<p align="center">
-  A lightweight open framework for turning AI-generated scientific outputs into structured, reviewable, and reproducible reports.
-</p>
+## North star
 
----
-
-## Why this project exists
-
-AI systems can already summarize papers, retrieve biological records, inspect protein structures, and generate scientific hypotheses in seconds. The difficult problem is establishing whether those outputs can be trusted inside real research environments.
-
-Most scientific AI demos stop at generation.
-
-This repository focuses on verification, provenance, and evidence tracking.
-
-The core idea is simple:
-
-- every important claim should be traceable,
-- every source should be explicit,
-- every generated report should be reviewable,
-- every workflow should remain reproducible.
-
-The project was initially built during an AGI House + Google DeepMind builder event focused on Gemini, Managed Agents, and Science Skills. The repository has since been simplified into a reusable developer starter kit for evidence-aware AI systems.
-
----
-
-## What this repository provides
-
-### Structured evidence records
-
-Scientific claims are stored in a simple JSON format that records:
-
-- claim text
-- confidence
-- source links
-- retrieval paths
-- validation state
-- review notes
-
-The format is intentionally lightweight and readable.
-
-### Validation tools
-
-The repository includes local validators that check whether reports:
-
-- contain supporting evidence,
-- expose provenance paths,
-- include verification metadata,
-- avoid structurally incomplete records.
-
-### Report rendering
-
-A compact renderer converts evidence records into readable Markdown reports.
-
-### Provenance hash chains
-
-The repository can generate a simple cryptographic hash chain over report claims so downstream systems can verify report integrity.
-
-### Reusable examples
-
-Included examples demonstrate:
-
-- valid evidence-backed reports,
-- intentionally invalid reports,
-- validation failures,
-- reproducible outputs.
-
----
-
-## Repository structure
-
-```text
-examples/       Example evidence records
-scripts/        Validation, rendering, and provenance tools
-templates/      Reusable JSON templates
-reports/        Generated reports
-ui/             Lightweight visualization app
-integrations/   Example integration adapters
-prompts/        Review and verification prompts
-```
-
----
+A scientific AI report should be inspectable by engineers, readable by scientists, and shareable with reviewers — with signed or hashable outputs.
 
 ## Quick start
-
-Clone the repository:
 
 ```bash
 git clone https://github.com/fraware/verified-science-agent.git
 cd verified-science-agent
+pip install -e ".[dev,ui,pdf,signing]"
 ```
 
-Run the main demo:
+### v0.3.0 workflow
+
+```bash
+vsa retrieve "BRCA1 c.68_69del"
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+vsa validate reports/brca1_report.json
+vsa audit reports/brca1_report.json
+vsa sign reports/brca1_report.json
+vsa verify-signature reports/brca1_report.json
+vsa render reports/brca1_report.json --format markdown
+vsa hash reports/brca1_report.json
+vsa benchmark
+streamlit run ui/app.py
+```
+
+### v0.1.0 workflow
+
+```bash
+vsa retrieve "BRCA1 c.68_69del"
+vsa build examples/brca1_input.json --out reports/brca1_report.json
+vsa validate reports/brca1_report.json
+vsa render reports/brca1_report.json --format markdown
+vsa hash reports/brca1_report.json
+vsa inspect reports/brca1_report.json
+vsa compare reports/brca1_report.json reports/brca1_report.json
+```
+
+Or run the full demo:
 
 ```bash
 make demo
 ```
 
-Validate the example report:
-
-```bash
-python scripts/validate_ledger.py examples/brca1_c68_69del_ledger.json
-```
-
-Generate a Markdown report:
-
-```bash
-python scripts/render_report.py examples/brca1_c68_69del_ledger.json --out reports/generated_brca1_report.md
-```
-
-Generate a provenance chain:
-
-```bash
-python scripts/provenance_hash.py examples/brca1_c68_69del_ledger.json
-```
-
-Launch the lightweight UI:
+Launch the Streamlit UI:
 
 ```bash
 streamlit run ui/app.py
 ```
 
----
+## CLI commands
 
-## Example workflow
+| Command | Description |
+|---------|-------------|
+| `vsa validate report.json` | Schema + semantic validation |
+| `vsa render report.json --format markdown\|html\|json` | Render readable report |
+| `vsa hash report.json` | Provenance hash chain |
+| `vsa inspect report.json` | Structural summary |
+| `vsa compare report_a.json report_b.json` | Diff two reports |
+| `vsa retrieve "question"` | Retrieve evidence from databases |
+| `vsa build input.json --out report.json` | Build full ScientificReport |
+| `vsa extract input.json` | Extract claims (rule or LLM) |
+| `vsa render report.json --format markdown\|html\|json\|pdf` | Render report (PDF needs `[pdf]` extra) |
+| `vsa review report.json --reviewer NAME --approve C001 --notes "..."` | Human review workflow |
+| `vsa audit report.json` | Scientific audit (rule + optional LLM hybrid) |
+| `vsa sign report.json` | Ed25519-sign report provenance hash |
+| `vsa verify-signature report.json` | Verify Ed25519 signature |
+| `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
+| `vsa benchmark` | Run benchmark task suite (offline or `--live`) |
+| `vsa compare report_a.json report_b.json --strict` | Diff reports (exit 1 if hashes differ) |
 
-1. An AI system generates a scientific summary.
-2. Claims are converted into structured evidence records.
-3. Each claim is linked to supporting sources.
-4. Validation checks are executed.
-5. A reviewable report is rendered.
-6. Provenance hashes are generated.
+Launch the full UI (build, review, evidence graph, PDF export):
 
-The resulting artifact becomes easier to inspect, reproduce, and share.
+```bash
+pip install -e ".[ui,pdf]"
+streamlit run ui/app.py
+```
 
----
+## LLM claim extraction
 
-## Example use cases
+Set API keys in `.env` (see `.env.example`):
 
-The repository is intentionally domain-general.
+```bash
+cp .env.example .env
+# Edit .env with your keys — never commit .env
+```
 
-Potential applications include:
+Build with LLM claims (auto-detects provider):
 
-- genomics
-- drug discovery
-- literature synthesis
-- chemistry workflows
-- materials science
-- clinical research tooling
-- AI-assisted peer review
-- internal research copilots
-- scientific compliance pipelines
-- agent evaluation systems
+```bash
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode llm
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode auto
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode llm --llm-provider anthropic
+```
 
----
+Rule-based fallback (no API keys required):
 
-## Design principles
+```bash
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+```
 
-### Small surface area
+## LLM scientific audit
 
-The project avoids heavy infrastructure requirements.
+Hybrid verifier: deterministic rule checks plus optional LLM semantic review (conservative merge — rules cannot be overridden).
 
-### Human-readable artifacts
+```bash
+vsa audit reports/brca1_report.json                      # auto: LLM if keys present
+vsa audit reports/brca1_report.json --audit-mode rule    # deterministic only
+vsa audit reports/brca1_report.json --audit-mode llm     # LLM + mandatory rule overlay
+vsa audit reports/brca1_report.json --audit-mode llm --llm-provider anthropic
+```
 
-Outputs should remain understandable without specialized tooling.
+Rule-based fallback (no API keys required):
 
-### Local-first execution
+```bash
+vsa audit reports/brca1_report.json --audit-mode rule
+```
 
-All included workflows run locally.
+The LLM auditor evaluates only the claim text and cited evidence provided in the payload — it cannot introduce new sources.
 
-### Interoperable structure
+## ScientificReport schema
 
-The evidence format is compatible with external agent systems and future orchestration frameworks.
+Canonical artifact model (schema version **1.1.0**, also accepts **1.0.0**):
 
-### Research-first orientation
+```
+ScientificReport
+  subject
+  claims[]
+  evidence[]
+  methods[]
+  provenance
+  validation_results
+  human_review
+  generated_outputs
+```
 
-The repository is intended for experimentation, infrastructure exploration, and scientific tooling research.
+Schema file: `src/vsa/schemas/scientific_report.schema.json`
 
----
+Domains supported: genomics variants, proteins, papers, chemicals, materials, experiments.
 
-## Relationship to external systems
+## Database connectors
 
-This repository does not depend on a specific model provider.
+Read-only connectors with normalized evidence output and file caching (`.vsa_cache/`):
 
-It can be connected to:
+- OpenAlex
+- **PubMed** (NCBI E-utilities)
+- Europe PMC
+- UniProt
+- ClinVar
+- AlphaFold DB
+- Crossref
+- Materials Project (requires API key)
 
-- Gemini
-- OpenAI models
-- Claude
-- local models
-- retrieval systems
-- scientific databases
-- agent frameworks
-- orchestration runtimes
+Each connector returns:
 
-The included integration adapter demonstrates how external systems can normalize outputs into the evidence format.
+```json
+{
+  "source_name": "...",
+  "source_type": "...",
+  "identifier": "...",
+  "retrieval_path": "...",
+  "retrieved_at": "...",
+  "summary": "...",
+  "raw_record_hash": "..."
+}
+```
 
----
+## Architecture
+
+```
+question → subject parser → connector queries → evidence candidates → ranking
+         → claim extraction (evidence IDs only) → validation → provenance → render
+```
+
+Core rule: **retrieval produces evidence, generation produces claims, validation checks claims against evidence.** Models cannot invent source fields.
+
+## Repository structure
+
+```text
+src/vsa/           Python package (CLI, validation, connectors, pipeline, render)
+schemas/           JSON Schema (symlink to package schema)
+examples/          Input files and good/bad report examples
+benchmarks/        Evaluation tasks and offline fixtures
+reports/           Generated report snapshots
+tests/             pytest suite
+ui/                Streamlit inspector
+.github/workflows/ CI pipeline
+```
+
+## Validation engine
+
+Checks include:
+
+- JSON Schema conformance
+- Every claim has evidence; every evidence ID resolves
+- Source type and retrieval path present
+- Confidence bounded [0, 1]
+- Unsupported claims fail; speculative claims labeled
+- Human review requirements explicit
+- Explainable evidence quality scoring
+- Contradiction detection
+- Provenance hash verification
+
+## Benchmarks
+
+Six domain tasks with offline fixtures (genomics, protein, paper, materials):
+
+```bash
+vsa benchmark
+# or
+python benchmarks/run_benchmark.py
+```
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
 
 ## Safety notice
 
-This repository is a research and infrastructure demonstration.
-
-It is not:
-
-- a medical device,
-- a clinical decision system,
-- a diagnostic platform,
-- a substitute for expert review.
-
-Human oversight remains essential.
-
----
-
-## Vision
-
-Scientific AI systems are moving from passive assistants toward autonomous research workflows.
-
-As these systems become more capable, the infrastructure surrounding evidence, provenance, reproducibility, and review becomes increasingly important.
-
-The long-term goal of this project is to explore what trustworthy scientific AI pipelines could look like when verification is treated as a first-class system component.
-
----
-
-## Contributing
-
-Contributions are welcome.
-
-Good extensions include:
-
-- additional report templates,
-- new validators,
-- integration adapters,
-- benchmark datasets,
-- provenance systems,
-- UI improvements,
-- evaluation workflows,
-- scientific tooling integrations.
-
----
+Research infrastructure only. Not a medical device, clinical decision system, or diagnostic platform. Human expert review is required before any clinical use.
 
 ## License
 

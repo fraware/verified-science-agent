@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e ".[dev,pdf,signing]"
+
+      - name: Run tests
+        run: pytest
+
+      - name: Build pinned snapshots
+        run: |
+          vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+          vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
+          vsa validate reports/brca1_report.json
+          vsa audit reports/brca1_report.json
+          vsa benchmark
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file CHANGELOG.md \
+            reports/brca1_report.json \
+            reports/brca1_report.md \
+            schemas/scientific_report.schema.json

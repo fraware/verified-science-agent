@@ -1,0 +1,24 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "UniProt",
+    "source_type": "database",
+    "identifier": "P38398",
+    "retrieval_path": "https://www.uniprot.org/uniprotkb/P38398/entry",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "accession: P38398; protein_name: Breast cancer type 1 susceptibility protein",
+    "raw_record_hash": "0e304a2652bb6dac0e5dc4750fc5b7612eece57d67fc43cf20622642e582c695",
+    "domain_metadata": {"accession": "P38398"}
+  },
+  {
+    "evidence_id": "E002",
+    "source_name": "AlphaFold DB",
+    "source_type": "structure",
+    "identifier": "P38398",
+    "retrieval_path": "https://alphafold.ebi.ac.uk/entry/P38398",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "uniprot: P38398; organism: Homo sapiens; model_version: 4",
+    "raw_record_hash": "b40873401bd8d3462b4364a003564dfadeaba6f41f881afcde6360ad6eea87b0",
+    "domain_metadata": {"uniprot_accession": "P38398", "model_version": 4}
+  }
+]

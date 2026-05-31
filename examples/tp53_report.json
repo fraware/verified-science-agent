@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0.0",
+  "report_id": "vsa-df98e81d921a",
+  "created_at": "2026-05-31T03:58:30Z",
+  "subject": {
+    "entity_type": "variant",
+    "display_name": "TP53 c.524G>A",
+    "gene_symbol": "TP53",
+    "variant_hgvs_c": "c.524G>A"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "TP53 c.524G>A is recorded in ClinVar with significance: likely pathogenic.",
+      "evidence_ids": [
+        "E001"
+      ],
+      "confidence": 0.85,
+      "review_boundary": "requires_clinical_review",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000003456",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/3456/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: TP53 c.524G>A; clinical_significance: likely pathogenic",
+      "raw_record_hash": "24b641060fac62e10044131d02e2cc1e642fde69eda081dbbb8b8413ad23dd75",
+      "domain_metadata": {
+        "clinical_significance": "likely pathogenic"
+      },
+      "quality_score": {
+        "score": 1.0,
+        "reasons": [
+          "source authority for ClinVar: 0.95",
+          "source type database: 0.95",
+          "identifier is specific",
+          "retrieval path is a reproducible URL",
+          "raw record hash enables reproducibility",
+          "retrieved recently (0 days ago)"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "M001",
+      "name": "evidence_retrieval_pipeline",
+      "version": "1.0.0",
+      "description": "Subject parser \u2192 connector queries \u2192 evidence ranking"
+    },
+    {
+      "method_id": "M002",
+      "name": "claim_extraction",
+      "version": "claim_extraction_v1",
+      "description": "Rule-based claim extraction from retrieved evidence IDs"
+    }
+  ],
+  "provenance": {
+    "source_record_hashes": {
+      "E001": "24b641060fac62e10044131d02e2cc1e642fde69eda081dbbb8b8413ad23dd75"
+    },
+    "evidence_bundle_hash": "83c8a7bc210e7bfefdc659bcad4b8514b332282f0f338610e484c8e7bc41a4b3",
+    "claim_hashes": {
+      "C001": "71e9850ddd14abd8a63b47f03dcc2550ec9caa0a026837eb5a21f9ce82f13120"
+    },
+    "report_hash": "6678bb99738ec484a4f26d76459ff3c3426534ff17ebb5693c877ab812dc6f4a",
+    "validation_version": "1.0.0",
+    "renderer_version": "1.0.0",
+    "generated_by": {
+      "system_name": "verified-science-agent",
+      "model_or_agent_stack": "rule-based v0.1.0 (no LLM source invention)",
+      "prompt_template_version": "claim_extraction_v1"
+    },
+    "reproducibility": {
+      "input_hash": "1553b6ee927201896208d2bd0ff3b1989b15bbd300fa3198e7fdced70103926e",
+      "cache_dir": ".vsa_cache",
+      "instructions": "Re-run `vsa build <input.json> --out <report.json>` with the same input and connector cache to reproduce evidence retrieval and hashes."
+    }
+  },
+  "validation_results": {
+    "status": "pass",
+    "checks": [
+      {
+        "check_id": "schema",
+        "name": "JSON Schema conformance",
+        "status": "pass",
+        "message": "valid"
+      },
+      {
+        "check_id": "schema_version",
+        "name": "Schema version",
+        "status": "pass",
+        "message": "matches"
+      },
+      {
+        "check_id": "claim_evidence",
+        "name": "Every claim has evidence",
+        "status": "pass",
+        "message": "all claims cite evidence"
+      },
+      {
+        "check_id": "evidence_refs",
+        "name": "Claim evidence IDs resolve",
+        "status": "pass",
+        "message": "all evidence IDs resolve"
+      },
+      {
+        "check_id": "evidence_metadata",
+        "name": "Evidence source type and retrieval path",
+        "status": "pass",
+        "message": "all evidence items complete"
+      },
+      {
+        "check_id": "confidence",
+        "name": "Confidence bounded [0,1]",
+        "status": "pass",
+        "message": "all confidence values valid"
+      },
+      {
+        "check_id": "unsupported",
+        "name": "Unsupported claims flagged",
+        "status": "pass",
+        "message": "no unsupported claims"
+      },
+      {
+        "check_id": "speculative",
+        "name": "Speculative claims labeled",
+        "status": "pass",
+        "message": "no speculative claims"
+      },
+      {
+        "check_id": "human_review",
+        "name": "Human review requirements explicit",
+        "status": "pass",
+        "message": "human_review.required=True; clinical claims: ['C001']"
+      },
+      {
+        "check_id": "review_boundary",
+        "name": "Review boundary labels valid",
+        "status": "pass",
+        "message": "all boundaries valid"
+      },
+      {
+        "check_id": "evidence_quality",
+        "name": "Evidence quality scoring",
+        "status": "pass",
+        "message": "evidence quality acceptable"
+      },
+      {
+        "check_id": "contradictions",
+        "name": "Contradiction detection",
+        "status": "pass",
+        "message": "no contradictions"
+      },
+      {
+        "check_id": "provenance",
+        "name": "Provenance hashes match",
+        "status": "pass",
+        "message": "hashes verified"
+      }
+    ],
+    "validated_at": "2026-05-31T03:58:30Z"
+  },
+  "human_review": {
+    "required": true,
+    "status": "pending",
+    "required_corrections": [],
+    "approved_claim_ids": []
+  },
+  "generated_outputs": {
+    "formats_available": [
+      "json",
+      "markdown",
+      "html"
+    ]
+  },
+  "contradictions": []
+}

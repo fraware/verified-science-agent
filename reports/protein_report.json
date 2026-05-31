@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.1.0",
+  "report_id": "vsa-f9276ef64897",
+  "created_at": "2026-05-31T04:17:43Z",
+  "subject": {
+    "entity_type": "protein",
+    "display_name": "P38398",
+    "protein_accession": "P38398"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "structure",
+      "claim_text": "Protein P38398 has curated metadata in UniProt. Predicted structure available in AlphaFold DB.",
+      "evidence_ids": [
+        "E001",
+        "E002"
+      ],
+      "confidence": 0.9,
+      "review_boundary": "requires_domain_review",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "UniProt",
+      "source_type": "database",
+      "identifier": "P38398",
+      "retrieval_path": "https://www.uniprot.org/uniprotkb/P38398/entry",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "accession: P38398; protein_name: Breast cancer type 1 susceptibility protein",
+      "raw_record_hash": "0e304a2652bb6dac0e5dc4750fc5b7612eece57d67fc43cf20622642e582c695",
+      "domain_metadata": {
+        "accession": "P38398"
+      },
+      "quality_score": {
+        "score": 1.0,
+        "reasons": [
+          "source authority for UniProt: 0.92",
+          "source type database: 0.95",
+          "identifier is specific",
+          "retrieval path is a reproducible URL",
+          "raw record hash enables reproducibility",
+          "retrieved recently (0 days ago)"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "evidence_id": "E002",
+      "source_name": "AlphaFold DB",
+      "source_type": "structure",
+      "identifier": "P38398",
+      "retrieval_path": "https://alphafold.ebi.ac.uk/entry/P38398",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "uniprot: P38398; organism: Homo sapiens; model_version: 4",
+      "raw_record_hash": "b40873401bd8d3462b4364a003564dfadeaba6f41f881afcde6360ad6eea87b0",
+      "domain_metadata": {
+        "uniprot_accession": "P38398",
+        "model_version": 4
+      },
+      "quality_score": {
+        "score": 1.0,
+        "reasons": [
+          "source authority for AlphaFold DB: 0.88",
+          "source type structure: 0.88",
+          "identifier is specific",
+          "retrieval path is a reproducible URL",
+          "raw record hash enables reproducibility",
+          "retrieved recently (0 days ago)"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "M001",
+      "name": "evidence_retrieval_pipeline",
+      "version": "1.0.0",
+      "description": "Subject parser → connector queries → evidence ranking"
+    },
+    {
+      "method_id": "M002",
+      "name": "claim_extraction",
+      "version": "claim_extraction_v1",
+      "description": "Claim extraction (rule-based) from retrieved evidence IDs"
+    }
+  ],
+  "provenance": {
+    "source_record_hashes": {
+      "E001": "0e304a2652bb6dac0e5dc4750fc5b7612eece57d67fc43cf20622642e582c695",
+      "E002": "b40873401bd8d3462b4364a003564dfadeaba6f41f881afcde6360ad6eea87b0"
+    },
+    "evidence_bundle_hash": "01141de93d442dbf80fc5f129b251152e9df2af9a36278f105f2dfb0a1770990",
+    "claim_hashes": {
+      "C001": "682541d42e0b06ef1207915150f3f053ae9845adb64b0f792e611dd927f52354"
+    },
+    "report_hash": "14f4c09e3e7f4e7f52743ece1e296f3d804da1f60fffe0d796de37a465360833",
+    "validation_version": "1.1.0",
+    "renderer_version": "1.1.0",
+    "generated_by": {
+      "system_name": "verified-science-agent",
+      "model_or_agent_stack": "rule-based",
+      "prompt_template_version": "claim_extraction_v1"
+    },
+    "reproducibility": {
+      "input_hash": "380ec5d58f7f1eb300b47d2b931b418b0686138e4c93f4ae8479eaef57fbed10",
+      "cache_dir": ".vsa_cache",
+      "instructions": "Re-run `vsa build <input.json> --out <report.json>` with the same input and connector cache to reproduce evidence retrieval and hashes."
+    }
+  },
+  "validation_results": {
+    "status": "pass",
+    "checks": [
+      {
+        "check_id": "schema",
+        "name": "JSON Schema conformance",
+        "status": "pass",
+        "message": "valid"
+      },
+      {
+        "check_id": "schema_version",
+        "name": "Schema version",
+        "status": "pass",
+        "message": "matches"
+      },
+      {
+        "check_id": "claim_evidence",
+        "name": "Every claim has evidence",
+        "status": "pass",
+        "message": "all claims cite evidence"
+      },
+      {
+        "check_id": "evidence_refs",
+        "name": "Claim evidence IDs resolve",
+        "status": "pass",
+        "message": "all evidence IDs resolve"
+      },
+      {
+        "check_id": "evidence_metadata",
+        "name": "Evidence source type and retrieval path",
+        "status": "pass",
+        "message": "all evidence items complete"
+      },
+      {
+        "check_id": "confidence",
+        "name": "Confidence bounded [0,1]",
+        "status": "pass",
+        "message": "all confidence values valid"
+      },
+      {
+        "check_id": "unsupported",
+        "name": "Unsupported claims flagged",
+        "status": "pass",
+        "message": "no unsupported claims"
+      },
+      {
+        "check_id": "speculative",
+        "name": "Speculative claims labeled",
+        "status": "pass",
+        "message": "no speculative claims"
+      },
+      {
+        "check_id": "human_review",
+        "name": "Human review requirements explicit",
+        "status": "pass",
+        "message": "human_review.required=True; clinical claims: none"
+      },
+      {
+        "check_id": "review_boundary",
+        "name": "Review boundary labels valid",
+        "status": "pass",
+        "message": "all boundaries valid"
+      },
+      {
+        "check_id": "evidence_quality",
+        "name": "Evidence quality scoring",
+        "status": "pass",
+        "message": "evidence quality acceptable"
+      },
+      {
+        "check_id": "contradictions",
+        "name": "Contradiction detection",
+        "status": "pass",
+        "message": "no contradictions"
+      },
+      {
+        "check_id": "provenance",
+        "name": "Provenance hashes match",
+        "status": "pass",
+        "message": "hashes verified"
+      }
+    ],
+    "validated_at": "2026-05-31T04:17:43Z"
+  },
+  "human_review": {
+    "required": true,
+    "status": "pending",
+    "required_corrections": [],
+    "approved_claim_ids": []
+  },
+  "generated_outputs": {
+    "formats_available": [
+      "json",
+      "markdown",
+      "html",
+      "pdf"
+    ]
+  },
+  "contradictions": []
+}

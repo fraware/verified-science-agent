@@ -1,0 +1,13 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "UniProt",
+    "source_type": "database",
+    "identifier": "P00533",
+    "retrieval_path": "https://www.uniprot.org/uniprotkb/P00533/entry",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "accession: P00533; protein_name: Epidermal growth factor receptor; gene: EGFR",
+    "raw_record_hash": "dd762d60b4c72cb1138285061f9a127579b962228d7b9e88f901d807d06cc1bb",
+    "domain_metadata": {"gene_symbol": "EGFR"}
+  }
+]

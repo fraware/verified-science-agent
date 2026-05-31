@@ -1,0 +1,46 @@
+{
+  "report_id": "vsa-bad-missing-evidence-001",
+  "schema_version": "1.0.0",
+  "created_at": "2026-05-30T12:00:00Z",
+  "subject": {
+    "entity_type": "variant",
+    "display_name": "BAD Example",
+    "gene_symbol": "TP53"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "This claim references evidence that does not exist in the report.",
+      "evidence_ids": ["E999"],
+      "confidence": 0.9,
+      "review_boundary": "unsupported",
+      "uncertainty_level": "high",
+      "support_level": "insufficient"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000000001",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "orphan evidence not linked to any claim",
+      "raw_record_hash": "70ab1c1b24af91acca45dd49b60dd16f9097e079407cc8994c1aec04fab28a0e"
+    }
+  ],
+  "methods": [],
+  "provenance": {
+    "source_record_hashes": {"E001": "70ab1c1b24af91acca45dd49b60dd16f9097e079407cc8994c1aec04fab28a0e"},
+    "evidence_bundle_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "claim_hashes": {},
+    "report_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "validation_version": "1.0.0",
+    "renderer_version": "1.0.0"
+  },
+  "validation_results": {"status": "fail", "checks": []},
+  "human_review": {"required": true, "status": "pending"},
+  "generated_outputs": {"formats_available": ["json"]}
+}

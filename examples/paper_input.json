@@ -1,0 +1,31 @@
+{
+  "question": "10.1038/nature12373",
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "OpenAlex",
+      "source_type": "publication",
+      "identifier": "https://openalex.org/W123",
+      "retrieval_path": "https://doi.org/10.1038/nature12373",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: Sample paper; authors: Author A; abstract: Sample abstract text.",
+      "raw_record_hash": "779b76aaf51382e1141f7773ed9f76e76186282e16c5b6a2d68404ddc08c222a",
+      "domain_metadata": {
+        "doi": "10.1038/nature12373"
+      }
+    },
+    {
+      "evidence_id": "E002",
+      "source_name": "Crossref",
+      "source_type": "publication",
+      "identifier": "10.1038/nature12373",
+      "retrieval_path": "https://doi.org/10.1038/nature12373",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: Sample paper; authors: Author A; abstract: Crossref abstract.",
+      "raw_record_hash": "be1bae20dcea8f576d0b12a8380418ff3a487776f3aa16275aa9b0cb792951bc",
+      "domain_metadata": {
+        "doi": "10.1038/nature12373"
+      }
+    }
+  ]
+}

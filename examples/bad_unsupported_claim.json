@@ -1,0 +1,49 @@
+{
+  "report_id": "vsa-bad-unsupported-001",
+  "schema_version": "1.0.0",
+  "created_at": "2026-05-30T12:00:00Z",
+  "subject": {
+    "entity_type": "variant",
+    "display_name": "TP53 unsupported claim",
+    "gene_symbol": "TP53",
+    "variant_hgvs_c": "c.524G>A"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "hypothesis",
+      "claim_text": "This variant definitively predicts treatment response without evidence.",
+      "evidence_ids": ["E001"],
+      "confidence": 0.95,
+      "review_boundary": "unsupported",
+      "uncertainty_level": "unknown",
+      "support_level": "insufficient"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000012345",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/12345/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: TP53 variant; clinical_significance: uncertain significance",
+      "raw_record_hash": "fb877f16af487bc9955add469fee1e99292c4eee8032d478814fe731015dad36",
+      "domain_metadata": {"clinical_significance": "uncertain significance"}
+    }
+  ],
+  "methods": [],
+  "provenance": {
+    "source_record_hashes": {"E001": "fb877f16af487bc9955add469fee1e99292c4eee8032d478814fe731015dad36"},
+    "evidence_bundle_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "claim_hashes": {},
+    "report_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "validation_version": "1.0.0",
+    "renderer_version": "1.0.0"
+  },
+  "validation_results": {"status": "fail", "checks": []},
+  "human_review": {"required": true, "status": "pending"},
+  "generated_outputs": {"formats_available": ["json"]},
+  "contradictions": []
+}
