@@ -1,6 +1,6 @@
 # Documentation
 
-Verified Science Agent **v0.7.1** — evidence-backed scientific AI report infrastructure.
+Verified Science Agent **v0.7.2** — evidence-backed scientific AI report infrastructure.
 
 ## Start here
 

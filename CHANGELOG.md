@@ -26,7 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ClinVar ambiguous queries always return `reliability: low`
 - UniProt gene search sets `retrieval_ambiguity` and caps reliability to low
 - Materials Project skipped cleanly with explicit warning when API key missing
-- Build pipeline hardens evidence and surfaces CLINVAR/metadata/AlphaFold warnings in limitations
+- Scientific credibility warnings in markdown and HTML render output
+- Retrieval pipeline applies credibility hardening before evidence is returned
+- Acceptance bar and CI assert benchmark category minimums (50 tasks)
 
 ## [0.7.1] - 2026-05-31
 

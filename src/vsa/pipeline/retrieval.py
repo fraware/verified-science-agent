@@ -114,6 +114,10 @@ def retrieve_evidence_with_meta(
             evidence_items.append(item.to_dict(eid))
 
         ranked = _rank_evidence(evidence_items)
+        from vsa.scientific.credibility import harden_evidence
+
+        ranked, credibility_warnings = harden_evidence(ranked)
+        warnings.extend(credibility_warnings)
         warnings.extend(collect_ambiguity_warnings(ranked))
         return RetrievalResult(evidence=ranked, warnings=warnings, retrieval_plan=plan)
 

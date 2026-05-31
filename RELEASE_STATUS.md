@@ -27,8 +27,8 @@ make acceptance
 After green CI on the commit you intend to ship:
 
 ```bash
-git tag v0.7.1
-git push origin v0.7.1
+git tag v0.7.2
+git push origin v0.7.2
 ```
 
 The [release workflow](.github/workflows/release.yml) runs the acceptance bar, builds a bundle zip, and attaches artifacts to the GitHub Release.

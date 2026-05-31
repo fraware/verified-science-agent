@@ -81,7 +81,9 @@ jobs:
         run: pytest --cov=vsa --cov-report=term-missing
 
       - name: Run benchmarks (offline)
-        run: vsa benchmark --out reports/benchmark_summary.json
+        run: |
+          vsa benchmark --out reports/benchmark_summary.json
+          python -c "import json,sys; s=json.load(open('reports/benchmark_summary.json')); assert not s.get('regression'), s; assert not any(s.get('category_gaps',{}).values()), s['category_gaps']; assert s['total']>=50"
 
       - name: Upload CI artifacts
         uses: actions/upload-artifact@v4

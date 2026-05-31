@@ -16,6 +16,7 @@ def test_html_renders(brca1_report):
     html = render(brca1_report, "html")
     assert "<html" in html
     assert "Scientific Report" in html
+    assert "Reliability" in html
 
 
 def test_json_render_roundtrip(brca1_report):

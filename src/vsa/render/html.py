@@ -5,7 +5,7 @@ from __future__ import annotations
 import html
 from typing import Any
 
-from vsa.render.markdown import render_markdown
+from vsa.render.markdown import _credibility_warning_lines, render_markdown
 
 
 def render_html(report: dict[str, Any]) -> str:
@@ -34,15 +34,32 @@ def render_html(report: dict[str, Any]) -> str:
     evidence_rows = ""
     for ev in report.get("evidence", []):
         qs = ev.get("quality_score", {})
+        meta = ev.get("domain_metadata") or {}
+        reliability = ev.get("reliability", "—")
+        if meta.get("retrieval_ambiguity") or meta.get("gene_search_ambiguous"):
+            reliability = f"{reliability} (ambiguous)"
         evidence_rows += f"""
         <tr>
           <td>{esc(ev.get('evidence_id'))}</td>
           <td>{esc(ev.get('source_name'))}</td>
           <td>{esc(ev.get('source_type'))}</td>
           <td><a href="{esc(ev.get('retrieval_path'))}">{esc(ev.get('identifier'))}</a></td>
+          <td>{esc(reliability)}</td>
           <td>{esc(qs.get('score', '—'))}</td>
           <td>{esc(ev.get('summary'))}</td>
         </tr>"""
+
+    credibility_section = ""
+    for line in _credibility_warning_lines(report):
+        credibility_section += f"<p><strong>{esc(line)}</strong></p>"
+    if credibility_section:
+        credibility_section = f'<div class="credibility"><h2>Scientific credibility warnings</h2>{credibility_section}</div>'
+
+    limitations_section = ""
+    for item in list(report.get("limitations") or []) + list(report.get("retrieval_warnings") or []):
+        limitations_section += f"<li>{esc(item)}</li>"
+    if limitations_section:
+        limitations_section = f"<h2>Limitations and retrieval warnings</h2><ul>{limitations_section}</ul>"
 
     conflict_section = ""
     for c in report.get("contradictions", []):
@@ -76,7 +93,8 @@ def render_html(report: dict[str, Any]) -> str:
     li.fail {{ color: #b00020; }}
     li.warn {{ color: #856404; }}
     code {{ background: #f5f5f5; padding: 0.1rem 0.3rem; }}
-    .meta {{ color: #555; font-size: 0.9rem; }}
+    .credibility {{ background: #fff3cd; border: 2px solid #856404; padding: 1rem; margin: 1rem 0; }}
+    .credibility strong {{ color: #856404; }}
   </style>
 </head>
 <body>
@@ -90,9 +108,12 @@ def render_html(report: dict[str, Any]) -> str:
     <li>Claims: {len(report.get('claims', []))} | Evidence: {len(report.get('evidence', []))}</li>
   </ul>
 
+  {credibility_section}
+  {limitations_section}
+
   <h2>Evidence table</h2>
   <table>
-    <thead><tr><th>ID</th><th>Source</th><th>Type</th><th>Identifier</th><th>Quality</th><th>Summary</th></tr></thead>
+    <thead><tr><th>ID</th><th>Source</th><th>Type</th><th>Identifier</th><th>Reliability</th><th>Quality</th><th>Summary</th></tr></thead>
     <tbody>{evidence_rows}</tbody>
   </table>
 

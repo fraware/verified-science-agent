@@ -63,8 +63,8 @@ This runs `scripts/acceptance.sh`: demo build, pytest, and benchmark. Must pass 
 ## Git tag (only after green CI)
 
 ```bash
-git tag v0.7.1
-git push origin v0.7.1
+git tag v0.7.2
+git push origin v0.7.2
 ```
 
 Release workflow attaches: report, audit, attestation, benchmark summary, bundle zip, schema.
