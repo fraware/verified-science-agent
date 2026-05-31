@@ -18,7 +18,7 @@ jobs:
       - name: Install
         run: pip install -e ".[dev,pdf,signing,api]"
 
-      - name: Run acceptance bar
+      - name: Run full test suite
         run: bash scripts/acceptance.sh
 
       - name: Build release bundle

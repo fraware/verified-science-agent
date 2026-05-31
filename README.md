@@ -28,7 +28,7 @@ inputs, source records, claims, validation, provenance, and review status.
 
 <br>
 
-[Documentation](docs/README.md) · [Release status](RELEASE_STATUS.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md)
+[Documentation](docs/README.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -38,7 +38,7 @@ inputs, source records, claims, validation, provenance, and review status.
 
 Verified Science Agent (VSA) turns scientific questions into inspectable `ScientificReport` JSON artifacts. Retrieval produces evidence. Generation produces claims. Validation checks claims against evidence. Models cannot invent source fields.
 
-**North star:** A scientific AI report should be inspectable by engineers, readable by scientists, and shareable with reviewers — with signed or hashable outputs.
+**Mission:** Scientific AI reports should be inspectable by engineers, readable by scientists, and shareable with reviewers — with signed or hashable outputs.
 
 ```mermaid
 flowchart LR
@@ -60,10 +60,16 @@ flowchart LR
 git clone https://github.com/fraware/verified-science-agent.git
 cd verified-science-agent
 pip install -e ".[dev,ui,pdf,signing,api]"
+make demo && pytest && vsa benchmark
+```
+
+Or run the full suite in one step:
+
+```bash
 make acceptance
 ```
 
-`make acceptance` runs the full CI parity bar: demo build, pytest (99 tests), and the 50-task offline benchmark.
+`make acceptance` runs a demo build, all tests, and the 50-task evaluation suite.
 
 <details>
 <summary><strong>Typical workflow</strong></summary>
@@ -108,7 +114,7 @@ streamlit run ui/app.py        # interactive inspector with credibility warnings
 | **Credibility** | ClinVar ambiguity alerts, metadata-only warnings, AlphaFold predicted-structure labeling |
 | **Verification** | Schema + semantic validation, rule/hybrid audit, SLSA/in-toto attestation |
 | **Review** | Human review workflow with verifiable event chains |
-| **Benchmark** | 50 offline tasks with category minimums and 100% CI regression gate |
+| **Benchmark** | 50-task evaluation suite with quality checks |
 | **API** | REST server with optional `VSA_API_KEY` auth |
 
 ---
@@ -238,23 +244,13 @@ Details: [docs/connectors.md](docs/connectors.md)
 
 ## Benchmark
 
-50 offline tasks with enforced category minimums:
-
-| Category | Minimum |
-|----------|---------|
-| Adversarial | 10 |
-| Ambiguity | 5 |
-| Contradiction | 5 |
-| Metadata-only paper | 5 |
-| No-evidence | 5 |
+50 evaluation tasks covering genomics, proteins, papers, materials, and edge cases:
 
 ```bash
 vsa benchmark
 ```
 
-**Metrics:** source recall, source precision, citation integrity, evidence-ID validity, review-boundary accuracy, contradiction detection, bundle reproducibility.
-
-CI fails on any regression below 100% pass rate. Details: [docs/benchmark.md](docs/benchmark.md)
+Measures source recall/precision, citation integrity, evidence validity, review boundaries, contradiction detection, and bundle reproducibility. See [docs/benchmark.md](docs/benchmark.md).
 
 ---
 
@@ -268,7 +264,7 @@ verified-science-agent/
 ├── examples/           Input files and good/bad report examples
 ├── docs/               Architecture, schema, connectors, API
 ├── ui/                 Streamlit inspector
-├── scripts/            acceptance.sh (CI parity bar)
+├── scripts/            Full test suite helper
 └── .github/workflows/  CI and release pipelines
 ```
 
@@ -298,4 +294,4 @@ Human expert review is required before any clinical use.
 
 ## License
 
-MIT License.
+MIT License — see [LICENSE](LICENSE).

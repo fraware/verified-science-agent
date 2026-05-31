@@ -118,10 +118,10 @@ with st.sidebar:
 # Load default if nothing in session
 report = st.session_state.report
 if report is None:
-    default_path = Path("reports/brca1_report.json")
+    default_path = Path("examples/tp53_report.json")
     if default_path.exists():
         report = json.loads(default_path.read_text(encoding="utf-8"))
-        st.info(f"Loaded default: {default_path}")
+        st.info(f"Loaded sample report: {default_path}")
     else:
         st.warning("Use the sidebar to build or upload a report.")
         if "retrieve_preview" in st.session_state:

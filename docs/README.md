@@ -1,40 +1,35 @@
 # Documentation
 
-Verified Science Agent **v0.7.2** — evidence-backed scientific AI report infrastructure.
+User guide for **Verified Science Agent** (VSA) v0.7.2.
 
-## Start here
+## Guides
 
-| Document | Contents |
-|----------|----------|
-| [../README.md](../README.md) | Quick start, CLI reference, install extras |
-| [../RELEASE_STATUS.md](../RELEASE_STATUS.md) | Production vs experimental features, CI verification |
-| [architecture.md](architecture.md) | Pipeline, components, hash layers |
-| [schema.md](schema.md) | ScientificReport v1.2.0 field reference |
-| [connectors.md](connectors.md) | Database connectors, ambiguity, content levels |
-| [benchmark.md](benchmark.md) | 50-task offline suite, metrics, regression gate |
-| [api.md](api.md) | REST API, auth, endpoints, CLI parity |
-| [release_checklist.md](release_checklist.md) | Pre-tag acceptance bar and release steps |
+| Document | Description |
+|----------|-------------|
+| [../README.md](../README.md) | Install, quick start, CLI overview |
+| [architecture.md](architecture.md) | Pipeline, components, provenance |
+| [schema.md](schema.md) | ScientificReport field reference |
+| [connectors.md](connectors.md) | Data sources and evidence policies |
+| [benchmark.md](benchmark.md) | Evaluation suite and metrics |
+| [api.md](api.md) | REST API reference |
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
 
-## Acceptance bar
-
-The canonical quality gate (CI parity):
+## Quick commands
 
 ```bash
 pip install -e ".[dev,ui,pdf,signing,api]"
-make acceptance
+make demo          # build and verify a sample report
+pytest             # run tests
+vsa benchmark      # run evaluation suite
 ```
 
-Equivalent to `bash scripts/acceptance.sh` (demo → pytest → benchmark).
+## Versions
 
-## Package versions
-
-| Constant | Value |
-|----------|-------|
-| Package | `0.7.2` |
-| Schema | `1.2.0` (also accepts `1.0.0`, `1.1.0`) |
-| Validation | `1.2.0` |
+| Component | Version |
+|-----------|---------|
+| Package | 0.7.2 |
+| Schema | 1.2.0 |
 
 ## Safety
 
-Research infrastructure only. Not a medical device or clinical decision system. See README safety notice.
+Research infrastructure only — not a medical device or clinical decision system. See the [README safety notice](../README.md#safety-notice).

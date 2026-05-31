@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full acceptance bar for verified-science-agent (CI parity).
+# Full test suite: demo build, unit tests, and benchmark evaluation.
 set -euo pipefail
 
 pip install -e ".[dev,ui,pdf,signing,api]"
@@ -24,8 +24,7 @@ if bad:
 if summary.get("total", 0) < 50:
     print(f"FAIL: expected at least 50 benchmark tasks, got {summary.get('total')}", file=sys.stderr)
     sys.exit(1)
-print(f"Benchmark OK: {summary['passed']}/{summary['total']} tasks, category minimums satisfied")
+print(f"Benchmark OK: {summary['passed']}/{summary['total']} tasks passed")
 PY
 
-COMMIT="$(git rev-parse HEAD)"
-echo "ACCEPTANCE PASS commit=${COMMIT}"
+echo "All checks passed."

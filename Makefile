@@ -16,10 +16,10 @@ acceptance: install
 	bash scripts/acceptance.sh
 
 validate:
-	vsa validate examples/*.json reports/*.json
+	vsa validate examples/*.json
 
 render:
-	vsa render reports/brca1_report.json --format markdown --out reports/brca1_report.md
+	vsa render examples/tp53_report.json --format markdown --out reports/brca1_report.md
 
 hash:
 	vsa hash reports/brca1_report.json --json

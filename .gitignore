@@ -9,19 +9,11 @@ build/
 .coverage
 htmlcov/
 
-# Reports (keep pinned snapshots)
+# Generated outputs (created by make demo / CI)
 reports/*
 !reports/.gitkeep
-!reports/brca1_report.json
-!reports/brca1_report.md
-!reports/tp53_report.json
-!reports/protein_report.json
-!reports/paper_report.json
-!reports/materials_report.json
-!reports/audit.json
-!reports/attestation.json
 
-# Environment
+# Environment and secrets
 .env
 .venv/
 venv/

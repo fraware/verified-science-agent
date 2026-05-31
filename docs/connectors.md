@@ -52,6 +52,4 @@ Mocked unit tests in `tests/connectors/`:
 - `test_clinvar.py`, `test_uniprot.py`, `test_alphafold.py`
 - `test_openalex.py`, `test_crossref.py`, `test_europe_pmc.py`, `test_semantic_scholar.py`
 
-Live integration (optional): `pytest -m live`
-
-See [RELEASE_STATUS.md](../RELEASE_STATUS.md) for experimental vs production-ready connector behavior.
+Live integration tests (optional): `pytest -m live`

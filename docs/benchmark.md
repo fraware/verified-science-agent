@@ -60,20 +60,11 @@ Each task reports core scientific credibility metrics:
 
 Additional metrics: type coverage, validation pass, claim atomicity, gold labels, hash reproducibility.
 
-Overall score is the mean of core and auxiliary metrics. Tasks pass when overall ≥ 0.7 and validation passes (unless `expect_pass: false`).
+Overall score is the mean of core and auxiliary metrics. Tasks pass when overall ≥ 0.7 and validation passes (unless the task expects failure).
 
-Task-specific gates also enforce:
+## Quality checks
 
-- `expect_ambiguity_surfaced` — AMBIGUITY warnings in limitations or retrieval_warnings
-- `expect_metadata_warning` — metadata-only publication warning surfaced
-- `expect_predicted_structure_label` — AlphaFold summaries declare predicted structure
-
-## CI regression gate
-
-CI and `make acceptance` run `vsa benchmark --out reports/benchmark_summary.json`. The command exits non-zero if:
-
-- any task fails, or
-- pass rate drops below 100% (`regression: true` in summary JSON)
+`make acceptance` and CI run the benchmark after unit tests. All 50 tasks must pass.
 
 ## Limitations
 

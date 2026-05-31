@@ -60,8 +60,6 @@ Retrieval produces evidence. Generation produces claims. Validation checks claim
 
 `vsa verify-bundle` checks manifest integrity and attestation digest.
 
-## CI and acceptance
+## Continuous integration
 
-`.github/workflows/ci.yml` runs the full pipeline on Ubuntu (Python 3.10–3.12) plus macOS smoke. The acceptance job runs `scripts/acceptance.sh` after matrix jobs pass.
-
-See [RELEASE_STATUS.md](../RELEASE_STATUS.md) for production-ready vs experimental features.
+GitHub Actions runs the full pipeline on Ubuntu (Python 3.10–3.12) and a macOS smoke job on every push. The test suite (`scripts/acceptance.sh`) builds a sample report, runs pytest, and evaluates all benchmark tasks.
