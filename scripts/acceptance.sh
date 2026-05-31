@@ -9,4 +9,3 @@ vsa benchmark --out reports/benchmark_summary.json
 
 COMMIT="$(git rev-parse HEAD)"
 echo "ACCEPTANCE PASS commit=${COMMIT}"
-echo "Update RELEASE_STATUS.md verified commit to: ${COMMIT}"

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Schema versioning
 
+- **ScientificReport schema 1.2.0** — lifecycle fields, `evidence_content_hash`, `validation_run_hash`
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Semantic Scholar connector sets `content_level` metadata
 - Build pipeline adds metadata-only CONTENT WARNING to limitations
 - Acceptance CI job uses shared acceptance script
+- Documentation consolidated and updated across README, docs/, and RELEASE_STATUS
 
 ## [0.7.0] - 2026-05-30
 
@@ -185,22 +187,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI workflow: schema validation, pytest, CLI smoke tests, render/hash tests
 - Example reports and bad examples for regression testing
 
-### Release checklist (v0.3.0)
-
-- [x] `pip install -e ".[dev,signing,pdf]"` succeeds
-- [x] `pytest` passes locally (49 tests)
-- [x] `vsa build` / `validate` / `audit` / `benchmark` pass on pinned reports
-- [x] Ed25519 sign/verify workflow works
-- [x] Schema 1.1.0 documented in CHANGELOG
-
-### Release checklist (v0.2.1)
-
-- [x] `pip install -e .` succeeds
-- [x] `pytest` passes locally (44 tests)
-- [x] `vsa build examples/brca1_input.json --out reports/brca1_report.json` produces valid report
-- [x] `vsa validate reports/brca1_report.json` passes
-- [x] Bad examples fail validation
-- [x] Schema changes documented in this CHANGELOG
-- [x] Example snapshots pinned under `reports/`
-
-[0.1.0]: https://github.com/verified-science-agent/verified-science-agent/releases/tag/v0.1.0
+[0.1.0]: https://github.com/fraware/verified-science-agent/releases/tag/v0.1.0

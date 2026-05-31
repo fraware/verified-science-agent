@@ -14,10 +14,24 @@ OpenAPI docs: http://127.0.0.1:8000/docs
 
 | Variable | Purpose |
 |----------|---------|
-| `VSA_API_KEY` | Require `X-API-Key` header on non-public API routes |
+| `VSA_API_KEY` | Require `X-API-Key` or `Authorization: Bearer` on non-public routes |
 | `VSA_API_DETERMINISTIC=1` | Force `claim_mode=rule` and `audit_mode=rule` on build/audit/export |
 | `VSA_API_RATE_LIMIT=120` | Enable in-memory rate limiting (requests per 60s per client IP) |
 | `VSA_OTEL_ENABLED=1` | OpenTelemetry spans (requires `[otel]` extra) |
+
+Public routes (no API key): `/health`, `/v1/version`, `/docs`, `/openapi.json`, `/redoc`.
+
+## Authentication
+
+When `VSA_API_KEY` is set:
+
+```bash
+curl -H "X-API-Key: your-secret" http://127.0.0.1:8000/v1/validate \
+  -H "Content-Type: application/json" \
+  -d '{"report": {...}}'
+```
+
+Missing or invalid keys return HTTP 401 with code `UNAUTHORIZED`.
 
 ## Error format
 
@@ -30,7 +44,7 @@ OpenAPI docs: http://127.0.0.1:8000/docs
 }
 ```
 
-Common codes: `MISSING_INPUT`, `VALIDATION_ERROR`, `RATE_LIMITED`, `HTTP_ERROR`.
+Codes: `MISSING_INPUT`, `VALIDATION_ERROR`, `RATE_LIMITED`, `UNAUTHORIZED`, `HTTP_ERROR`.
 
 ## Endpoints
 
@@ -39,7 +53,7 @@ Common codes: `MISSING_INPUT`, `VALIDATION_ERROR`, `RATE_LIMITED`, `HTTP_ERROR`.
 | GET | `/health` | Liveness + version |
 | GET | `/v1/version` | Package version |
 | POST | `/v1/retrieve` | Retrieve evidence for a question |
-| POST | `/v1/build` | Build ScientificReport (typed `BuildRequest`) |
+| POST | `/v1/build` | Build ScientificReport (JSON body) |
 | POST | `/v1/validate` | Validate report JSON |
 | POST | `/v1/audit` | Rule or hybrid audit |
 | POST | `/v1/hash` | Provenance hash chain |
@@ -50,7 +64,9 @@ Common codes: `MISSING_INPUT`, `VALIDATION_ERROR`, `RATE_LIMITED`, `HTTP_ERROR`.
 | POST | `/v1/review/approve-claim` | Approve claim IDs |
 | POST | `/v1/review/verify` | Verify review chain hashes |
 
-## Example: build + export
+Report endpoints accept flexible JSON bodies (`{"report": {...}}` or the report object directly) so nested evidence structures are not rejected by strict schema validation at the HTTP layer.
+
+## Example: build
 
 ```bash
 curl -s http://127.0.0.1:8000/v1/build \
@@ -60,26 +76,25 @@ curl -s http://127.0.0.1:8000/v1/build \
 
 ## CLI parity
 
-Review workflow CLI:
+Review workflow:
 
 ```bash
 vsa review start reports/brca1_report.json --reviewer reviewer@example.com
 vsa review approve-claim reports/brca1_report.json --reviewer reviewer@example.com --claim C001 --out reviewed.json
-vsa review verify reviewed.json
+vsa verify-review reviewed.json
 vsa validate reviewed.json
-vsa hash reviewed.json
 ```
 
-Legacy flat flags remain supported:
-
-```bash
-vsa review reports/brca1_report.json --reviewer reviewer@example.com --approve C001 --out reviewed.json
-```
-
-## Attestation CLI
+Attestation and bundle verification:
 
 ```bash
 vsa attest reports/brca1_report.json --out reports/attestation.json --subject-name report.json
 vsa verify-attestation reports/brca1_report.json reports/attestation.json --subject-name report.json
 vsa verify-bundle reports/bundle
+```
+
+Legacy review flags:
+
+```bash
+vsa review reports/brca1_report.json --reviewer reviewer@example.com --approve C001 --out reviewed.json
 ```

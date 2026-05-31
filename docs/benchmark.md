@@ -1,13 +1,13 @@
 # Benchmark suite
 
-The offline benchmark measures whether the build pipeline produces valid, evidence-backed reports across representative scientific tasks.
+27 offline tasks measure whether the build pipeline produces valid, evidence-backed reports across representative scientific domains.
 
 ## Run
 
 ```bash
 vsa benchmark
 vsa benchmark --out reports/benchmark_summary.json
-pytest  # unit tests (benchmark runner covered indirectly)
+pytest
 ```
 
 Live mode hits real connectors (network required):
@@ -52,19 +52,12 @@ Overall score is the mean of applicable metrics. Tasks pass when overall ≥ 0.7
 
 ## CI regression gate
 
-CI runs `vsa benchmark --out reports/benchmark_summary.json`. The command exits non-zero if:
+CI and `make acceptance` run `vsa benchmark --out reports/benchmark_summary.json`. The command exits non-zero if:
 
 - any task fails, or
 - pass rate drops below 100% (`regression: true` in summary JSON)
 
-## What can fail
+## Limitations
 
-- Missing offline fixture for a task
-- Validation failure on reports that should pass
-- Unexpected claim types or missing review boundaries
-- Benchmark regression after connector or claim template changes
-
-## Experimental
-
-- Live benchmark mode (network variability)
+- Live benchmark mode is network-dependent and experimental
 - Gold labels are heuristic, not curator-verified clinical truth

@@ -1,56 +1,43 @@
-# Demo Narrative
+# Demo narrative
 
 ## Slide 1 — Why scientific AI systems need evidence infrastructure
 
-AI systems can already summarize papers, search databases, inspect molecular structures, and generate research hypotheses quickly.
+AI systems can summarize papers, search databases, inspect molecular structures, and generate research hypotheses quickly.
 
-The difficult problem is no longer generation alone.
-
-Research teams increasingly need systems that make AI-generated outputs:
+The difficult problem is no longer generation alone. Research teams need outputs that are:
 
 - reviewable,
 - reproducible,
 - traceable,
-- easier to audit.
+- auditable.
 
-This repository explores lightweight infrastructure for evidence-backed AI reports.
+This repository provides infrastructure for evidence-backed AI reports — treating scientific outputs like software build artifacts.
 
 ---
 
 ## Slide 2 — What this repository demonstrates
 
-The demo converts AI-generated scientific outputs into structured evidence records.
+The pipeline converts scientific questions into structured `ScientificReport` JSON artifacts:
 
-Each claim includes:
+- normalized evidence from read-only database connectors,
+- claims bound to evidence IDs (no invented sources),
+- validation, provenance hashes, and optional Ed25519 signing,
+- rule-based or LLM audit with conservative merge,
+- human review workflow with verifiable event chains,
+- export bundles with manifest verification (`vsa verify-bundle`),
+- 27-task offline benchmark with CI regression gate,
+- REST API with optional auth.
 
-- supporting evidence,
-- source metadata,
-- provenance paths,
-- validation status,
-- review notes.
-
-The repository also includes:
-
-- local validation tools,
-- report rendering,
-- provenance hashing,
-- reusable examples,
-- lightweight visualization.
-
-The system is intentionally small so developers and researchers can adapt it to their own workflows.
+Supporting tools: CLI, Streamlit UI, SLSA/in-toto attestation, benchmark suite.
 
 ---
 
-## Slide 3 — Long-term direction
+## Slide 3 — Scope and direction
 
-As AI systems become more integrated into scientific work, the surrounding infrastructure becomes increasingly important.
+**Production-ready today (CI-verified):** schema validation, rule-based claims, export bundles, review workflow, attestation, offline benchmark.
 
-Future systems will likely require:
+**Experimental:** LLM claim extraction, LLM audit, live connector retrieval, OpenTelemetry.
 
-- explicit provenance,
-- reproducible evidence chains,
-- structured uncertainty handling,
-- transparent review boundaries,
-- durable machine-readable artifacts.
+**Not yet implemented:** full-text paper parsing, curator-verified clinical gold standards, external SLSA registry.
 
-This repository is a small exploration of what those workflows could look like in practice.
+This is research infrastructure — not a medical device. Human expert review is required before any clinical use.

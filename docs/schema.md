@@ -1,8 +1,10 @@
 # ScientificReport schema (v1.2.0)
 
-Canonical artifact: `src/vsa/schemas/scientific_report.schema.json`
+Canonical artifact: `src/vsa/schemas/scientific_report.schema.json` (symlinked at `schemas/`)
 
 Supported versions: `1.0.0`, `1.1.0`, `1.2.0`
+
+Migrate with: `vsa migrate-schema report.json --out migrated.json`
 
 ## Top-level fields
 
@@ -53,9 +55,16 @@ Supported versions: `1.0.0`, `1.1.0`, `1.2.0`
 | `reliability` | high/medium/low | Ambiguous ClinVar → medium |
 | `domain_metadata` | Connector-specific | `retrieval_ambiguity: true` needs review |
 
-## Migration
+## Version history
 
-- **1.0.0 → 1.1.0**: Add optional `signature`, review chain hashes; `human_review` in report hash core.
-- **1.1.0 → 1.2.0**: Add lifecycle fields (`input_question`, `retrieval_warnings`, etc.) and `evidence_content_hash`, `validation_run_hash` in provenance. All new fields optional for backward compatibility.
+| Version | Changes |
+|---------|---------|
+| **1.2.0** | Lifecycle fields (`input_question`, `retrieval_warnings`, `limitations`, etc.); `evidence_content_hash`, `validation_run_hash` in provenance |
+| **1.1.0** | Optional `signature`; review chain hashes; `human_review` in report hash core |
+| **1.0.0** | Initial canonical artifact model |
 
-Rebuild pinned reports after schema bumps: `vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule`
+Rebuild pinned reports after schema bumps:
+
+```bash
+vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
+```

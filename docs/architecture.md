@@ -13,7 +13,7 @@ input_question
   → contradiction detection
   → validation engine
   → provenance hash chain
-  → render / audit / sign / review
+  → render / audit / sign / review / export
 ```
 
 ## Core rule
@@ -31,10 +31,12 @@ Retrieval produces evidence. Generation produces claims. Validation checks claim
 | Validate | `src/vsa/validate/` | Schema + semantic checks |
 | Provenance | `src/vsa/provenance/` | Hashes, signing |
 | Audit | `src/vsa/llm/verifier.py` | Rule + hybrid LLM audit |
-| Artifacts | `src/vsa/artifacts/` | Export audit/provenance bundles |
+| Review | `src/vsa/review/workflow.py` | Human review events and chain verification |
+| Artifacts | `src/vsa/artifacts/` | Export bundles, manifest verification |
 | API | `src/vsa/api/` | FastAPI REST server |
 | Attestation | `src/vsa/provenance/attestation.py` | SLSA/in-toto statements |
 | Telemetry | `src/vsa/telemetry.py` | Optional OpenTelemetry spans |
+| Benchmark | `src/vsa/benchmark/` | 27-task offline evaluation suite |
 
 ## Hash layers
 
@@ -44,7 +46,21 @@ Retrieval produces evidence. Generation produces claims. Validation checks claim
 - `claim_hashes` — per-claim content
 - `report_hash` — subject, claims, evidence, contradictions, human_review
 - `validation_run_hash` — validation_results snapshot
+- `review_chain_hash` — human review event chain (when present)
 
-## Release posture
+## Export bundle
+
+`vsa export` writes a directory with:
+
+- `report.json`, `report.md`, `audit.json`, `provenance.json`, `review.json`
+- `attestation.json` (unless skipped)
+- `sources/` — cached raw connector records
+- `manifest.json` — SHA-256 hashes for all files
+
+`vsa verify-bundle` checks manifest integrity and attestation digest.
+
+## CI and acceptance
+
+`.github/workflows/ci.yml` runs the full pipeline on Ubuntu (Python 3.10–3.12) plus macOS smoke. The acceptance job runs `scripts/acceptance.sh` after matrix jobs pass.
 
 See [RELEASE_STATUS.md](../RELEASE_STATUS.md) for production-ready vs experimental features.

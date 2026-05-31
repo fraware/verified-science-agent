@@ -1,48 +1,42 @@
 # Release checklist
 
-Use this before tagging a release or updating README production-ready claims.
+Use before tagging a release or claiming a feature is production-ready.
 
-## Pre-release commands (acceptance bar)
+## Acceptance bar
 
 ```bash
 pip install -e ".[dev,ui,pdf,signing,api]"
-make demo && make test && vsa benchmark
+make acceptance
 ```
 
-All must pass on Ubuntu CI (canonical). macOS smoke runs in CI.
+This runs `scripts/acceptance.sh`: demo build, pytest, and benchmark. Must pass on Ubuntu CI (canonical). macOS smoke runs separately in CI.
 
 ## Version bumps
 
 - [ ] `src/vsa/version.py` — `__version__`, `SCHEMA_VERSION`, `VALIDATION_VERSION`
 - [ ] `pyproject.toml` — `version`
 - [ ] `CHANGELOG.md` — dated section
-- [ ] `RELEASE_STATUS.md` — verified commit hash + date
+- [ ] `README.md` — version badge and workflow examples
+- [ ] `docs/README.md` — package version table
 - [ ] Rebuild pinned reports under `reports/` if schema or hash core changed
-
-## README accuracy
-
-- [ ] CI badge reflects passing workflow on verified commit
-- [ ] Workflow examples match tested commands
-- [ ] Known limitations section present
-- [ ] No claims of clinical diagnostic use
 
 ## Schema
 
 - [ ] `src/vsa/schemas/scientific_report.schema.json` synced to `schemas/`
 - [ ] `docs/schema.md` updated for new fields
-- [ ] Migration notes in CHANGELOG
+- [ ] Migration notes in `CHANGELOG.md`
 
 ## Connectors
 
 - [ ] Mocked tests for changed connectors under `tests/connectors/`
-- [ ] Ambiguous retrieval documented in `docs/connectors.md`
-- [ ] Offline fixtures for benchmark tasks
+- [ ] Ambiguity and content levels documented in `docs/connectors.md`
+- [ ] Offline fixtures for new benchmark tasks
 
 ## Benchmark
 
 - [ ] 27 offline tasks pass (`vsa benchmark`)
 - [ ] Adversarial tasks (`expect_pass: false`) behave correctly
-- [ ] CI fails on benchmark regression
+- [ ] CI fails on benchmark regression (pass rate below 100%)
 
 ## Artifacts
 
@@ -53,7 +47,13 @@ All must pass on Ubuntu CI (canonical). macOS smoke runs in CI.
 ## Review workflow
 
 - [ ] `vsa review start` / `approve-claim` / `verify` smoke tested
+- [ ] `vsa verify-review report.json` passes after review events
 - [ ] Review chain hashes verify after `vsa validate`
+
+## API
+
+- [ ] `pytest tests/test_api.py tests/test_api_auth.py` pass
+- [ ] `docs/api.md` matches endpoints and env vars
 
 ## Safety
 
@@ -63,20 +63,8 @@ All must pass on Ubuntu CI (canonical). macOS smoke runs in CI.
 ## Git tag (only after green CI)
 
 ```bash
-git tag v0.7.0
-git push origin v0.7.0
+git tag v0.7.1
+git push origin v0.7.1
 ```
 
-Update `RELEASE_STATUS.md` verified commit to match tag SHA.
-
-## Version history
-
-| Release | Focus |
-|---------|-------|
-| v0.7 | Review subcommands, API schemas, rate limits, verify-bundle |
-| v0.6 | verify-bundle, export manifest, benchmark gate, connector hardening |
-| v0.5 | REST API, SLSA attestation, OTEL, live connector CI |
-| v0.4 | Schema 1.2.0, ClinVar hardening, 25+ task benchmark, docs |
-| v0.3 | LLM audit, signing, human review |
-| v0.2 | Connectors, build pipeline, UI |
-| v0.1 | Schema, validate, render, hash |
+Release workflow attaches: report, audit, attestation, benchmark summary, bundle zip, schema.
