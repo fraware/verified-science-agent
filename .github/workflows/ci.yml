@@ -52,6 +52,13 @@ jobs:
       - name: Verify export bundle
         run: vsa verify-bundle reports/bundle
 
+      - name: Review workflow smoke
+        run: |
+          vsa review start reports/brca1_report.json --reviewer ci@example.com --out /tmp/review_started.json
+          vsa review approve-claim /tmp/review_started.json --reviewer ci@example.com --claim C002 --out /tmp/reviewed.json
+          vsa review verify /tmp/reviewed.json
+          vsa validate /tmp/reviewed.json
+
       - name: API smoke test
         run: python -c "from fastapi.testclient import TestClient; from vsa.api.app import create_app; c=TestClient(create_app()); assert c.get('/health').json()['status']=='ok'"
 

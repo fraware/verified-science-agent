@@ -1,7 +1,7 @@
 {
   "schema_version": "1.2.0",
   "report_id": "vsa-brca1-demo-001",
-  "created_at": "2026-05-31T05:39:25Z",
+  "created_at": "2026-05-31T05:44:54Z",
   "input_question": "BRCA1 c.68_69del",
   "domain": "genomics",
   "subject": {
@@ -250,7 +250,7 @@
         "message": "hashes verified"
       }
     ],
-    "validated_at": "2026-05-31T05:39:25Z"
+    "validated_at": "2026-05-31T05:44:54Z"
   },
   "human_review": {
     "required": true,

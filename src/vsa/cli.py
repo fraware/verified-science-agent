@@ -137,9 +137,15 @@ def cmd_extract(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_review(args: argparse.Namespace) -> int:
-    from vsa.validate.engine import run_validation
+def _write_reviewed_report(report: dict[str, Any], report_path: Path, out: Path | None) -> None:
+    out_path = out or report_path
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"updated {out_path}")
+    print(f"review status: {report['human_review']['status']}")
 
+
+def cmd_review_legacy(args: argparse.Namespace) -> int:
     report = _load_report(args.report)
     approved = [c.strip() for c in args.approve.split(",") if c.strip()] if args.approve else []
     report = apply_review(
@@ -152,11 +158,92 @@ def cmd_review(args: argparse.Namespace) -> int:
         review_notes=args.notes,
     )
     report = run_validation(report, verify_hashes=True)
-    out_path = args.out or args.report
-    out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"updated {out_path}")
-    print(f"review status: {report['human_review']['status']}")
+    _write_reviewed_report(report, args.report, args.out)
     return 0
+
+
+def cmd_review_start(args: argparse.Namespace) -> int:
+    from vsa.review.workflow import start_review
+
+    report = _load_report(args.report)
+    report = start_review(report, reviewer_identity=args.reviewer, review_notes=args.notes)
+    report = run_validation(report, verify_hashes=True)
+    _write_reviewed_report(report, args.report, args.out)
+    return 0
+
+
+def cmd_review_approve_claim(args: argparse.Namespace) -> int:
+    from vsa.review.workflow import approve_claims
+
+    report = _load_report(args.report)
+    claim_ids = args.claim if isinstance(args.claim, list) else [args.claim]
+    report = approve_claims(
+        report,
+        reviewer_identity=args.reviewer,
+        claim_ids=claim_ids,
+        review_notes=args.notes,
+    )
+    report = run_validation(report, verify_hashes=True)
+    _write_reviewed_report(report, args.report, args.out)
+    return 0
+
+
+def cmd_review_request_corrections(args: argparse.Namespace) -> int:
+    from vsa.review.workflow import request_corrections
+
+    report = _load_report(args.report)
+    report = request_corrections(
+        report,
+        reviewer_identity=args.reviewer,
+        corrections=args.corrections,
+        review_notes=args.notes,
+    )
+    report = run_validation(report, verify_hashes=True)
+    _write_reviewed_report(report, args.report, args.out)
+    return 0
+
+
+def cmd_review_reject(args: argparse.Namespace) -> int:
+    from vsa.review.workflow import reject_review
+
+    report = _load_report(args.report)
+    report = reject_review(report, reviewer_identity=args.reviewer, review_notes=args.notes)
+    report = run_validation(report, verify_hashes=True)
+    _write_reviewed_report(report, args.report, args.out)
+    return 0
+
+
+def cmd_review_verify(args: argparse.Namespace) -> int:
+    from vsa.review.workflow import verify_review_chain
+
+    report = _load_report(args.report)
+    ok, errors = verify_review_chain(report)
+    if ok:
+        print("PASS: review chain verified")
+        return 0
+    print("FAIL: review chain verification errors:", file=sys.stderr)
+    for err in errors:
+        print(f"  - {err}", file=sys.stderr)
+    return 1
+
+
+def cmd_review(args: argparse.Namespace) -> int:
+    """Dispatch review subcommands or legacy flat flags."""
+    action = getattr(args, "review_action", None)
+    if action == "apply":
+        return cmd_review_legacy(args)
+    if action == "start":
+        return cmd_review_start(args)
+    if action == "approve-claim":
+        return cmd_review_approve_claim(args)
+    if action == "request-corrections":
+        return cmd_review_request_corrections(args)
+    if action == "reject":
+        return cmd_review_reject(args)
+    if action == "verify":
+        return cmd_review_verify(args)
+    print("ERROR: review requires a subcommand (start, approve-claim, request-corrections, reject, verify, apply)", file=sys.stderr)
+    return 1
 
 
 def cmd_build(args: argparse.Namespace) -> int:
@@ -436,15 +523,61 @@ def build_parser() -> argparse.ArgumentParser:
     p_extract.add_argument("--llm-model", default=None)
     p_extract.set_defaults(func=cmd_extract)
 
-    p_review = sub.add_parser("review", help="Apply human review to a report")
-    p_review.add_argument("report", type=Path)
-    p_review.add_argument("--reviewer", required=True, help="Reviewer identity")
-    p_review.add_argument("--decision", default="approved", help="Review decision label")
-    p_review.add_argument("--approve", default="", help="Comma-separated claim IDs to approve")
-    p_review.add_argument("--corrections", nargs="*", default=[])
+    p_review = sub.add_parser("review", help="Human review workflow")
+    p_review.add_argument("--reviewer", default=None, help="Reviewer identity (legacy apply mode)")
+    p_review.add_argument("--decision", default="approved", help="Review decision (legacy apply mode)")
+    p_review.add_argument("--approve", default="", help="Comma-separated claim IDs (legacy apply mode)")
+    p_review.add_argument("--corrections", nargs="*", default=[], help="Required corrections")
     p_review.add_argument("--notes", default=None, help="Reviewer notes")
-    p_review.add_argument("--out", "-o", type=Path, default=None, help="Output path (default: update report in place)")
-    p_review.add_argument("--reject", action="store_true")
+    p_review.add_argument("--out", "-o", type=Path, default=None)
+    p_review.add_argument("--reject", action="store_true", help="Reject report (legacy apply mode)")
+    review_sub = p_review.add_subparsers(dest="review_action")
+
+    p_apply = review_sub.add_parser("apply", help="Apply review with legacy flags")
+    p_apply.add_argument("report", type=Path)
+    p_apply.add_argument("--reviewer", required=True)
+    p_apply.add_argument("--decision", default="approved")
+    p_apply.add_argument("--approve", default="")
+    p_apply.add_argument("--corrections", nargs="*", default=[])
+    p_apply.add_argument("--notes", default=None)
+    p_apply.add_argument("--out", "-o", type=Path, default=None)
+    p_apply.add_argument("--reject", action="store_true")
+    p_apply.set_defaults(func=cmd_review)
+
+    p_rs = review_sub.add_parser("start", help="Start human review session")
+    p_rs.add_argument("report", type=Path)
+    p_rs.add_argument("--reviewer", required=True)
+    p_rs.add_argument("--notes", default=None)
+    p_rs.add_argument("--out", "-o", type=Path, default=None)
+    p_rs.set_defaults(func=cmd_review)
+
+    p_ra = review_sub.add_parser("approve-claim", help="Approve one or more claims")
+    p_ra.add_argument("report", type=Path)
+    p_ra.add_argument("--reviewer", required=True)
+    p_ra.add_argument("--claim", action="append", required=True, help="Claim ID (repeatable)")
+    p_ra.add_argument("--notes", default=None)
+    p_ra.add_argument("--out", "-o", type=Path, default=None)
+    p_ra.set_defaults(func=cmd_review)
+
+    p_rr = review_sub.add_parser("request-corrections", help="Request corrections without approving")
+    p_rr.add_argument("report", type=Path)
+    p_rr.add_argument("--reviewer", required=True)
+    p_rr.add_argument("--corrections", nargs="+", required=True)
+    p_rr.add_argument("--notes", default=None)
+    p_rr.add_argument("--out", "-o", type=Path, default=None)
+    p_rr.set_defaults(func=cmd_review)
+
+    p_rj = review_sub.add_parser("reject", help="Reject report")
+    p_rj.add_argument("report", type=Path)
+    p_rj.add_argument("--reviewer", required=True)
+    p_rj.add_argument("--notes", default=None)
+    p_rj.add_argument("--out", "-o", type=Path, default=None)
+    p_rj.set_defaults(func=cmd_review)
+
+    p_rv = review_sub.add_parser("verify", help="Verify review event chain hashes")
+    p_rv.add_argument("report", type=Path)
+    p_rv.set_defaults(func=cmd_review)
+
     p_review.set_defaults(func=cmd_review)
 
     p_sign = sub.add_parser("sign", help="Ed25519-sign report provenance hash")
@@ -525,8 +658,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    parsed_argv = list(argv) if argv is not None else None
+    if parsed_argv is not None and len(parsed_argv) >= 2 and parsed_argv[0] == "review":
+        subs = {"start", "approve-claim", "request-corrections", "reject", "verify", "apply"}
+        if parsed_argv[1] not in subs and not parsed_argv[1].startswith("-"):
+            parsed_argv.insert(1, "apply")
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(parsed_argv)
     return args.func(args)
 
 

@@ -3,11 +3,11 @@
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/package-v0.6.1-orange)
+![Version](https://img.shields.io/badge/package-v0.7.0-orange)
 
 Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
 
-**Release status:** see [RELEASE_STATUS.md](RELEASE_STATUS.md) · **Docs:** [architecture](docs/architecture.md) · [schema](docs/schema.md) · [connectors](docs/connectors.md) · [benchmark](docs/benchmark.md)
+**Release status:** see [RELEASE_STATUS.md](RELEASE_STATUS.md) · **Docs:** [architecture](docs/architecture.md) · [schema](docs/schema.md) · [connectors](docs/connectors.md) · [benchmark](docs/benchmark.md) · [API](docs/api.md)
 
 ## North star
 
@@ -98,7 +98,12 @@ streamlit run ui/app.py
 | `vsa build input.json --out report.json` | Build full ScientificReport |
 | `vsa extract input.json` | Extract claims (rule or LLM) |
 | `vsa render report.json --format markdown\|html\|json\|pdf` | Render report (PDF needs `[pdf]` extra) |
-| `vsa review report.json --reviewer NAME --approve C001 --notes "..."` | Human review workflow |
+| `vsa review report.json --reviewer NAME --approve C001` | Legacy human review (approve claims) |
+| `vsa review start report.json --reviewer NAME` | Start review session |
+| `vsa review approve-claim report.json --reviewer NAME --claim C001` | Approve specific claims |
+| `vsa review request-corrections report.json --reviewer NAME --corrections "..."` | Request corrections |
+| `vsa review reject report.json --reviewer NAME` | Reject report |
+| `vsa review verify report.json` | Verify review chain hashes |
 | `vsa audit report.json` | Scientific audit (rule + optional LLM hybrid) |
 | `vsa sign report.json` | Ed25519-sign report provenance hash |
 | `vsa verify-signature report.json` | Verify Ed25519 signature |

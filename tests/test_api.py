@@ -64,6 +64,41 @@ def test_export_endpoint(client, brca1_report):
 def test_build_missing_input(client):
     resp = client.post("/v1/build", json={})
     assert resp.status_code == 400
+    assert resp.json()["error"]["code"] == "MISSING_INPUT"
+
+
+def test_review_api_flow(client, brca1_report):
+    resp = client.post(
+        "/v1/review/start",
+        json={"report": brca1_report, "reviewer": "reviewer@example.com"},
+    )
+    assert resp.status_code == 200
+    started = resp.json()
+    resp2 = client.post(
+        "/v1/review/approve-claim",
+        json={
+            "report": started,
+            "reviewer": "reviewer@example.com",
+            "claim_ids": ["C002"],
+        },
+    )
+    assert resp2.status_code == 200
+    resp3 = client.post("/v1/review/verify", json={"report": resp2.json()})
+    assert resp3.status_code == 200
+    assert resp3.json()["passed"] is True
+
+
+def test_deterministic_build(client, brca1_evidence, monkeypatch):
+    monkeypatch.setenv("VSA_API_DETERMINISTIC", "1")
+    from vsa.api.app import create_app
+    from fastapi.testclient import TestClient
+
+    client = TestClient(create_app())
+    resp = client.post(
+        "/v1/build",
+        json={"input": {"question": "BRCA1 c.68_69del", "evidence": brca1_evidence}},
+    )
+    assert resp.status_code == 200
 
 
 def test_version_endpoint(client):

@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
+## [0.7.0] - 2026-05-30
+
+### Added
+
+- Review subcommands: `start`, `approve-claim`, `request-corrections`, `reject`, `verify`
+- API review endpoints: `/v1/review/start`, `/v1/review/approve-claim`, `/v1/review/verify`
+- Typed Pydantic request/response models for core API routes
+- Structured API error codes (`MISSING_INPUT`, `VALIDATION_ERROR`, `RATE_LIMITED`)
+- Optional rate limiting (`VSA_API_RATE_LIMIT`) and deterministic mode (`VSA_API_DETERMINISTIC`)
+- Review chain verification via `vsa review verify` and `verify_review_chain()`
+
+### Changed
+
+- `docs/api.md` expanded with env vars, error format, review parity
+- CI runs review workflow smoke after bundle verification
+
 ## [0.6.1] - 2026-05-30
 
 ### Added
