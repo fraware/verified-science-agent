@@ -123,7 +123,9 @@ class ClinVarConnector(Connector):
         return results
 
     def _reliability_for_candidate(self, rank: int, score: float, ambiguous: bool) -> str:
-        if rank == 1 and score >= MIN_CONFIDENT_SCORE and not ambiguous:
+        if ambiguous:
+            return "low"
+        if rank == 1 and score >= MIN_CONFIDENT_SCORE:
             return "high"
         if rank == 1 and score >= 0.35:
             return "medium"

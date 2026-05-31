@@ -259,14 +259,75 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
         if infer_content_level(e) == "metadata"
     ]
     if pub_evidence and len(metadata_only) == len(pub_evidence):
+        lim_text = " ".join(str(x) for x in report.get("limitations", []))
+        has_credibility_warning = "SCIENTIFIC CREDIBILITY WARNING" in lim_text.upper() or "METADATA-ONLY" in lim_text.upper()
         _add(
             checks,
             "publication_content",
             "Publication content depth",
-            True,
-            f"CONTENT WARNING: all {len(metadata_only)} publication evidence item(s) are metadata-only",
-            warn=True,
+            has_credibility_warning,
+            f"SCIENTIFIC CREDIBILITY WARNING required: all {len(metadata_only)} publication evidence item(s) are metadata-only",
+            warn=has_credibility_warning,
         )
+        if not has_credibility_warning:
+            errors.append("metadata-only publication reports must include SCIENTIFIC CREDIBILITY WARNING in limitations")
+
+    # Ambiguous retrieval must not carry high reliability
+    ambiguous_high = [
+        ev.get("evidence_id", "?")
+        for ev in evidence
+        if (ev.get("domain_metadata") or {}).get("retrieval_ambiguity")
+        and ev.get("reliability") == "high"
+    ]
+    _add(
+        checks,
+        "ambiguous_reliability",
+        "Ambiguous evidence reliability cap",
+        not ambiguous_high,
+        f"high reliability on ambiguous evidence: {ambiguous_high}" if ambiguous_high else "ambiguous evidence capped",
+    )
+    if ambiguous_high:
+        errors.append(f"ambiguous evidence cannot have high reliability: {ambiguous_high}")
+
+    # AlphaFold must declare predicted structure
+    alphafold_issues: list[str] = []
+    for ev in evidence:
+        if ev.get("source_name") != "AlphaFold DB":
+            continue
+        meta = ev.get("domain_metadata") or {}
+        summary = str(ev.get("summary", "")).lower()
+        if meta.get("structure_type") != "predicted":
+            alphafold_issues.append(f"{ev.get('evidence_id')}: missing structure_type=predicted")
+        if "predicted" not in summary:
+            alphafold_issues.append(f"{ev.get('evidence_id')}: summary missing predicted-structure disclaimer")
+    _add(
+        checks,
+        "alphafold_predicted",
+        "AlphaFold predicted-structure labeling",
+        not alphafold_issues,
+        "; ".join(alphafold_issues) or "AlphaFold evidence correctly labeled as predicted",
+    )
+    errors.extend(alphafold_issues)
+
+    # ClinVar ambiguity must surface in report warnings when present
+    ambiguous_clinvar = [
+        ev.get("evidence_id", "?")
+        for ev in evidence
+        if ev.get("source_name") == "ClinVar" and (ev.get("domain_metadata") or {}).get("retrieval_ambiguity")
+    ]
+    if ambiguous_clinvar:
+        lim_text = " ".join(str(x) for x in report.get("limitations", []))
+        rw_text = " ".join(str(x) for x in report.get("retrieval_warnings", []))
+        surfaced = "CLINVAR AMBIGUITY" in lim_text.upper() or "AMBIGUITY ALERT" in rw_text.upper()
+        _add(
+            checks,
+            "clinvar_ambiguity_surfaced",
+            "ClinVar ambiguity visibility",
+            surfaced,
+            f"ambiguous ClinVar evidence {ambiguous_clinvar} must appear in limitations or retrieval_warnings",
+        )
+        if not surfaced:
+            errors.append("ClinVar ambiguity not surfaced in report warnings")
 
     # Stale evidence retrieval dates
     from datetime import datetime, timedelta, timezone

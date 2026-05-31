@@ -1,0 +1,17 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "Semantic Scholar",
+    "source_type": "publication",
+    "identifier": "paper:metadata3",
+    "retrieval_path": "https://www.semanticscholar.org/paper/metadata3",
+    "retrieved_at": "2020-01-01T00:00:00Z",
+    "summary": "title: Metadata-only semantic scholar entry",
+    "raw_record_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "domain_metadata": {
+      "doi": "10.1000/metadata.only3",
+      "title": "Metadata-only semantic scholar entry",
+      "content_level": "metadata"
+    }
+  }
+]

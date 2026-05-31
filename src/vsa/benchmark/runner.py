@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -10,9 +11,18 @@ from vsa.llm.verifier import audit_report
 from vsa.pipeline.build import build_report
 from vsa.pipeline.retrieval import retrieve_evidence_with_meta
 from vsa.provenance.hashchain import build_provenance
+from vsa.validate.contradictions import detect_contradictions
 from vsa.validate.engine import validate_report
 
 CRITICAL_MIN_PASS_RATE = 1.0
+
+REQUIRED_CATEGORY_MINIMUMS = {
+    "adversarial": 10,
+    "ambiguity": 5,
+    "contradiction": 5,
+    "metadata_only_paper": 5,
+    "no_evidence": 5,
+}
 
 
 def _benchmarks_dir() -> Path:
@@ -45,9 +55,25 @@ def _citation_integrity(report: dict[str, Any]) -> float:
     evidence_ids = {e["evidence_id"] for e in report.get("evidence", [])}
     claims = report.get("claims", [])
     if not claims:
-        return 0.0
+        return 1.0
     ok = sum(1 for c in claims if all(eid in evidence_ids for eid in c.get("evidence_ids", [])))
     return ok / len(claims)
+
+
+def _evidence_id_validity(report: dict[str, Any]) -> float:
+    evidence = report.get("evidence", [])
+    claims = report.get("claims", [])
+    if not evidence and not claims:
+        return 1.0
+    with_ids = sum(1 for e in evidence if e.get("evidence_id"))
+    id_coverage = with_ids / len(evidence) if evidence else 1.0
+    if not claims:
+        return id_coverage
+    evidence_ids = {e.get("evidence_id") for e in evidence if e.get("evidence_id")}
+    valid_claims = sum(
+        1 for c in claims if c.get("evidence_ids") and all(eid in evidence_ids for eid in c["evidence_ids"])
+    )
+    return (id_coverage + valid_claims / len(claims)) / 2
 
 
 def _claim_atomicity(report: dict[str, Any]) -> float:
@@ -94,6 +120,33 @@ def _audit_stability(report: dict[str, Any]) -> float:
     return 1.0 if a1.overall_status == a2.overall_status else 0.0
 
 
+def _bundle_reproducibility(report: dict[str, Any]) -> float:
+    from vsa.artifacts.export import export_report_bundle
+
+    with tempfile.TemporaryDirectory() as tmp1, tempfile.TemporaryDirectory() as tmp2:
+        export_report_bundle(report, Path(tmp1), audit_mode="rule")
+        export_report_bundle(report, Path(tmp2), audit_mode="rule")
+        m1 = json.loads((Path(tmp1) / "manifest.json").read_text(encoding="utf-8"))
+        m2 = json.loads((Path(tmp2) / "manifest.json").read_text(encoding="utf-8"))
+        a1 = {k: v["sha256"] for k, v in m1.get("artifacts", {}).items()}
+        a2 = {k: v["sha256"] for k, v in m2.get("artifacts", {}).items()}
+        return 1.0 if a1 == a2 else 0.0
+
+
+def _task_categories(task: dict[str, Any]) -> list[str]:
+    if task.get("task_categories"):
+        return list(task["task_categories"])
+    if task.get("task_category"):
+        return [task["task_category"]]
+    if task.get("task_class"):
+        return [task["task_class"]]
+    return ["standard"]
+
+
+def _report_warning_text(report: dict[str, Any]) -> str:
+    return " ".join(str(x) for x in report.get("limitations", []) + report.get("retrieval_warnings", []))
+
+
 def score_task(
     task: dict[str, Any],
     *,
@@ -106,12 +159,17 @@ def score_task(
 
     fixtures_dir = fixtures_dir or _benchmarks_dir() / "fixtures"
     warnings: list[str] = []
+    hash_stable = True
+    bundle_stable = 1.0
     fixture_report = _load_fixture_report(task, fixtures_dir) if task.get("use_fixture_report") else None
 
     if fixture_report is not None:
-        report = fixture_report
+        report = dict(fixture_report)
+        if task.get("expect_contradictions") and not report.get("contradictions"):
+            report["contradictions"] = detect_contradictions(report)
         validation = validate_report(report, verify_hashes=task.get("verify_hashes", False))
-        hash_stable = True
+        if task.get("check_bundle_reproducible"):
+            bundle_stable = _bundle_reproducibility(report)
     else:
         subject = parse_question(task["input_question"])
         evidence: list[dict[str, Any]] | None = None
@@ -155,27 +213,29 @@ def score_task(
         else:
             hash_stable = True
 
+        bundle_stable = _bundle_reproducibility(report) if task.get("check_bundle_reproducible") else 1.0
+
     sources = {e.get("source_name") for e in report.get("evidence", [])}
     claim_types = {c.get("claim_type") for c in report.get("claims", [])}
-    boundaries = {c.get("review_boundary") for c in report.get("claims", [])}
-    contradictions = report.get("contradictions", [])
+    contradictions = report.get("contradictions") or detect_contradictions(report)
 
     expected_sources = set(task.get("expected_evidence_sources", []))
     expected_types = set(task.get("expected_claim_types", []))
     expected_flags = set(task.get("required_review_flags", []))
 
-    source_coverage = _evidence_recall(report, expected_sources)
-    evidence_precision = _evidence_precision(report, expected_sources)
+    source_recall = _evidence_recall(report, expected_sources)
+    source_precision = _evidence_precision(report, expected_sources)
     type_coverage = len(claim_types & expected_types) / max(len(expected_types), 1)
-    flag_coverage = _review_boundary_correctness(report, expected_flags)
+    review_boundary_accuracy = _review_boundary_correctness(report, expected_flags)
     validity = 1.0 if validation.passed else 0.0
-    citation = _citation_integrity(report)
+    citation_integrity = _citation_integrity(report)
+    evidence_id_validity = _evidence_id_validity(report)
     atomicity = _claim_atomicity(report)
-    contradiction_score = 1.0
+    contradiction_detection = 1.0
     if task.get("expect_contradictions"):
-        contradiction_score = 1.0 if contradictions else 0.0
+        contradiction_detection = 1.0 if contradictions else 0.0
     elif task.get("expect_no_contradictions"):
-        contradiction_score = 1.0 if not contradictions else 0.0
+        contradiction_detection = 1.0 if not contradictions else 0.0
 
     gold = task.get("gold_labels") or {}
     gold_score = 1.0
@@ -189,43 +249,65 @@ def score_task(
         gold_score *= len(claim_ids & needed) / max(len(needed), 1)
 
     audit_stable = _audit_stability(report) if task.get("check_audit_stable") else 1.0
+    bundle_reproducibility = bundle_stable if task.get("check_bundle_reproducible") else (
+        1.0 if hash_stable else 0.0
+    )
 
-    metric_values = [
-        source_coverage,
-        evidence_precision,
-        type_coverage,
-        flag_coverage,
-        validity,
-        citation,
-        atomicity,
-        contradiction_score,
-        gold_score,
-        audit_stable,
+    core_metrics = [
+        source_recall,
+        source_precision,
+        citation_integrity,
+        evidence_id_validity,
+        review_boundary_accuracy,
+        contradiction_detection,
+        bundle_reproducibility,
     ]
-    overall = sum(metric_values) / len(metric_values)
+    auxiliary_metrics = [type_coverage, validity, atomicity, gold_score, audit_stable]
+    overall = sum(core_metrics + auxiliary_metrics) / (len(core_metrics) + len(auxiliary_metrics))
 
     expect_pass = task.get("expect_pass", True)
     task_passed = (overall >= 0.7 and validation.passed) if expect_pass else (not validation.passed or overall < 0.5)
     if task.get("check_hash_stable") and not hash_stable:
         task_passed = False
+    if task.get("check_bundle_reproducible") and bundle_reproducibility < 1.0:
+        task_passed = False
     if task.get("expect_validation_fail") and validation.passed:
         task_passed = False
 
+    warning_text = _report_warning_text(report).upper()
+    if task.get("expect_ambiguity_surfaced") and "AMBIGUITY" not in warning_text:
+        task_passed = False
+    if task.get("expect_metadata_warning") and "METADATA-ONLY" not in warning_text and "METADATA ONLY" not in warning_text:
+        task_passed = False
+    if task.get("expect_predicted_structure_label"):
+        alphafold_ok = all(
+            "PREDICTED" in str(e.get("summary", "")).upper()
+            for e in report.get("evidence", [])
+            if e.get("source_name") == "AlphaFold DB"
+        )
+        if not alphafold_ok:
+            task_passed = False
+
     return {
         "task_id": task["task_id"],
-        "task_class": task.get("task_class"),
+        "task_categories": _task_categories(task),
         "passed": task_passed,
         "mode": "offline" if offline else "live",
         "warnings": warnings,
         "scores": {
-            "evidence_recall": round(source_coverage, 3),
-            "evidence_precision": round(evidence_precision, 3),
+            "source_recall": round(source_recall, 3),
+            "source_precision": round(source_precision, 3),
+            "citation_integrity": round(citation_integrity, 3),
+            "evidence_id_validity": round(evidence_id_validity, 3),
+            "review_boundary_accuracy": round(review_boundary_accuracy, 3),
+            "contradiction_detection": round(contradiction_detection, 3),
+            "bundle_reproducibility": round(bundle_reproducibility, 3),
+            "evidence_recall": round(source_recall, 3),
+            "evidence_precision": round(source_precision, 3),
+            "review_boundary_correctness": round(review_boundary_accuracy, 3),
             "type_coverage": round(type_coverage, 3),
-            "review_boundary_correctness": round(flag_coverage, 3),
             "validity": validity,
-            "citation_integrity": round(citation, 3),
             "claim_atomicity": round(atomicity, 3),
-            "contradiction_detection": round(contradiction_score, 3),
             "gold_label_score": round(gold_score, 3),
             "hash_reproducibility": hash_stable,
             "audit_stability": round(audit_stable, 3),
@@ -235,6 +317,14 @@ def score_task(
         "sources_found": sorted(sources),
         "contradictions_found": len(contradictions),
     }
+
+
+def category_coverage(tasks: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for task in tasks:
+        for category in _task_categories(task):
+            counts[category] = counts.get(category, 0) + 1
+    return counts
 
 
 def run_benchmark(
@@ -249,13 +339,18 @@ def run_benchmark(
     tasks_path = tasks_path or benchmarks / "tasks.json"
     fixtures_dir = fixtures_dir or benchmarks / "fixtures"
     tasks = json.loads(tasks_path.read_text(encoding="utf-8"))["tasks"]
+    coverage = category_coverage(tasks)
+    category_gaps = {
+        name: max(0, minimum - coverage.get(name, 0))
+        for name, minimum in REQUIRED_CATEGORY_MINIMUMS.items()
+    }
     results = [
         score_task(t, offline=offline, cache_dir=cache_dir, fixtures_dir=fixtures_dir) for t in tasks
     ]
     passed = sum(1 for r in results if r["passed"])
     total = len(results)
     pass_rate = passed / total if total else 0.0
-    regression = pass_rate < (min_pass_rate or 0.0)
+    regression = pass_rate < (min_pass_rate or 0.0) or any(category_gaps.values())
     return {
         "mode": "offline" if offline else "live",
         "total": total,
@@ -264,5 +359,7 @@ def run_benchmark(
         "pass_rate": round(pass_rate, 3),
         "regression": regression,
         "min_pass_rate": min_pass_rate,
+        "category_coverage": coverage,
+        "category_gaps": category_gaps,
         "results": results,
     }

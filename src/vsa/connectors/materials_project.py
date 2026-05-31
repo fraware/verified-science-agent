@@ -8,6 +8,14 @@ from vsa.config import materials_project_api_key
 from vsa.connectors.base import Connector, NormalizedEvidence, now_utc, summarize_record
 from vsa.connectors.cache import EvidenceCache
 from vsa.http_client import make_client
+from vsa.scientific.credibility import MATERIALS_PROJECT_SKIP
+
+
+def materials_project_skipped_reason() -> str | None:
+    """Return a user-visible skip reason when live retrieval cannot run."""
+    if materials_project_api_key():
+        return None
+    return MATERIALS_PROJECT_SKIP
 
 
 class MaterialsProjectConnector(Connector):

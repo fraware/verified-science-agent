@@ -3,7 +3,7 @@
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/package-v0.7.1-orange)
+![Version](https://img.shields.io/badge/package-v0.7.2-orange)
 
 Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
 
@@ -22,7 +22,7 @@ pip install -e ".[dev,ui,pdf,signing,api]"
 make acceptance
 ```
 
-`make acceptance` runs the full CI parity bar: build demo report, pytest (94 tests), and the 27-task offline benchmark.
+`make acceptance` runs the full CI parity bar: build demo report, pytest, and the 50-task offline benchmark.
 
 ### Typical workflow
 
@@ -89,7 +89,7 @@ streamlit run ui/app.py
 | `vsa verify-signature report.json` | Verify Ed25519 signature |
 | `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
 | `vsa migrate-schema report.json --out migrated.json` | Upgrade schema version |
-| `vsa benchmark` | Run 27-task benchmark suite (offline or `--live`) |
+| `vsa benchmark` | Run 50-task benchmark suite (offline or `--live`) |
 | `vsa serve --port 8000` | Start REST API (requires `[api]` extra) |
 
 Legacy review flags remain supported: `vsa review report.json --reviewer NAME --approve C001`.
@@ -165,9 +165,9 @@ Details: [docs/architecture.md](docs/architecture.md)
 src/vsa/           Python package (CLI, validation, connectors, pipeline, render, API)
 schemas/           JSON Schema (symlink to package schema)
 examples/          Input files and good/bad report examples
-benchmarks/        27 evaluation tasks and offline fixtures
+benchmarks/        50 evaluation tasks and offline fixtures
 reports/           Generated report snapshots
-tests/             pytest suite (94 tests)
+tests/             pytest suite (99 tests)
 ui/                Streamlit inspector
 scripts/           acceptance.sh (CI parity bar)
 .github/workflows/ CI and release pipelines
@@ -188,7 +188,7 @@ docs/              Architecture, schema, connectors, benchmark, API, release che
 
 ## Benchmarks
 
-27 offline tasks covering genomics, protein, paper, materials, and adversarial cases:
+50 offline tasks covering genomics, protein, paper, materials, and adversarial cases:
 
 ```bash
 vsa benchmark

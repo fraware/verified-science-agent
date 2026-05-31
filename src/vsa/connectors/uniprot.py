@@ -105,10 +105,11 @@ class UniProtConnector(Connector):
         evidence = self._fetch_accession(accession)
         if evidence and ambiguous:
             item = evidence[0]
-            item.reliability = "medium"
+            item.reliability = "low"
             item.domain_metadata = {
                 **item.domain_metadata,
                 "gene_search_ambiguous": True,
+                "retrieval_ambiguity": True,
                 "alternate_accessions": accessions[1:4],
                 "candidate_count": len(accessions),
             }

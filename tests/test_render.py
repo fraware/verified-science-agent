@@ -9,6 +9,7 @@ def test_markdown_contains_sections(brca1_report):
     md = render(brca1_report, "markdown")
     for section in ["Executive summary", "Evidence table", "Claim table", "Provenance", "Validation checks"]:
         assert section in md
+    assert "Reliability" in md
 
 
 def test_html_renders(brca1_report):

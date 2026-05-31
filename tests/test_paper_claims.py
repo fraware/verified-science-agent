@@ -33,4 +33,9 @@ def test_paper_claims_metadata_only():
         }
     ]
     claims = extract_claims(subject, evidence)
-    assert any("CONTENT WARNING" in c["claim_text"] or "metadata" in c["claim_text"].lower() for c in claims)
+    assert any(
+        "SCIENTIFIC CREDIBILITY WARNING" in c["claim_text"]
+        or "CONTENT WARNING" in c["claim_text"]
+        or "metadata" in c["claim_text"].lower()
+        for c in claims
+    )

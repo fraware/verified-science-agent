@@ -29,6 +29,25 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append(f"- **Contradictions:** {len(report.get('contradictions', []))}")
     lines.append("")
 
+    credibility_lines = _credibility_warning_lines(report)
+    if credibility_lines:
+        lines.append("## Scientific credibility warnings")
+        lines.append("")
+        for line in credibility_lines:
+            lines.append(f"> **{line}**")
+        lines.append("")
+
+    limitations = report.get("limitations") or []
+    retrieval_warnings = report.get("retrieval_warnings") or []
+    if limitations or retrieval_warnings:
+        lines.append("## Limitations and retrieval warnings")
+        lines.append("")
+        for item in limitations:
+            lines.append(f"- {item}")
+        for item in retrieval_warnings:
+            lines.append(f"- {item}")
+        lines.append("")
+
     # Subject
     lines.append("## Subject")
     lines.append("")
@@ -40,15 +59,19 @@ def render_markdown(report: dict[str, Any]) -> str:
     # Evidence table
     lines.append("## Evidence table")
     lines.append("")
-    lines.append("| ID | Source | Type | Identifier | Quality | Summary |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("| ID | Source | Type | Identifier | Reliability | Quality | Summary |")
+    lines.append("|---|---|---|---|---|---|---|")
     for ev in report.get("evidence", []):
         qs = ev.get("quality_score", {})
         score = qs.get("score", "—")
         summary = str(ev.get("summary", "")).replace("|", "/")[:80]
+        meta = ev.get("domain_metadata") or {}
+        reliability = ev.get("reliability", "—")
+        if meta.get("retrieval_ambiguity") or meta.get("gene_search_ambiguous"):
+            reliability = f"{reliability} (ambiguous)"
         lines.append(
             f"| {ev.get('evidence_id')} | {ev.get('source_name')} | {ev.get('source_type')} "
-            f"| {ev.get('identifier')} | {score} | {summary} |"
+            f"| {ev.get('identifier')} | {reliability} | {score} | {summary} |"
         )
     lines.append("")
 
@@ -117,3 +140,23 @@ def render_markdown(report: dict[str, Any]) -> str:
     lines.append("")
 
     return "\n".join(lines)
+
+
+def _credibility_warning_lines(report: dict[str, Any]) -> list[str]:
+    """Extract high-priority credibility warnings for prominent render display."""
+    keywords = (
+        "CLINVAR AMBIGUITY",
+        "SCIENTIFIC CREDIBILITY WARNING",
+        "RETRIEVAL AMBIGUITY",
+        "STRUCTURE WARNING",
+        "AMBIGUITY ALERT",
+        "CONTENT WARNING",
+    )
+    seen: set[str] = set()
+    lines: list[str] = []
+    for text in list(report.get("limitations") or []) + list(report.get("retrieval_warnings") or []):
+        upper = str(text).upper()
+        if any(k in upper for k in keywords) and text not in seen:
+            seen.add(str(text))
+            lines.append(str(text))
+    return lines

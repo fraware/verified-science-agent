@@ -9,6 +9,7 @@ from typing import Any
 from vsa.connectors import Connector, EvidenceCache, default_connectors
 from vsa.connectors.base import NormalizedEvidence
 from vsa.connectors.dedup import collect_ambiguity_warnings, dedupe_evidence
+from vsa.connectors.materials_project import materials_project_skipped_reason
 from vsa.pipeline.subject_parser import parse_input, parse_question
 from vsa.telemetry import span
 from vsa.scoring.evidence_quality import score_evidence
@@ -91,6 +92,11 @@ def retrieve_evidence_with_meta(
 
         for connector in selected:
             try:
+                if connector.name == "Materials Project":
+                    skip = materials_project_skipped_reason()
+                    if skip:
+                        warnings.append(skip)
+                        continue
                 results = connector.fetch(query)
             except Exception as exc:
                 msg = f"{connector.name}: {exc}"

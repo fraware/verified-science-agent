@@ -11,7 +11,7 @@ Verified Science Agent **v0.7.1** — evidence-backed scientific AI report infra
 | [architecture.md](architecture.md) | Pipeline, components, hash layers |
 | [schema.md](schema.md) | ScientificReport v1.2.0 field reference |
 | [connectors.md](connectors.md) | Database connectors, ambiguity, content levels |
-| [benchmark.md](benchmark.md) | 27-task offline suite, metrics, regression gate |
+| [benchmark.md](benchmark.md) | 50-task offline suite, metrics, regression gate |
 | [api.md](api.md) | REST API, auth, endpoints, CLI parity |
 | [release_checklist.md](release_checklist.md) | Pre-tag acceptance bar and release steps |
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
@@ -31,7 +31,7 @@ Equivalent to `bash scripts/acceptance.sh` (demo → pytest → benchmark).
 
 | Constant | Value |
 |----------|-------|
-| Package | `0.7.1` |
+| Package | `0.7.2` |
 | Schema | `1.2.0` (also accepts `1.0.0`, `1.1.0`) |
 | Validation | `1.2.0` |
 

@@ -79,8 +79,13 @@ def collect_ambiguity_warnings(evidence: list[dict[str, Any]]) -> list[str]:
         meta = ev.get("domain_metadata") or {}
         if meta.get("retrieval_ambiguity"):
             warnings.append(
-                f"{ev.get('source_name')}:{ev.get('identifier')}: ambiguous retrieval "
+                f"AMBIGUITY ALERT {ev.get('source_name')}:{ev.get('identifier')}: ambiguous retrieval "
                 f"(match_score={meta.get('match_score')}, rank={meta.get('candidate_rank')})"
+            )
+        if meta.get("gene_search_ambiguous"):
+            warnings.append(
+                f"AMBIGUITY ALERT UniProt {ev.get('identifier')}: gene symbol maps to multiple isoforms "
+                f"(candidates={meta.get('candidate_count', '?')})"
             )
         if meta.get("entry_type") == "unreviewed":
             warnings.append(f"UniProt {ev.get('identifier')}: TrEMBL (unreviewed) entry")

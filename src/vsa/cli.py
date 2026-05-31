@@ -459,6 +459,10 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     text = json.dumps(summary, indent=2) + "\n"
     _write_output(text, args.out)
     if summary.get("regression"):
+        gaps = summary.get("category_gaps") or {}
+        gap_msg = ", ".join(f"{k} missing {v}" for k, v in gaps.items() if v)
+        if gap_msg:
+            print(f"FAIL: benchmark category gaps: {gap_msg}", file=sys.stderr)
         print("FAIL: benchmark regression detected", file=sys.stderr)
         return 1
     return 0 if summary["failed"] == 0 else 1

@@ -1,0 +1,21 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "UniProt",
+    "source_type": "database",
+    "identifier": "P00533",
+    "retrieval_path": "https://www.uniprot.org/uniprotkb/P00533/entry",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "accession: P00533; protein_name: Epidermal growth factor receptor; gene: EGFR; gene search ambiguous (4 human isoforms; using P00533)",
+    "raw_record_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "reliability": "low",
+    "domain_metadata": {
+      "accession": "P00533",
+      "gene_symbol": "EGFR",
+      "gene_search_ambiguous": true,
+      "retrieval_ambiguity": true,
+      "candidate_count": 4,
+      "alternate_accessions": ["Q504U8", "F2YGG2"]
+    }
+  }
+]

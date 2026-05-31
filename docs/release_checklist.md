@@ -34,7 +34,7 @@ This runs `scripts/acceptance.sh`: demo build, pytest, and benchmark. Must pass 
 
 ## Benchmark
 
-- [ ] 27 offline tasks pass (`vsa benchmark`)
+- [ ] 50 offline tasks pass (`vsa benchmark`)
 - [ ] Adversarial tasks (`expect_pass: false`) behave correctly
 - [ ] CI fails on benchmark regression (pass rate below 100%)
 

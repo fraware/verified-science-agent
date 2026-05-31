@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.2.0",
+  "report_id": "vsa-adversarial-alphafold",
+  "created_at": "2026-05-30T12:00:00Z",
+  "input_question": "P38398 structure probe",
+  "domain": "protein",
+  "subject": {"entity_type": "protein", "protein_accession": "P38398", "display_name": "P38398"},
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "structure",
+      "claim_text": "P38398 has an experimentally determined crystallographic structure available.",
+      "evidence_ids": ["E001"],
+      "confidence": 0.9,
+      "review_boundary": "requires_domain_review",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "AlphaFold DB",
+      "source_type": "structure",
+      "identifier": "P38398",
+      "retrieval_path": "https://alphafold.ebi.ac.uk/entry/P38398",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "Predicted structure for P38398 (Homo sapiens); AlphaFold model — not experimental structure.",
+      "raw_record_hash": "abababababababababababababababababababababababababababababababab",
+      "reliability": "medium",
+      "domain_metadata": {"structure_type": "predicted", "uniprot_accession": "P38398"}
+    }
+  ],
+  "retrieval_plan": ["AlphaFold DB"],
+  "retrieval_warnings": ["AlphaFold P38398: predicted structure only — not experimental"],
+  "limitations": ["STRUCTURE WARNING: AlphaFold coordinates are computationally predicted."],
+  "methods": [],
+  "provenance": {
+    "source_record_hashes": {"E001": "abababababababababababababababababababababababababababababababab"},
+    "evidence_bundle_hash": "bcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbcbc",
+    "evidence_content_hash": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "claim_hashes": {"C001": "dedededededededededededededededededededededededededededededededede"},
+    "report_hash": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+    "validation_run_hash": "1212121212121212121212121212121212121212121212121212121212121212",
+    "validation_version": "1.2.0",
+    "renderer_version": "1.2.0",
+    "generated_by": {"system_name": "verified-science-agent", "model_or_agent_stack": "fixture"}
+  },
+  "validation_results": {"status": "pending", "checks": []},
+  "human_review": {"required": true, "status": "pending", "required_corrections": [], "approved_claim_ids": []},
+  "generated_outputs": {"formats_available": ["json"]},
+  "contradictions": []
+}

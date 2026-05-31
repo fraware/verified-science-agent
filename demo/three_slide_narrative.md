@@ -25,7 +25,7 @@ The pipeline converts scientific questions into structured `ScientificReport` JS
 - rule-based or LLM audit with conservative merge,
 - human review workflow with verifiable event chains,
 - export bundles with manifest verification (`vsa verify-bundle`),
-- 27-task offline benchmark with CI regression gate,
+- 50-task offline benchmark with category minimums and CI regression gate,
 - REST API with optional auth.
 
 Supporting tools: CLI, Streamlit UI, SLSA/in-toto attestation, benchmark suite.

@@ -258,13 +258,13 @@ def _paper_claims(subject: dict[str, Any], evidence: list[dict[str, Any]]) -> li
                 "claim_id": f"C{cid:03d}",
                 "claim_type": "observation",
                 "claim_text": (
-                    "CONTENT WARNING: Only bibliographic metadata retrieved; no abstract or full-text "
-                    "body available in evidence bundle."
+                    "SCIENTIFIC CREDIBILITY WARNING: Only bibliographic metadata retrieved; no abstract "
+                    "or full-text body available in evidence bundle."
                 ),
                 "evidence_ids": [primary["evidence_id"]],
-                "confidence": 0.85,
+                "confidence": 0.55,
                 "review_boundary": "requires_domain_review",
-                "uncertainty_level": "medium",
+                "uncertainty_level": "high",
                 "support_level": "insufficient",
             }
         )
@@ -278,7 +278,7 @@ def _paper_claims(subject: dict[str, Any], evidence: list[dict[str, Any]]) -> li
                     "metadata until abstract or full-text evidence is retrieved."
                 ),
                 "evidence_ids": [primary["evidence_id"]],
-                "confidence": 0.9,
+                "confidence": 0.6,
                 "review_boundary": "safe_summary",
                 "uncertainty_level": "low",
                 "support_level": "insufficient",

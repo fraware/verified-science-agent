@@ -61,6 +61,7 @@
     },
     {
       "task_id": "conflicting_clinical",
+      "task_categories": ["contradiction"],
       "input_question": "BRCA1 c.68_69del",
       "expected_evidence_sources": ["ClinVar"],
       "expected_claim_types": ["classification", "identity", "observation"],
@@ -70,6 +71,7 @@
     },
     {
       "task_id": "no_evidence",
+      "task_categories": ["no_evidence"],
       "input_question": "ZZZZZ unknown entity probe",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
@@ -127,6 +129,7 @@
     },
     {
       "task_id": "variant_ambiguous",
+      "task_categories": ["ambiguity", "contradiction"],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
       "expected_evidence_sources": ["ClinVar"],
@@ -137,13 +140,15 @@
     },
     {
       "task_id": "metadata_paper",
+      "task_categories": ["metadata_only_paper"],
       "task_class": "metadata_only_paper",
       "input_question": "10.1038/nature12373",
       "fixture_task_id": "metadata_only_paper",
       "expected_evidence_sources": ["Crossref"],
       "expected_claim_types": ["identity", "observation", "summary"],
       "required_review_flags": ["requires_domain_review", "safe_summary"],
-      "expect_no_contradictions": true
+      "expect_no_contradictions": true,
+      "expect_metadata_warning": true
     },
     {
       "task_id": "low_quality",
@@ -212,6 +217,7 @@
     },
     {
       "task_id": "adversarial_empty_claims",
+      "task_categories": ["adversarial", "no_evidence"],
       "task_class": "no_result_lookup",
       "input_question": "adversarial probe with no supporting evidence",
       "expected_evidence_sources": [],
@@ -222,6 +228,7 @@
     },
     {
       "task_id": "fake_evidence_id",
+      "task_categories": ["adversarial"],
       "task_class": "fake_evidence_id",
       "input_question": "adversarial fake evidence probe",
       "use_fixture_report": true,
@@ -241,6 +248,264 @@
       "expected_evidence_sources": ["UniProt"],
       "expected_claim_types": ["identity"],
       "required_review_flags": ["requires_domain_review"],
+      "expect_pass": true
+    },
+    {
+      "task_id": "uniprot_gene_ambiguous",
+      "task_categories": ["ambiguity"],
+      "input_question": "EGFR",
+      "fixture_task_id": "gene_ambiguous_uniprot",
+      "expected_evidence_sources": ["UniProt"],
+      "expected_claim_types": ["observation", "identity"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_ambiguity_surfaced": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "clinvar_ambiguous_multi",
+      "task_categories": ["ambiguity"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["identity", "classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_ambiguity_surfaced": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "clinvar_ambiguous_scores",
+      "task_categories": ["ambiguity"],
+      "input_question": "TP53 c.524G>A",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_ambiguity_surfaced": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "hgvs_ambiguous_lookup",
+      "task_categories": ["ambiguity"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_ambiguity_surfaced": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "contradiction_pathogenic_vus",
+      "task_categories": ["contradiction"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_contradictions": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "contradiction_ambiguous_high_conf",
+      "task_categories": ["contradiction"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_contradictions": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "contradiction_alphafold_experimental",
+      "task_categories": ["contradiction", "adversarial"],
+      "input_question": "P38398 experimental structure probe",
+      "use_fixture_report": true,
+      "fixture_report_id": "adversarial_alphafold_experimental",
+      "expected_evidence_sources": ["AlphaFold DB"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_contradictions": true,
+      "verify_hashes": false,
+      "expect_pass": false
+    },
+    {
+      "task_id": "metadata_only_openalex",
+      "task_categories": ["metadata_only_paper"],
+      "input_question": "10.1000/metadata.only2",
+      "fixture_task_id": "metadata_only_paper_2",
+      "expected_evidence_sources": ["OpenAlex"],
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary"],
+      "expect_metadata_warning": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "metadata_only_semantic",
+      "task_categories": ["metadata_only_paper"],
+      "input_question": "10.1000/metadata.only3",
+      "fixture_task_id": "metadata_only_paper_3",
+      "expected_evidence_sources": ["Semantic Scholar"],
+      "expected_claim_types": ["identity", "observation"],
+      "required_review_flags": ["safe_summary"],
+      "expect_metadata_warning": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "metadata_only_pubmed",
+      "task_categories": ["metadata_only_paper"],
+      "input_question": "PMID:99999901",
+      "fixture_task_id": "metadata_only_paper_4",
+      "expected_evidence_sources": ["PubMed"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["safe_summary"],
+      "expect_metadata_warning": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "metadata_only_europe_pmc",
+      "task_categories": ["metadata_only_paper"],
+      "input_question": "PMID:99999902",
+      "fixture_task_id": "metadata_only_paper_5",
+      "expected_evidence_sources": ["Europe PMC"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["safe_summary"],
+      "expect_metadata_warning": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "no_evidence_unknown_gene",
+      "task_categories": ["no_evidence"],
+      "input_question": "GENE_DOES_NOT_EXIST_XYZ",
+      "fixture_task_id": "no_evidence",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "expect_pass": false
+    },
+    {
+      "task_id": "no_evidence_gibberish",
+      "task_categories": ["no_evidence"],
+      "input_question": "###invalid@@query%%",
+      "fixture_task_id": "no_evidence",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "expect_pass": false
+    },
+    {
+      "task_id": "no_evidence_null_accession",
+      "task_categories": ["no_evidence"],
+      "input_question": "protein accession ?????",
+      "fixture_task_id": "no_evidence",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "expect_pass": false
+    },
+    {
+      "task_id": "adversarial_unsupported_claim",
+      "task_categories": ["adversarial"],
+      "input_question": "adversarial unsupported claim probe",
+      "use_fixture_report": true,
+      "fixture_report_id": "adversarial_unsupported",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["unsupported"],
+      "expect_validation_fail": true,
+      "verify_hashes": false,
+      "expect_pass": false
+    },
+    {
+      "task_id": "adversarial_stale_ambiguous",
+      "task_categories": ["adversarial", "ambiguity"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "conflicting_clinical",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_ambiguity_surfaced": true,
+      "expect_pass": false
+    },
+    {
+      "task_id": "adversarial_orphan_evidence",
+      "task_categories": ["adversarial"],
+      "input_question": "adversarial fake evidence probe",
+      "use_fixture_report": true,
+      "fixture_report_id": "fake_evidence",
+      "expected_evidence_sources": ["Test"],
+      "expected_claim_types": ["observation"],
+      "required_review_flags": ["unsupported"],
+      "expect_pass": false,
+      "expect_validation_fail": true,
+      "verify_hashes": false
+    },
+    {
+      "task_id": "adversarial_low_quality_evidence",
+      "task_categories": ["adversarial"],
+      "input_question": "TP53 c.524G>A",
+      "fixture_task_id": "tp53_variant",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_pass": true
+    },
+    {
+      "task_id": "adversarial_materials_no_key",
+      "task_categories": ["adversarial"],
+      "input_question": "LiFePO4 cathode material",
+      "fixture_task_id": "materials_no_key",
+      "expected_evidence_sources": [],
+      "expected_claim_types": [],
+      "required_review_flags": [],
+      "expect_pass": false
+    },
+    {
+      "task_id": "adversarial_missing_retrieval_path",
+      "task_categories": ["adversarial"],
+      "input_question": "adversarial missing retrieval path",
+      "use_fixture_report": true,
+      "fixture_report_id": "adversarial_missing_path",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_validation_fail": true,
+      "verify_hashes": false,
+      "expect_pass": false
+    },
+    {
+      "task_id": "adversarial_clinical_premature_approval",
+      "task_categories": ["adversarial"],
+      "input_question": "adversarial clinical approval probe",
+      "use_fixture_report": true,
+      "fixture_report_id": "adversarial_clinical_approved",
+      "expected_evidence_sources": ["ClinVar"],
+      "expected_claim_types": ["classification"],
+      "required_review_flags": ["requires_clinical_review"],
+      "expect_validation_fail": true,
+      "verify_hashes": false,
+      "expect_pass": false
+    },
+    {
+      "task_id": "alphafold_predicted_label",
+      "task_categories": ["standard"],
+      "input_question": "P38398",
+      "fixture_task_id": "protein_structure",
+      "expected_evidence_sources": ["AlphaFold DB"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_predicted_structure_label": true,
+      "expect_pass": true
+    },
+    {
+      "task_id": "brca1_bundle_reproducible",
+      "task_categories": ["standard"],
+      "input_question": "BRCA1 c.68_69del",
+      "fixture_task_id": "brca1_variant",
+      "expected_evidence_sources": ["ClinVar", "UniProt"],
+      "expected_claim_types": ["classification", "identity"],
+      "required_review_flags": ["requires_clinical_review"],
+      "check_bundle_reproducible": true,
       "expect_pass": true
     }
   ]

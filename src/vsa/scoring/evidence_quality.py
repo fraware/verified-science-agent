@@ -98,6 +98,14 @@ def score_evidence(item: dict[str, Any]) -> dict[str, Any]:
     if role == "contradicts":
         reasons.append("marked as contradicting evidence (included for conflict resolution)")
 
+    meta = item.get("domain_metadata") or {}
+    if meta.get("retrieval_ambiguity") or meta.get("gene_search_ambiguous"):
+        score = min(score, 0.45)
+        warnings.append("ambiguous retrieval caps evidence quality score")
+    if meta.get("structure_type") == "predicted":
+        score = min(score, 0.65)
+        reasons.append("predicted structure — not experimental evidence")
+
     score = max(0.0, min(1.0, score))
     if score < 0.5:
         warnings.append("low-quality evidence; consider additional sources")

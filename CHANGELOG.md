@@ -11,6 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
+## [0.7.2] - 2026-05-31
+
+### Added
+
+- Scientific credibility module (`src/vsa/scientific/credibility.py`) with ambiguity caps and report warnings
+- Validation checks: ambiguous reliability cap, AlphaFold predicted labeling, ClinVar ambiguity visibility
+- Benchmark expanded to 50 tasks with category minimums (10 adversarial, 5 each for ambiguity/contradiction/metadata-only/no-evidence)
+- Core benchmark metrics: source recall/precision, citation integrity, evidence-ID validity, review-boundary accuracy, contradiction detection, bundle reproducibility
+- Tests for credibility policies and Materials Project missing-key degradation
+
+### Changed
+
+- ClinVar ambiguous queries always return `reliability: low`
+- UniProt gene search sets `retrieval_ambiguity` and caps reliability to low
+- Materials Project skipped cleanly with explicit warning when API key missing
+- Build pipeline hardens evidence and surfaces CLINVAR/metadata/AlphaFold warnings in limitations
+
 ## [0.7.1] - 2026-05-31
 
 ### Added

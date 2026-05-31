@@ -1,0 +1,17 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "OpenAlex",
+    "source_type": "publication",
+    "identifier": "W123456789",
+    "retrieval_path": "https://openalex.org/W123456789",
+    "retrieved_at": "2019-01-01T00:00:00Z",
+    "summary": "title: Bibliographic-only record; authors: Smith J",
+    "raw_record_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "domain_metadata": {
+      "doi": "10.1000/metadata.only2",
+      "title": "Bibliographic-only record",
+      "content_level": "metadata"
+    }
+  }
+]

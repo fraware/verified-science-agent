@@ -1,6 +1,6 @@
 # Release status
 
-Package **v0.7.1** on `main`. CI is the source of truth for verification.
+Package **v0.7.2** on `main`. CI is the source of truth for verification.
 
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 
@@ -36,7 +36,7 @@ The [release workflow](.github/workflows/release.yml) runs the acceptance bar, b
 ## Production-ready (CI-evidence-backed)
 
 - JSON Schema validation, provenance hashes, rule-based claims
-- Offline benchmark (27 tasks) with 100% regression gate
+- Offline benchmark (50 tasks) with category minimums and 100% regression gate
 - Export bundle + `vsa verify-bundle`
 - Human review workflow + `vsa verify-review`
 - SLSA/in-toto attestation

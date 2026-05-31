@@ -32,11 +32,12 @@ Retrieval produces evidence. Generation produces claims. Validation checks claim
 | Provenance | `src/vsa/provenance/` | Hashes, signing |
 | Audit | `src/vsa/llm/verifier.py` | Rule + hybrid LLM audit |
 | Review | `src/vsa/review/workflow.py` | Human review events and chain verification |
+| Scientific | `src/vsa/scientific/credibility.py` | Ambiguity caps, metadata/AlphaFold warnings |
 | Artifacts | `src/vsa/artifacts/` | Export bundles, manifest verification |
 | API | `src/vsa/api/` | FastAPI REST server |
 | Attestation | `src/vsa/provenance/attestation.py` | SLSA/in-toto statements |
 | Telemetry | `src/vsa/telemetry.py` | Optional OpenTelemetry spans |
-| Benchmark | `src/vsa/benchmark/` | 27-task offline evaluation suite |
+| Benchmark | `src/vsa/benchmark/` | 50-task offline evaluation suite |
 
 ## Hash layers
 

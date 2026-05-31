@@ -35,13 +35,14 @@ Connectors: OpenAlex, Crossref, PubMed (NCBI E-utilities), Europe PMC, Semantic 
 - **Content levels**: `domain_metadata.content_level` is `metadata`, `abstract`, or `fulltext` (Europe PMC sets `fulltext` when `hasFullText=Y`; Semantic Scholar sets level from abstract availability)
 - **Dedup**: Merged by DOI, PMID, or normalized title+year in retrieval pipeline
 - **Claims**: Rule extraction produces bibliographic identity (C001) and abstract/metadata observation (C002); full-text availability flagged as C003 when present
-- **Build warnings**: Metadata-only publication evidence triggers a CONTENT WARNING in report `limitations`
+- **Build warnings**: Metadata-only publication evidence triggers SCIENTIFIC CREDIBILITY WARNING in report `limitations`
+- **Ambiguity**: ClinVar ambiguous matches capped to `reliability: low` with CLINVAR AMBIGUITY ALERT in report warnings
 - **Limitation**: Claims are abstract/metadata-derived; full-text body parsing is not implemented
 
 ## Materials Project
 
 - **Queries**: material formula / ID
-- **API key**: `MATERIALS_PROJECT_API_KEY` for live retrieval
+- **API key**: `MATERIALS_PROJECT_API_KEY` for live retrieval; skipped with explicit warning when unset
 - **Offline**: Benchmark and tests use fixtures; missing key never breaks offline tests
 
 ## Testing

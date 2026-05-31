@@ -77,4 +77,4 @@ def test_clinvar_ambiguous_lowers_reliability():
     results = conn.fetch({"gene_symbol": "BRCA1", "variant_hgvs_c": "c.68_69del"})
     top = results[0]
     if top.domain_metadata.get("retrieval_ambiguity"):
-        assert top.reliability in ("medium", "low")
+        assert top.reliability == "low"

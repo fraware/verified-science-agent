@@ -6,7 +6,9 @@ import httpx
 import respx
 
 from vsa.connectors.cache import EvidenceCache
-from vsa.connectors.materials_project import MaterialsProjectConnector
+from vsa.connectors.materials_project import MaterialsProjectConnector, materials_project_skipped_reason
+from vsa.pipeline.retrieval import retrieve_evidence_with_meta
+from vsa.pipeline.subject_parser import parse_question
 
 
 @respx.mock
@@ -31,3 +33,18 @@ def test_materials_project_fetch(tmp_path, monkeypatch):
     results = MaterialsProjectConnector(cache).fetch({"material_id": "LiFePO4"})
     assert results[0].source_name == "Materials Project"
     assert "LiFePO4" in results[0].summary
+
+
+def test_materials_project_missing_key_degrades_cleanly(monkeypatch):
+    monkeypatch.delenv("MATERIALS_PROJECT_API_KEY", raising=False)
+    assert materials_project_skipped_reason() is not None
+    results = MaterialsProjectConnector().fetch({"material_id": "LiFePO4"})
+    assert results == []
+
+
+def test_retrieval_skips_materials_project_without_api_key(monkeypatch):
+    monkeypatch.delenv("MATERIALS_PROJECT_API_KEY", raising=False)
+    subject = parse_question("LiFePO4 cathode material")
+    result = retrieve_evidence_with_meta(subject, cache=EvidenceCache())
+    assert any("MATERIALS_PROJECT_API_KEY" in w for w in result.warnings)
+    assert all(e.get("source_name") != "Materials Project" for e in result.evidence)
