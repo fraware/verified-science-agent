@@ -1,17 +1,58 @@
-# Verified Science Agent
+<div align="center">
+
+<pre>
+ ######################################################################################################
+
+ __     __        _  __ _          _   ____       _                          _                    _   
+ \ \   / /__ _ __(_)/ _(_) ___  __| | / ___|  ___(_) ___ _ __   ___ ___     / \   __ _  ___ _ __ | |_ 
+  \ \ / / _ \ '__| | |_| |/ _ \/ _` | \___ \ / __| |/ _ \ '_ \ / __/ _ \   / _ \ / _` |/ _ \ '_ \| __|
+   \ V /  __/ |  | |  _| |  __/ (_| |  ___) | (__| |  __/ | | | (_|  __/  / ___ \ (_| |  __/ | | | |_ 
+    \_/ \___|_|  |_|_| |_|\___|\__,_| |____/ \___|_|\___|_| |_|\___\___| /_/   \_\__, |\___|_| |_|\__|
+                                                                                 |___/                
+
+ ######################################################################################################
+</pre>
+
+**Evidence-backed scientific AI report infrastructure**
+
+Treat every AI-generated scientific report like a software build artifact —  
+inputs, source records, claims, validation, provenance, and review status.
+
+<br>
 
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
+![Version](https://img.shields.io/badge/version-v0.7.2-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/package-v0.7.2-orange)
+![Benchmark](https://img.shields.io/badge/benchmark-50%20tasks-brightgreen)
 
-Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
+<br>
 
-**Documentation:** [docs/README.md](docs/README.md) · **Release status:** [RELEASE_STATUS.md](RELEASE_STATUS.md)
+[Documentation](docs/README.md) · [Release status](RELEASE_STATUS.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md)
 
-## North star
+</div>
 
-A scientific AI report should be inspectable by engineers, readable by scientists, and shareable with reviewers — with signed or hashable outputs.
+---
+
+## Overview
+
+Verified Science Agent (VSA) turns scientific questions into inspectable `ScientificReport` JSON artifacts. Retrieval produces evidence. Generation produces claims. Validation checks claims against evidence. Models cannot invent source fields.
+
+**North star:** A scientific AI report should be inspectable by engineers, readable by scientists, and shareable with reviewers — with signed or hashable outputs.
+
+```mermaid
+flowchart LR
+  Q[Question] --> P[Subject parser]
+  P --> C[Connectors]
+  C --> E[Evidence ranking]
+  E --> X[Claim extraction]
+  X --> V[Validation]
+  V --> R[Render / audit / review / export]
+```
+
+**Core rule:** retrieval → evidence · generation → claims · validation → proof
+
+---
 
 ## Quick start
 
@@ -22,9 +63,10 @@ pip install -e ".[dev,ui,pdf,signing,api]"
 make acceptance
 ```
 
-`make acceptance` runs the full CI parity bar: build demo report, pytest, and the 50-task offline benchmark.
+`make acceptance` runs the full CI parity bar: demo build, pytest (99 tests), and the 50-task offline benchmark.
 
-### Typical workflow
+<details>
+<summary><strong>Typical workflow</strong></summary>
 
 ```bash
 # Retrieve and build
@@ -49,52 +91,94 @@ vsa sign reports/brca1_report.json
 vsa serve --port 8000
 ```
 
-Or run the Makefile demo only:
+</details>
 
 ```bash
-make demo
+make demo                      # build + validate + audit + export + verify-bundle
+streamlit run ui/app.py        # interactive inspector with credibility warnings
 ```
 
-Launch the Streamlit UI:
+---
 
-```bash
-streamlit run ui/app.py
-```
+## Features
 
-## CLI commands
+| Area | What you get |
+|------|----------------|
+| **Artifacts** | Canonical `ScientificReport` schema (v1.2.0), provenance hashes, export bundles |
+| **Credibility** | ClinVar ambiguity alerts, metadata-only warnings, AlphaFold predicted-structure labeling |
+| **Verification** | Schema + semantic validation, rule/hybrid audit, SLSA/in-toto attestation |
+| **Review** | Human review workflow with verifiable event chains |
+| **Benchmark** | 50 offline tasks with category minimums and 100% CI regression gate |
+| **API** | REST server with optional `VSA_API_KEY` auth |
+
+---
+
+## CLI reference
+
+### Build and retrieve
 
 | Command | Description |
 |---------|-------------|
 | `vsa retrieve "question"` | Retrieve evidence from databases |
-| `vsa build input.json --out report.json` | Build full ScientificReport |
+| `vsa build input.json --out report.json` | Build a full ScientificReport |
 | `vsa extract input.json` | Extract claims (rule or LLM) |
+| `vsa benchmark` | Run 50-task benchmark suite (`--live` for network) |
+
+### Validate and audit
+
+| Command | Description |
+|---------|-------------|
 | `vsa validate report.json` | Schema + semantic validation |
 | `vsa audit report.json` | Scientific audit (rule + optional LLM hybrid) |
-| `vsa export report.json --out-dir dir/` | Export bundle: report, report.md, audit, provenance, review, attestation, sources/, manifest |
-| `vsa verify-bundle dir/` | Verify bundle manifest hashes and attestation |
+| `vsa compare report_a.json report_b.json` | Diff two reports |
+| `vsa compare-audit audit_a.json audit_b.json` | Diff audit artifacts |
+
+### Export and verify
+
+| Command | Description |
+|---------|-------------|
+| `vsa export report.json --out-dir dir/` | Full bundle: report, audit, provenance, sources/, manifest |
+| `vsa verify-bundle dir/` | Verify manifest hashes and attestation |
 | `vsa attest report.json --out attestation.json` | SLSA/in-toto provenance attestation |
 | `vsa verify-attestation report.json attestation.json` | Verify attestation digest |
+
+### Review
+
+| Command | Description |
+|---------|-------------|
 | `vsa review start report.json --reviewer NAME` | Start human review session |
-| `vsa review approve-claim report.json --reviewer NAME --claim C001` | Approve specific claims |
-| `vsa review request-corrections report.json --reviewer NAME` | Request corrections |
-| `vsa review reject report.json --reviewer NAME` | Reject report |
+| `vsa review approve-claim ... --claim C001` | Approve specific claims |
 | `vsa review verify report.json` | Verify review chain hashes |
-| `vsa verify-review report.json` | Same as `review verify` |
-| `vsa render report.json --format markdown\|html\|json\|pdf` | Render report (PDF needs `[pdf]` extra) |
+| `vsa verify-review report.json` | Alias for `review verify` |
+
+Legacy flags remain supported: `vsa review report.json --reviewer NAME --approve C001`.
+
+### Render, sign, and serve
+
+| Command | Description |
+|---------|-------------|
+| `vsa render report.json --format markdown\|html\|json\|pdf` | Render report |
 | `vsa hash report.json` | Provenance hash chain |
-| `vsa inspect report.json` | Structural summary |
-| `vsa compare report_a.json report_b.json` | Diff two reports |
-| `vsa compare-audit audit_a.json audit_b.json` | Diff audit artifacts across runs |
 | `vsa sign report.json` | Ed25519-sign report provenance hash |
 | `vsa verify-signature report.json` | Verify Ed25519 signature |
-| `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
-| `vsa migrate-schema report.json --out migrated.json` | Upgrade schema version |
-| `vsa benchmark` | Run 50-task benchmark suite (offline or `--live`) |
 | `vsa serve --port 8000` | Start REST API (requires `[api]` extra) |
 
-Legacy review flags remain supported: `vsa review report.json --reviewer NAME --approve C001`.
+REST endpoint parity: [docs/api.md](docs/api.md)
 
-See [docs/api.md](docs/api.md) for REST endpoint parity.
+---
+
+## Scientific credibility
+
+VSA enforces policies that make weak evidence hard to miss:
+
+- **ClinVar ambiguity** — ambiguous queries capped to low reliability; `CLINVAR AMBIGUITY ALERT` in report warnings
+- **Metadata-only papers** — `SCIENTIFIC CREDIBILITY WARNING` when all publication evidence is bibliographic only
+- **AlphaFold** — summaries always declare predicted structure; never treated as experimental
+- **Materials Project** — missing API key degrades with an explicit skip warning
+
+Warnings surface in CLI output, markdown/HTML render, validation checks, and the Streamlit UI.
+
+---
 
 ## LLM modes (optional)
 
@@ -114,99 +198,83 @@ vsa audit reports/brca1_report.json --audit-mode rule
 
 The LLM auditor evaluates only claim text and cited evidence in the payload — it cannot introduce new sources.
 
+---
+
 ## ScientificReport schema
 
-Canonical artifact model (schema version **1.2.0**, also accepts **1.0.0** and **1.1.0**):
+Canonical artifact model (schema **1.2.0**, also accepts **1.0.0** and **1.1.0**):
 
 ```
 ScientificReport
-  subject
-  claims[]
-  evidence[]
-  methods[]
-  provenance
-  validation_results
-  human_review
-  generated_outputs
+├── subject
+├── claims[]
+├── evidence[]
+├── methods[]
+├── provenance
+├── validation_results
+├── human_review
+└── generated_outputs
 ```
 
-Schema file: `src/vsa/schemas/scientific_report.schema.json` (symlinked at `schemas/`).
+Schema: `src/vsa/schemas/scientific_report.schema.json` · Field reference: [docs/schema.md](docs/schema.md)
 
-Field reference: [docs/schema.md](docs/schema.md)
+**Domains:** genomics variants, proteins, papers, chemicals, materials, experiments.
 
-Domains supported: genomics variants, proteins, papers, chemicals, materials, experiments.
+---
 
-## Database connectors
+## Connectors
 
-Read-only connectors with normalized evidence output and file caching (`.vsa_cache/`):
+Read-only connectors with normalized evidence and file caching (`.vsa_cache/`):
 
-- OpenAlex, Crossref, PubMed (NCBI E-utilities), Europe PMC, Semantic Scholar
-- UniProt, ClinVar, AlphaFold DB
-- Materials Project (requires `MATERIALS_PROJECT_API_KEY`)
+| Category | Sources |
+|----------|---------|
+| Literature | OpenAlex, Crossref, PubMed, Europe PMC, Semantic Scholar |
+| Genomics / protein | ClinVar, UniProt, AlphaFold DB |
+| Materials | Materials Project (`MATERIALS_PROJECT_API_KEY`) |
 
 Details: [docs/connectors.md](docs/connectors.md)
 
-Each connector returns normalized evidence with `source_name`, `source_type`, `identifier`, `retrieval_path`, `retrieved_at`, `summary`, and `raw_record_hash`.
+---
 
-## Architecture
+## Benchmark
 
-```
-question → subject parser → connector queries → evidence candidates → ranking
-         → claim extraction (evidence IDs only) → validation → provenance → render
-```
+50 offline tasks with enforced category minimums:
 
-Core rule: **retrieval produces evidence, generation produces claims, validation checks claims against evidence.** Models cannot invent source fields.
-
-Details: [docs/architecture.md](docs/architecture.md)
-
-## Repository structure
-
-```text
-src/vsa/           Python package (CLI, validation, connectors, pipeline, render, API)
-schemas/           JSON Schema (symlink to package schema)
-examples/          Input files and good/bad report examples
-benchmarks/        50 evaluation tasks and offline fixtures
-reports/           Generated report snapshots
-tests/             pytest suite (99 tests)
-ui/                Streamlit inspector
-scripts/           acceptance.sh (CI parity bar)
-.github/workflows/ CI and release pipelines
-docs/              Architecture, schema, connectors, benchmark, API, release checklist
-```
-
-## Validation engine
-
-- JSON Schema conformance
-- Every claim has evidence; every evidence ID resolves
-- Source type and retrieval path present
-- Confidence bounded [0, 1]
-- Unsupported claims fail; speculative claims labeled
-- Human review requirements explicit
-- Explainable evidence quality scoring
-- Contradiction detection
-- Provenance hash verification
-
-## Benchmarks
-
-50 offline tasks covering genomics, protein, paper, materials, and adversarial cases:
+| Category | Minimum |
+|----------|---------|
+| Adversarial | 10 |
+| Ambiguity | 5 |
+| Contradiction | 5 |
+| Metadata-only paper | 5 |
+| No-evidence | 5 |
 
 ```bash
 vsa benchmark
 ```
 
-Scoring includes source coverage, claim validity, citation integrity, contradiction detection, and hash reproducibility. CI fails on any regression below 100% pass rate.
+**Metrics:** source recall, source precision, citation integrity, evidence-ID validity, review-boundary accuracy, contradiction detection, bundle reproducibility.
 
-Details: [docs/benchmark.md](docs/benchmark.md)
+CI fails on any regression below 100% pass rate. Details: [docs/benchmark.md](docs/benchmark.md)
 
-## Known limitations
+---
 
-- **Connectors**: Live retrieval can be ambiguous; inspect `retrieval_warnings` and evidence `domain_metadata.retrieval_ambiguity`.
-- **Claims**: Rule extraction uses domain templates — not deep variant interpretation.
-- **Benchmark**: Heuristic gold labels, not curator-verified clinical truth.
-- **Audit**: Hybrid LLM audit is experimental; use `--audit-mode rule` for deterministic CI.
-- **API**: In-memory rate limiting; optional shared-secret auth via `VSA_API_KEY`.
+## Repository layout
 
-See [RELEASE_STATUS.md](RELEASE_STATUS.md) for production-ready vs experimental features.
+```
+verified-science-agent/
+├── src/vsa/            CLI, pipeline, connectors, validation, API
+├── schemas/            JSON Schema (symlink to package schema)
+├── benchmarks/         50 tasks + offline fixtures
+├── examples/           Input files and good/bad report examples
+├── docs/               Architecture, schema, connectors, API
+├── ui/                 Streamlit inspector
+├── scripts/            acceptance.sh (CI parity bar)
+└── .github/workflows/  CI and release pipelines
+```
+
+Architecture: [docs/architecture.md](docs/architecture.md)
+
+---
 
 ## Development
 
@@ -216,15 +284,17 @@ pytest
 make demo
 ```
 
+---
+
 ## Safety notice
 
 Research infrastructure only. Not a medical device, clinical decision system, or diagnostic platform.
 
-Every variant report includes:
-
 > Research infrastructure output. Not for diagnosis, treatment, or clinical decision-making without qualified expert review.
 
 Human expert review is required before any clinical use.
+
+---
 
 ## License
 
