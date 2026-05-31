@@ -259,6 +259,19 @@ def cmd_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_verify_bundle(args: argparse.Namespace) -> int:
+    from vsa.artifacts.verify import verify_bundle
+
+    ok, errors = verify_bundle(args.bundle_dir, verify_attestation_digest=not args.skip_attestation)
+    if ok:
+        print("PASS: bundle verified")
+        return 0
+    print("FAIL: bundle verification errors:", file=sys.stderr)
+    for err in errors:
+        print(f"  - {err}", file=sys.stderr)
+    return 1
+
+
 def cmd_compare_audit(args: argparse.Namespace) -> int:
     from vsa.compare_audit import compare_audits, format_compare_audits
 
@@ -354,6 +367,9 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     summary = run_benchmark(offline=not args.live, cache_dir=args.cache_dir)
     text = json.dumps(summary, indent=2) + "\n"
     _write_output(text, args.out)
+    if summary.get("regression"):
+        print("FAIL: benchmark regression detected", file=sys.stderr)
+        return 1
     return 0 if summary["failed"] == 0 else 1
 
 
@@ -457,6 +473,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("--audit-mode", default="rule", choices=["auto", "rule", "llm"])
     p_export.add_argument("--no-attestation", action="store_true", help="Skip attestation.json in bundle")
     p_export.set_defaults(func=cmd_export)
+
+    p_verify_bundle = sub.add_parser("verify-bundle", help="Verify export bundle manifest hashes and attestation")
+    p_verify_bundle.add_argument("bundle_dir", type=Path)
+    p_verify_bundle.add_argument("--skip-attestation", action="store_true")
+    p_verify_bundle.set_defaults(func=cmd_verify_bundle)
 
     p_compare_audit = sub.add_parser("compare-audit", help="Compare two audit JSON artifacts")
     p_compare_audit.add_argument("audit_a", type=Path)

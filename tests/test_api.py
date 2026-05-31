@@ -47,3 +47,26 @@ def test_attest_endpoint(client, brca1_report):
     resp = client.post("/v1/attest", json={"report": brca1_report})
     assert resp.status_code == 200
     assert resp.json()["predicateType"] == "https://slsa.dev/provenance/v1"
+
+
+def test_audit_endpoint(client, brca1_report):
+    resp = client.post("/v1/audit", json={"report": brca1_report, "audit_mode": "rule"})
+    assert resp.status_code == 200
+    assert resp.json()["overall_status"] in ("passed", "partial")
+
+
+def test_export_endpoint(client, brca1_report):
+    resp = client.post("/v1/export", json={"report": brca1_report, "audit_mode": "rule"})
+    assert resp.status_code == 200
+    assert "manifest" in resp.json()
+
+
+def test_build_missing_input(client):
+    resp = client.post("/v1/build", json={})
+    assert resp.status_code == 400
+
+
+def test_version_endpoint(client):
+    resp = client.get("/v1/version")
+    assert resp.status_code == 200
+    assert resp.json()["version"]

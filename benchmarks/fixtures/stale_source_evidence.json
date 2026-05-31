@@ -1,0 +1,13 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "UniProt",
+    "source_type": "database",
+    "identifier": "P38398",
+    "retrieval_path": "https://www.uniprot.org/uniprotkb/P38398/entry",
+    "retrieved_at": "2015-06-01T00:00:00Z",
+    "summary": "accession: P38398; protein_name: Example; gene: BRCA1; entry_type: Swiss-Prot (reviewed)",
+    "raw_record_hash": "cafebabe1234567890abcdef1234567890abcdef1234567890abcdef12345678",
+    "domain_metadata": {"accession": "P38398", "entry_type": "reviewed", "gene_symbol": "BRCA1"}
+  }
+]

@@ -6,7 +6,7 @@
 
 - **Validation status:** pass
 - **Human review:** pending (required: True)
-- **Claims:** 3
+- **Claims:** 4
 - **Evidence items:** 2
 - **Contradictions:** 0
 
@@ -28,9 +28,10 @@
 
 | ID | Type | Boundary | Confidence | Claim | Evidence |
 |---|---|---|---|---|---|
-| C001 | identity | requires_domain_review | 0.88 | Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (retrieval strategy: unknown). | E001 |
-| C002 | classification | requires_clinical_review | 0.85 | BRCA1 c.68_69del is recorded in ClinVar with clinical significance: pathogenic. | E001 |
-| C003 | identity | safe_summary | 0.78 | BRCA1 protein record is available in UniProt (P38398); entry type: unknown. | E002 |
+| C001 | identity | requires_domain_review | 0.88 | Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (strategy: unknown, rank 1). | E001 |
+| C002 | identity | safe_summary | 0.9 | ClinVar database record identity: UID ?, identifier VCV000017662. | E001 |
+| C003 | classification | requires_clinical_review | 0.85 | BRCA1 c.68_69del is recorded in ClinVar with clinical significance: pathogenic. | E001 |
+| C004 | identity | safe_summary | 0.78 | BRCA1 protein record is available in UniProt (P38398); entry type: unknown. | E002 |
 
 ## Contradictions
 
@@ -43,7 +44,7 @@ _No contradictions detected._
 
 ## Provenance
 
-- Report hash: `a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c`
+- Report hash: `658a0a78fa8739d613fd69c67864605d63b4025606368384fb00bfe96af45d6f`
 - Evidence bundle hash: `21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc`
 - Validation version: 1.2.0
 - Renderer version: 1.2.0
@@ -64,7 +65,7 @@ _No contradictions detected._
 - [PASS] Confidence bounded [0,1]: all confidence values valid
 - [PASS] Unsupported claims flagged: no unsupported claims
 - [PASS] Speculative claims labeled: no speculative claims
-- [PASS] Human review requirements explicit: human_review.required=True; clinical claims: ['C002']
+- [PASS] Human review requirements explicit: human_review.required=True; clinical claims: ['C003']
 - [PASS] Review boundary labels valid: all boundaries valid
 - [PASS] Evidence quality scoring: evidence quality acceptable
 - [PASS] Contradiction detection: no contradictions

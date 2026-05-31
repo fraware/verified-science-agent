@@ -1,7 +1,7 @@
 {
   "schema_version": "1.2.0",
   "report_id": "vsa-brca1-demo-001",
-  "created_at": "2026-05-31T05:03:30Z",
+  "created_at": "2026-05-31T05:39:25Z",
   "input_question": "BRCA1 c.68_69del",
   "domain": "genomics",
   "subject": {
@@ -14,7 +14,7 @@
     {
       "claim_id": "C001",
       "claim_type": "identity",
-      "claim_text": "Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (retrieval strategy: unknown).",
+      "claim_text": "Variant BRCA1 c.68_69del matches ClinVar record VCV000017662 (strategy: unknown, rank 1).",
       "evidence_ids": [
         "E001"
       ],
@@ -25,6 +25,18 @@
     },
     {
       "claim_id": "C002",
+      "claim_type": "identity",
+      "claim_text": "ClinVar database record identity: UID ?, identifier VCV000017662.",
+      "evidence_ids": [
+        "E001"
+      ],
+      "confidence": 0.9,
+      "review_boundary": "safe_summary",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    },
+    {
+      "claim_id": "C003",
       "claim_type": "classification",
       "claim_text": "BRCA1 c.68_69del is recorded in ClinVar with clinical significance: pathogenic.",
       "evidence_ids": [
@@ -36,7 +48,7 @@
       "support_level": "high"
     },
     {
-      "claim_id": "C003",
+      "claim_id": "C004",
       "claim_type": "identity",
       "claim_text": "BRCA1 protein record is available in UniProt (P38398); entry type: unknown.",
       "evidence_ids": [
@@ -137,11 +149,12 @@
     "evidence_bundle_hash": "21675ed9bf8c2683afe1202ec2761d5199d34cd85715e8699700a79cdf3de6dc",
     "evidence_content_hash": "eb43b91a556901f822fd18d03f1b682ff623ba516287702b1db8d38714d00b82",
     "claim_hashes": {
-      "C001": "98e5c05ee6e28d5bbd56f2ccd9bba549f74ef44e5ec7b426d7c27b5ed15c8ba8",
-      "C002": "de0576a23914593a816ae96d51baf196d6f76d1f65e3f8f75ed0752aa161aaac",
-      "C003": "a8bbd6e4b84450233e1f3e8054701e94995baa87d3fced23867f56db00e8c49b"
+      "C001": "f4eca293eb301f209c192b9349ef56211db8c23b9add6c1e1bf3061717197e7d",
+      "C002": "5c9a4f5a689226d77bdab364332e86b70db8bb97719e80b17f78479e7a04d47b",
+      "C003": "7d90b7e67095e71a1fe60f43129aff75893247082e846f5880c1e694e4fec3ec",
+      "C004": "998912ffdb34901ceaa0473382c9cf0f7ac4f6d891a2d1aaab5b29305bbd6b9d"
     },
-    "report_hash": "a4fc89d5fe845a1643eff90cb4a677e91e13edf61320e43d3b3cb3300244d31c",
+    "report_hash": "658a0a78fa8739d613fd69c67864605d63b4025606368384fb00bfe96af45d6f",
     "validation_version": "1.2.0",
     "renderer_version": "1.2.0",
     "generated_by": {
@@ -210,7 +223,7 @@
         "check_id": "human_review",
         "name": "Human review requirements explicit",
         "status": "pass",
-        "message": "human_review.required=True; clinical claims: ['C002']"
+        "message": "human_review.required=True; clinical claims: ['C003']"
       },
       {
         "check_id": "review_boundary",
@@ -237,7 +250,7 @@
         "message": "hashes verified"
       }
     ],
-    "validated_at": "2026-05-31T05:03:30Z"
+    "validated_at": "2026-05-31T05:39:25Z"
   },
   "human_review": {
     "required": true,

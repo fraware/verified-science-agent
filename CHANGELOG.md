@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 
+## [0.6.1] - 2026-05-30
+
+### Added
+
+- `vsa verify-bundle` — manifest hash verification and attestation check
+- Export bundle v1.1: `report.md`, `sources/`, manifest `created_at`, schema/validation versions
+- Benchmark regression gate (100% pass rate), expanded metrics, 27 tasks (fake evidence ID, stale source)
+- CI acceptance job: clean-clone `make demo && make test && vsa benchmark`
+- `docs/benchmark.md`; RELEASE_STATUS verified-commit table
+
+### Changed
+
+- Deeper variant/paper/protein/material claim templates
+- ClinVar HGVS-only lookup; UniProt gene disambiguation warnings
+- macOS CI smoke installs `[signing]`; Makefile `install` includes `[api]`
+- Metadata-only paper claims use explicit CONTENT WARNING
+
 ## [0.6.0] - 2026-05-30
 
 ### Added

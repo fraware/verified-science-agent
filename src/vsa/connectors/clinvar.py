@@ -51,6 +51,9 @@ class ClinVarConnector(Connector):
         if gene and variant:
             terms.append((f"{gene}[gene] AND {variant}[Variant Name]", "gene_hgvs_variant_name"))
             terms.append((f"{gene}[gene] AND {variant}", "gene_hgvs_raw"))
+        elif variant:
+            terms.append((f"{variant}[Variant Name]", "hgvs_only"))
+            terms.append((variant, "hgvs_raw"))
         elif gene:
             terms.append((f"{gene}[gene]", "gene_only"))
 

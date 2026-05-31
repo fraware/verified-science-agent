@@ -34,10 +34,11 @@
     },
     {
       "task_id": "protein_structure",
+      "task_class": "predicted_structure_protein",
       "input_question": "P38398",
       "expected_evidence_sources": ["UniProt", "AlphaFold DB"],
-      "expected_claim_types": ["structure", "summary"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_claim_types": ["identity", "structure", "observation"],
+      "required_review_flags": ["requires_domain_review", "safe_summary"]
     },
     {
       "task_id": "paper_doi",
@@ -77,10 +78,11 @@
     },
     {
       "task_id": "alphafold_only",
+      "task_class": "predicted_structure_only",
       "input_question": "P38398",
       "expected_evidence_sources": ["AlphaFold DB"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_claim_types": ["identity", "structure", "observation"],
+      "required_review_flags": ["requires_domain_review", "safe_summary"]
     },
     {
       "task_id": "brca1_hash_stable",
@@ -135,11 +137,12 @@
     },
     {
       "task_id": "metadata_paper",
+      "task_class": "metadata_only_paper",
       "input_question": "10.1038/nature12373",
-      "fixture_task_id": "paper_doi",
-      "expected_evidence_sources": ["OpenAlex", "Crossref"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary", "requires_domain_review"],
+      "fixture_task_id": "metadata_only_paper",
+      "expected_evidence_sources": ["Crossref"],
+      "expected_claim_types": ["identity", "observation", "summary"],
+      "required_review_flags": ["requires_domain_review", "safe_summary"],
       "expect_no_contradictions": true
     },
     {
@@ -209,12 +212,36 @@
     },
     {
       "task_id": "adversarial_empty_claims",
+      "task_class": "no_result_lookup",
       "input_question": "adversarial probe with no supporting evidence",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
       "fixture_task_id": "no_evidence",
       "expect_pass": false
+    },
+    {
+      "task_id": "fake_evidence_id",
+      "task_class": "fake_evidence_id",
+      "input_question": "adversarial fake evidence probe",
+      "use_fixture_report": true,
+      "fixture_report_id": "fake_evidence",
+      "expected_evidence_sources": ["Test"],
+      "expected_claim_types": ["observation"],
+      "required_review_flags": ["unsupported"],
+      "expect_pass": false,
+      "expect_validation_fail": true,
+      "verify_hashes": false
+    },
+    {
+      "task_id": "stale_source",
+      "task_class": "stale_source",
+      "input_question": "P38398",
+      "fixture_task_id": "stale_source",
+      "expected_evidence_sources": ["UniProt"],
+      "expected_claim_types": ["identity"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_pass": true
     }
   ]
 }

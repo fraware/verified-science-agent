@@ -97,10 +97,23 @@ class UniProtConnector(Connector):
 
         if not results:
             return []
-        if len(results) > 1:
-            # Gene symbol can map to multiple isoforms; take primary accession with warning in metadata
-            pass
-        accession = results[0].get("primaryAccession")
+        accessions = [r.get("primaryAccession") for r in results if r.get("primaryAccession")]
+        ambiguous = len(accessions) > 1
+        accession = accessions[0]
         if not accession:
             return []
-        return self._fetch_accession(accession)
+        evidence = self._fetch_accession(accession)
+        if evidence and ambiguous:
+            item = evidence[0]
+            item.reliability = "medium"
+            item.domain_metadata = {
+                **item.domain_metadata,
+                "gene_search_ambiguous": True,
+                "alternate_accessions": accessions[1:4],
+                "candidate_count": len(accessions),
+            }
+            item.summary = (
+                item.summary
+                + f"; gene search ambiguous ({len(accessions)} human isoforms; using {accession})"
+            )
+        return evidence

@@ -264,7 +264,34 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
             "publication_content",
             "Publication content depth",
             True,
-            f"all {len(metadata_only)} publication evidence item(s) are metadata-only",
+            f"CONTENT WARNING: all {len(metadata_only)} publication evidence item(s) are metadata-only",
+            warn=True,
+        )
+
+    # Stale evidence retrieval dates
+    from datetime import datetime, timedelta, timezone
+
+    stale_ids: list[str] = []
+    stale_cutoff = datetime.now(timezone.utc) - timedelta(days=365 * 5)
+    for ev in evidence:
+        retrieved = ev.get("retrieved_at")
+        if not retrieved:
+            continue
+        try:
+            dt = datetime.fromisoformat(str(retrieved).replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            if dt < stale_cutoff:
+                stale_ids.append(ev.get("evidence_id", "?"))
+        except ValueError:
+            continue
+    if stale_ids:
+        _add(
+            checks,
+            "stale_evidence",
+            "Evidence retrieval freshness",
+            True,
+            f"stale retrieval (>5y): {stale_ids}",
             warn=True,
         )
 

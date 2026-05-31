@@ -3,11 +3,11 @@
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/package-v0.6.0-orange)
+![Version](https://img.shields.io/badge/package-v0.6.1-orange)
 
 Evidence-backed scientific AI report infrastructure. Treat every AI-generated scientific report like a software build artifact: inputs, source records, claims, validation checks, provenance, reproducibility metadata, and review status.
 
-**Release status:** see [RELEASE_STATUS.md](RELEASE_STATUS.md) · **Docs:** [architecture](docs/architecture.md) · [schema](docs/schema.md) · [connectors](docs/connectors.md)
+**Release status:** see [RELEASE_STATUS.md](RELEASE_STATUS.md) · **Docs:** [architecture](docs/architecture.md) · [schema](docs/schema.md) · [connectors](docs/connectors.md) · [benchmark](docs/benchmark.md)
 
 ## North star
 
@@ -39,6 +39,7 @@ vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode
 vsa validate reports/brca1_report.json
 vsa audit reports/brca1_report.json --audit-mode rule --out reports/audit.json
 vsa export reports/brca1_report.json --out-dir reports/bundle/
+vsa verify-bundle reports/bundle
 vsa compare-audit reports/audit.json reports/audit.json
 vsa sign reports/brca1_report.json
 vsa benchmark
@@ -102,7 +103,8 @@ streamlit run ui/app.py
 | `vsa sign report.json` | Ed25519-sign report provenance hash |
 | `vsa verify-signature report.json` | Verify Ed25519 signature |
 | `vsa migrate ledger.json --out report.json` | Migrate legacy claim ledger |
-| `vsa export report.json --out-dir dir/` | Export bundle: report, audit, provenance, review, attestation, manifest |
+| `vsa export report.json --out-dir dir/` | Export bundle: report, report.md, audit, provenance, review, attestation, sources/, manifest |
+| `vsa verify-bundle reports/bundle` | Verify bundle manifest hashes and attestation |
 | `vsa compare-audit audit_a.json audit_b.json` | Diff audit artifacts across runs |
 | `vsa attest report.json --out attestation.json` | SLSA/in-toto provenance attestation |
 | `vsa verify-attestation report.json attestation.json` | Verify attestation digest |
@@ -162,7 +164,7 @@ The LLM auditor evaluates only the claim text and cited evidence provided in the
 
 ## ScientificReport schema
 
-Canonical artifact model (schema version **1.1.0**, also accepts **1.0.0**):
+Canonical artifact model (schema version **1.2.0**, also accepts **1.0.0** and **1.1.0**):
 
 ```
 ScientificReport

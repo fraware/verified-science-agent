@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.2.0",
+  "report_id": "rpt-fake-evidence-test",
+  "created_at": "2026-05-30T12:00:00Z",
+  "input_question": "adversarial fake evidence probe",
+  "subject": {"entity_type": "experiment", "display_name": "adversarial"},
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "Test",
+      "source_type": "database",
+      "identifier": "TEST1",
+      "retrieval_path": "https://example.com/test",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "test evidence",
+      "raw_record_hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "observation",
+      "claim_text": "Claim references non-existent evidence.",
+      "evidence_ids": ["E999"],
+      "confidence": 0.5,
+      "review_boundary": "unsupported",
+      "uncertainty_level": "high",
+      "support_level": "insufficient"
+    }
+  ],
+  "contradictions": [],
+  "human_review": {"required": true, "status": "pending"},
+  "limitations": [],
+  "provenance": {
+    "report_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "evidence_bundle_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "claim_hashes": {},
+    "validation_version": "1.2.0"
+  },
+  "validation_results": {"status": "pass", "checks": []}
+}
