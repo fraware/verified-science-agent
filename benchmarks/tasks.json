@@ -507,6 +507,17 @@
       "required_review_flags": ["requires_clinical_review"],
       "check_bundle_reproducible": true,
       "expect_pass": true
+    },
+    {
+      "task_id": "contradiction_comp_to_exp_language",
+      "task_categories": ["contradiction"],
+      "input_question": "P38398",
+      "fixture_task_id": "protein_structure",
+      "expected_evidence_sources": ["AlphaFold DB"],
+      "expected_claim_types": ["structure"],
+      "required_review_flags": ["requires_domain_review"],
+      "expect_predicted_structure_label": true,
+      "expect_pass": true
     }
   ]
 }

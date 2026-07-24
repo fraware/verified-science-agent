@@ -74,13 +74,43 @@ def detect_contradictions(report: dict[str, Any]) -> list[dict[str, Any]]:
                 }
             )
 
-    # Predicted structure vs experimental claim language
+    # Predicted / computational structure vs experimental claim language
     for claim in claims:
         text = str(claim.get("claim_text", "")).lower()
-        if "experimental structure" in text or "experimentally determined" in text:
+        # Affirmative experimental-structure language only (ignore disclaimers)
+        experimental_language = (
+            "experimental structure" in text
+            or "experimentally determined" in text
+            or "experimental evidence confirms" in text
+        ) and not any(
+            neg in text
+            for neg in (
+                "not an experimental",
+                "not experimental",
+                "do not treat as experimental",
+                "computational model, not",
+                "predicted; do not",
+            )
+        )
+        if experimental_language or (
+            "experimental" in text
+            and "structure" in text
+            and "not" not in text
+            and "do not" not in text
+            and "predicted" not in text
+        ):
             for eid in claim.get("evidence_ids", []):
                 ev = evidence_by_id.get(eid)
-                if ev and (ev.get("domain_metadata") or {}).get("structure_type") == "predicted":
+                if not ev:
+                    continue
+                meta = ev.get("domain_metadata") or {}
+                source = str(ev.get("source_name") or "")
+                is_predicted = (
+                    meta.get("structure_type") == "predicted"
+                    or "alphafold" in source.lower()
+                    or meta.get("evidence_modality") == "computational"
+                )
+                if is_predicted:
                     contradictions.append(
                         {
                             "contradiction_id": f"CONFLICT-{len(contradictions) + 1:03d}",
@@ -88,11 +118,31 @@ def detect_contradictions(report: dict[str, Any]) -> list[dict[str, Any]]:
                             "evidence_ids": [eid],
                             "description": (
                                 f"Claim {claim['claim_id']} implies experimental structure but "
-                                f"{eid} is a predicted AlphaFold model."
+                                f"{eid} is a predicted/computational model — unsupported "
+                                f"computational->experimental extrapolation."
                             ),
-                            "severity": "medium",
+                            "severity": "high",
                         }
                     )
+
+    # High-quality evidence with opposing clinical significance (elevate severity)
+    def _quality(ev: dict[str, Any]) -> float:
+        qs = ev.get("quality_score")
+        if isinstance(qs, dict) and isinstance(qs.get("score"), (int, float)):
+            return float(qs["score"])
+        return 0.5
+
+    for c in contradictions:
+        eids = c.get("evidence_ids") or []
+        if len(eids) < 2:
+            continue
+        scores = [_quality(evidence_by_id[eid]) for eid in eids if eid in evidence_by_id]
+        if len(scores) >= 2 and min(scores) >= 0.7 and c.get("severity") != "high":
+            c["severity"] = "high"
+            c["description"] = (
+                str(c.get("description") or "")
+                + " Elevated: opposing high-quality evidence sources."
+            )
 
     # Evidence explicitly marked as contradicts
     for claim in claims:

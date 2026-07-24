@@ -347,14 +347,51 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
         except ValueError:
             continue
     if stale_ids:
+        # ok=False + warn=True → status "warn" without failing the report
         _add(
             checks,
             "stale_evidence",
             "Evidence retrieval freshness",
-            True,
+            False,
             f"stale retrieval (>5y): {stale_ids}",
             warn=True,
         )
+
+    # Additive non-breaking warnings (ScientificReport path stays pass-compatible)
+    entity_ambiguity = [
+        ev.get("evidence_id", "?")
+        for ev in evidence
+        if (ev.get("domain_metadata") or {}).get("retrieval_ambiguity")
+    ]
+    if entity_ambiguity:
+        _add(
+            checks,
+            "entity_ambiguity_warn",
+            "Unresolved entity ambiguity (advisory)",
+            False,
+            f"ambiguous evidence IDs: {entity_ambiguity}",
+            warn=True,
+        )
+
+    for claim in claims:
+        text = str(claim.get("claim_text") or "").lower()
+        if (
+            ("experimental structure" in text or "experimentally determined" in text)
+            and "not" not in text
+            and "do not" not in text
+        ):
+            for eid in claim.get("evidence_ids") or []:
+                ev = next((e for e in evidence if e.get("evidence_id") == eid), None)
+                if ev and (ev.get("domain_metadata") or {}).get("structure_type") == "predicted":
+                    _add(
+                        checks,
+                        "comp_to_exp_warn",
+                        "Computational->experimental language (advisory)",
+                        False,
+                        f"claim {claim.get('claim_id')} cites predicted structure {eid}",
+                        warn=True,
+                    )
+                    break
 
     fail_count = sum(1 for c in checks if c.status == "fail")
     warn_count = sum(1 for c in checks if c.status == "warn")
