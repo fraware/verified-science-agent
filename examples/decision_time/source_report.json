@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.2.0",
+  "report_id": "vsa-dt-demo-001",
+  "created_at": "2024-06-01T12:00:00Z",
+  "subject": {
+    "entity_type": "variant",
+    "display_name": "DEMO c.1A>G",
+    "gene_symbol": "DEMO",
+    "variant_hgvs_c": "c.1A>G"
+  },
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "DEMO c.1A>G is recorded with significance: pathogenic.",
+      "evidence_ids": ["E001"],
+      "confidence": 0.8,
+      "review_boundary": "requires_clinical_review",
+      "uncertainty_level": "medium",
+      "support_level": "moderate"
+    },
+    {
+      "claim_id": "C002",
+      "claim_type": "observation",
+      "claim_text": "A later database update notes conflicting annotation.",
+      "evidence_ids": ["E002"],
+      "confidence": 0.5,
+      "review_boundary": "requires_domain_review",
+      "uncertainty_level": "high",
+      "support_level": "low"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000000001",
+      "retrieval_path": "https://example.test/clinvar/1",
+      "retrieved_at": "2023-01-15T00:00:00Z",
+      "published_at": "2022-06-01T00:00:00Z",
+      "summary": "clinical_significance: pathogenic",
+      "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "domain_metadata": {
+        "clinical_significance": "pathogenic"
+      },
+      "quality_score": {
+        "score": 0.9,
+        "reasons": ["fixture"],
+        "warnings": []
+      }
+    },
+    {
+      "evidence_id": "E002",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000000002",
+      "retrieval_path": "https://example.test/clinvar/2",
+      "retrieved_at": "2025-03-01T00:00:00Z",
+      "published_at": "2025-02-01T00:00:00Z",
+      "summary": "clinical_significance: benign",
+      "raw_record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "domain_metadata": {
+        "clinical_significance": "benign"
+      },
+      "quality_score": {
+        "score": 0.9,
+        "reasons": ["fixture"],
+        "warnings": []
+      }
+    }
+  ],
+  "methods": [
+    {
+      "method_id": "M001",
+      "name": "fixture",
+      "version": "1.0.0",
+      "description": "Offline decision-time demo fixture"
+    }
+  ],
+  "provenance": {
+    "source_record_hashes": {
+      "E001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "E002": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    "evidence_bundle_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claim_hashes": {
+      "C001": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "C002": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    "report_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "validation_version": "1.2.0",
+    "renderer_version": "1.2.0",
+    "generated_by": {
+      "system_name": "verified-science-agent",
+      "model_or_agent_stack": "fixture",
+      "prompt_template_version": "claim_extraction_v1"
+    },
+    "reproducibility": {
+      "input_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "cache_dir": ".vsa_cache",
+      "instructions": "fixture"
+    }
+  },
+  "validation_results": {
+    "status": "pass",
+    "checks": []
+  },
+  "human_review": {
+    "required": true,
+    "status": "pending",
+    "reviewer": null,
+    "reviewed_at": null,
+    "approved_claims": [],
+    "required_corrections": [],
+    "notes": null
+  },
+  "limitations": [
+    "Fixture for decision-time cutoff demos only."
+  ],
+  "retrieval_warnings": []
+}

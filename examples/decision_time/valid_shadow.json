@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0.0",
+  "bundle_id": "d82b9dc0-2222-51d2-9930-af46d54b918d",
+  "source_snapshot_id": "85fa4493-7e56-5bf2-84a3-06b708d3366f",
+  "evidence_report_id": "vsa-dt-demo-001",
+  "scientific_question_id": null,
+  "decision_time_cutoff": "2024-01-01T00:00:00Z",
+  "mode": "shadow",
+  "query": {
+    "question": "DEMO c.1A>G",
+    "retrieval_params": {},
+    "retrieval_timestamps": {
+      "E001": "2023-01-15T00:00:00Z"
+    }
+  },
+  "included_evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000000001",
+      "retrieval_path": "https://example.test/clinvar/1",
+      "retrieved_at": "2023-01-15T00:00:00Z",
+      "published_at": "2022-06-01T00:00:00Z",
+      "summary": "clinical_significance: pathogenic",
+      "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "domain_metadata": {
+        "clinical_significance": "pathogenic"
+      },
+      "quality_score": {
+        "score": 0.9,
+        "reasons": [
+          "fixture"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "excluded_post_cutoff": [
+    {
+      "evidence_id": "E002",
+      "reason": "effective timestamp published_at=2025-02-01T00:00:00Z after decision_time_cutoff 2024-01-01T00:00:00Z",
+      "effective_timestamp": "2025-02-01T00:00:00Z",
+      "raw_record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "summary": "clinical_significance: benign"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "DEMO c.1A>G is recorded with significance: pathogenic.",
+      "evidence_ids": [
+        "E001"
+      ],
+      "confidence": 0.8,
+      "review_boundary": "requires_clinical_review",
+      "uncertainty_level": "medium",
+      "support_level": "moderate"
+    }
+  ],
+  "contradictions": [],
+  "uncertainty": {
+    "claim_uncertainty": [
+      {
+        "claim_id": "C001",
+        "uncertainty_level": "medium",
+        "notes": null
+      }
+    ],
+    "missing_evidence": []
+  },
+  "source_quality_warnings": [],
+  "unresolved_questions": [
+    "Fixture for decision-time cutoff demos only."
+  ],
+  "candidate_action_evidence_requirements": [],
+  "portable_refs": [
+    {
+      "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "media_type": "application/json",
+      "producer": "ClinVar",
+      "retrieved_at": "2023-01-15T00:00:00Z",
+      "schema_id": "pcs.portable_evidence_ref/1.0.0",
+      "evidence_id": "E001"
+    }
+  ],
+  "producer": {
+    "package_version": "0.7.2",
+    "model_or_checkpoint_id": "fixture",
+    "validation_version": "1.2.0",
+    "prompt_template_version": "claim_extraction_v1"
+  },
+  "integrity": {
+    "bundle_hash": "ba09d84c6106df95912f9313f6f8a03e1e65f0e67ab6dee7b783bf5441c6942c",
+    "source_record_hashes": {
+      "E001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "schema_digest": "36884d6c221100e6ce6c16191de890dab468300b7237ef333bea488c06a739a0",
+    "signature": null
+  },
+  "privacy_safe_metrics": {
+    "included_source_count": 1,
+    "excluded_source_count": 1,
+    "contradiction_severity_histogram": {},
+    "uncertainty_distribution": {
+      "medium": 1
+    }
+  },
+  "non_claims": {
+    "authorizes_actions": false,
+    "executes_tools": false,
+    "issues_grants": false,
+    "certifies_scientific_correctness": false
+  }
+}

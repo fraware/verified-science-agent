@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-science-agent.local/schemas/decision_time_evidence_bundle.schema.json",
+  "title": "DecisionTimeEvidenceBundle",
+  "description": "Immutable cutoff-frozen scientific evidence snapshot. Later outcomes must append as linked records only. VSA does not authorize actions, execute tools, issue grants, or certify scientific correctness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "source_snapshot_id",
+    "decision_time_cutoff",
+    "mode",
+    "query",
+    "included_evidence",
+    "excluded_post_cutoff",
+    "claims",
+    "contradictions",
+    "uncertainty",
+    "source_quality_warnings",
+    "unresolved_questions",
+    "candidate_action_evidence_requirements",
+    "integrity",
+    "non_claims"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "source_snapshot_id": { "type": "string", "minLength": 1 },
+    "evidence_report_id": { "type": ["string", "null"] },
+    "scientific_question_id": { "type": ["string", "null"] },
+    "decision_time_cutoff": { "type": "string", "minLength": 1 },
+    "mode": {
+      "type": "string",
+      "enum": ["retrospective", "shadow", "read_only"]
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["question", "retrieval_params", "retrieval_timestamps"],
+      "properties": {
+        "question": { "type": "string" },
+        "retrieval_params": { "type": "object" },
+        "retrieval_timestamps": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "included_evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidenceItem" }
+    },
+    "excluded_post_cutoff": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "reason", "effective_timestamp"],
+        "properties": {
+          "evidence_id": { "type": "string" },
+          "reason": { "type": "string" },
+          "effective_timestamp": { "type": "string" },
+          "raw_record_hash": { "type": ["string", "null"] },
+          "summary": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_uncertainty", "missing_evidence"],
+      "properties": {
+        "claim_uncertainty": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["claim_id", "uncertainty_level"],
+            "properties": {
+              "claim_id": { "type": "string" },
+              "uncertainty_level": { "type": "string" },
+              "notes": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "missing_evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "source_quality_warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "unresolved_questions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "candidate_action_evidence_requirements": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "portable_refs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/portableRef" }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "package_version": { "type": "string" },
+        "model_or_checkpoint_id": { "type": ["string", "null"] },
+        "validation_version": { "type": "string" },
+        "prompt_template_version": { "type": ["string", "null"] }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle_hash", "source_record_hashes", "schema_digest"],
+      "properties": {
+        "bundle_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "source_record_hashes": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "schema_digest": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "signature": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "algorithm": { "type": "string" },
+            "public_key_b64": { "type": "string" },
+            "signature_b64": { "type": "string" },
+            "signed_at": { "type": "string" },
+            "payload": { "type": "string" }
+          }
+        }
+      }
+    },
+    "privacy_safe_metrics": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "included_source_count": { "type": "integer", "minimum": 0 },
+        "excluded_source_count": { "type": "integer", "minimum": 0 },
+        "contradiction_severity_histogram": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        },
+        "uncertainty_distribution": {
+          "type": "object",
+          "additionalProperties": { "type": "integer" }
+        }
+      }
+    },
+    "non_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorizes_actions",
+        "executes_tools",
+        "issues_grants",
+        "certifies_scientific_correctness"
+      ],
+      "properties": {
+        "authorizes_actions": { "type": "boolean", "const": false },
+        "executes_tools": { "type": "boolean", "const": false },
+        "issues_grants": { "type": "boolean", "const": false },
+        "certifies_scientific_correctness": { "type": "boolean", "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["evidence_id", "raw_record_hash"],
+      "description": "Effective timestamp precedence: source_timestamp, then published_at/publication_date, then retrieved_at. At least one must be present (enforced by cutoff filter).",
+      "properties": {
+        "evidence_id": { "type": "string" },
+        "raw_record_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "retrieved_at": { "type": ["string", "null"] },
+        "published_at": { "type": ["string", "null"] },
+        "source_timestamp": { "type": ["string", "null"] }
+      }
+    },
+    "portableRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_digest", "media_type", "producer", "retrieved_at", "schema_id"],
+      "properties": {
+        "content_digest": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "media_type": { "type": "string" },
+        "producer": { "type": "string" },
+        "retrieved_at": { "type": "string" },
+        "schema_id": { "type": "string" },
+        "evidence_id": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
