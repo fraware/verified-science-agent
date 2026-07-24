@@ -7,9 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Schema versioning
 
-- **ScientificReport schema 1.2.0** — lifecycle fields, `evidence_content_hash`, `validation_run_hash`
+- **ScientificReport schema 1.2.0** — lifecycle fields, `evidence_content_hash`, `validation_run_hash` (compatibility baseline; unchanged by decision-time companions)
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
+- **Companion schemas 1.0.0** — `integration_envelope`, `decision_time_evidence_bundle`, `akta_action_context`, `scientific_outcome_link` (additive; do not mutate ScientificReport)
+
+## Unreleased
+
+### Added
+
+- ADR 0001: VSA / AKTA / Scientific Memory boundaries and decision-time semantics
+- `SECURITY.md` and `docs/threat-model.md`
+- Integration envelope builder (`src/vsa/identity/`)
+- Decision-time evidence bundle with cutoff filter, verify, and compare (`src/vsa/decision_time/`)
+- AKTA action-context export with non-authorization semantic validation (`src/vsa/export/akta.py`)
+- PCS-shaped portable evidence refs and signed bundle verification
+- Pilot modes (retrospective / shadow / read_only), privacy-safe metrics, outcome append links
+- CLI: `snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`
+- Operator guide with cutoff precedence and independent reconstruction commands: `docs/operator-decision-time.md`
+- Adversarial decision-time tests (tamper, forged signature, digest mismatch, missing portable refs)
+- Dev quality tooling: Ruff (warnings as errors) and MyPy scoped to companion modules
+
+### Fixed
+
+- Contradiction/uncertainty hardening for decision-time bundles (post-cutoff, high-quality conflicts, metadata-only, entity ambiguity, computational→experimental extrapolation)
+- ScientificReport advisory checks now emit `warn` status (stale evidence, entity ambiguity, computational→experimental language)
+- Bundle verify fail-closed on missing portable refs, corrupted non-claims; signatures verified over recomputed hash
+- `privacy_safe_metrics` included in `bundle_hash`; AKTA export rejects evidence digest disagreement with report
 
 ## [0.7.2] - 2026-05-31
 

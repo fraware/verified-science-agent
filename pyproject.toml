@@ -45,6 +45,8 @@ dev = [
     "respx>=0.21.0",
     "fastapi>=0.115.0",
     "httpx>=0.27.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
 ]
 
 [project.scripts]
@@ -63,3 +65,39 @@ addopts = "-q -m 'not live'"
 markers = [
     "live: live network connector tests (run with pytest -m live)",
 ]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501", "UP038"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+packages = [
+    "vsa.decision_time",
+    "vsa.identity",
+    "vsa.export",
+    "vsa.outcome",
+    "vsa.companion_schema",
+]
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["cryptography.*", "jsonschema.*"]
+ignore_missing_imports = true

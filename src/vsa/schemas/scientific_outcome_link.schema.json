@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-science-agent.local/schemas/scientific_outcome_link.schema.json",
+  "title": "ScientificOutcomeLink",
+  "description": "Append-only pointer to later outcome or calibration. Must not mutate the referenced DecisionTimeEvidenceBundle bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "link_id",
+    "bundle_id",
+    "bundle_hash",
+    "outcome_ref",
+    "linked_at",
+    "link_kind"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "link_id": { "type": "string", "minLength": 1 },
+    "bundle_id": { "type": "string", "minLength": 1 },
+    "bundle_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+    "outcome_ref": { "type": "string", "minLength": 1 },
+    "linked_at": { "type": "string", "minLength": 1 },
+    "link_kind": {
+      "type": "string",
+      "enum": ["outcome", "calibration", "follow_up"]
+    },
+    "notes": { "type": ["string", "null"] },
+    "non_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mutates_bundle": { "type": "boolean", "const": false },
+        "authorizes_actions": { "type": "boolean", "const": false }
+      }
+    }
+  }
+}

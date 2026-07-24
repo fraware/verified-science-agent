@@ -476,6 +476,129 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
     return 0 if summary["failed"] == 0 else 1
 
 
+def cmd_snapshot_evidence(args: argparse.Namespace) -> int:
+    """Freeze a DecisionTimeEvidenceBundle at a cutoff.
+
+    Non-claims: VSA does not authorize actions, execute tools, issue grants,
+    or certify scientific correctness. Bundles are immutable.
+    """
+    from vsa.decision_time.snapshot import build_decision_time_bundle
+
+    source = _load_report(args.input)
+    try:
+        bundle = build_decision_time_bundle(
+            source,
+            cutoff=args.cutoff,
+            mode=args.mode,
+            candidate_action_id=args.candidate_action_id,
+            question=args.question,
+            sign=args.sign,
+            key_path=args.key_file,
+        )
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    text = json.dumps(bundle, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    print(
+        f"bundle_hash={bundle['integrity']['bundle_hash']} "
+        f"included={len(bundle['included_evidence'])} "
+        f"excluded={len(bundle['excluded_post_cutoff'])}",
+        file=sys.stderr,
+    )
+    return 0
+
+
+def cmd_verify_decision_time_bundle(args: argparse.Namespace) -> int:
+    """Verify schema, cutoff invariants, hashes, optional signature, portable refs."""
+    from vsa.decision_time.verify import verify_decision_time_bundle
+
+    bundle = _load_report(args.bundle)
+    result = verify_decision_time_bundle(bundle, require_signature=args.require_signature)
+    status = "PASS" if result.passed else "FAIL"
+    print(f"{status}: {args.bundle} [{result.status}]")
+    for check in result.checks:
+        print(f"  [{check['status'].upper()}] {check['name']}: {check['message']}")
+    return 0 if result.passed else 1
+
+
+def cmd_compare_cutoffs(args: argparse.Namespace) -> int:
+    """Compare two cutoffs. Informational only; does not authorize actions.
+
+    Embeds per-bundle verify results. Exit code reflects comparison success
+    (able to load and diff), not semantic pass/fail of either side.
+    """
+    from vsa.decision_time.verify import compare_cutoffs
+
+    a = _load_report(args.bundle_a)
+    b = _load_report(args.bundle_b)
+    diff = compare_cutoffs(a, b)
+    text = json.dumps(diff, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    if not diff.get("verify_a", {}).get("passed") or not diff.get("verify_b", {}).get("passed"):
+        print(
+            "NOTE: one or both bundles failed verification; see verify_a/verify_b "
+            "(comparison is informational; VSA does not authorize actions)",
+            file=sys.stderr,
+        )
+    return 0
+
+
+def cmd_export_akta_context(args: argparse.Namespace) -> int:
+    """Export AktaActionContext (evidence context only; authorization=none)."""
+    from vsa.export.akta import build_akta_action_context
+
+    report = _load_report(args.report) if args.report else None
+    bundle = _load_report(args.bundle) if args.bundle else None
+    if report is None and bundle is None:
+        print("ERROR: provide --report and/or --bundle", file=sys.stderr)
+        return 1
+    try:
+        context = build_akta_action_context(
+            report=report,
+            bundle=bundle,
+            action_id=args.action_id,
+            action_class=args.action_class,
+            action_description=args.description,
+            tool_or_execution_class=args.execution_class,
+        )
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    text = json.dumps(context, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    print("authorization=none (VSA does not authorize actions)", file=sys.stderr)
+    return 0
+
+
+def cmd_link_outcome(args: argparse.Namespace) -> int:
+    """Append-only outcome link; does not mutate the decision-time bundle."""
+    from vsa.outcome.links import write_outcome_link
+    from vsa.decision_time.snapshot import compute_bundle_hash
+
+    bundle = _load_report(args.bundle)
+    before = compute_bundle_hash(bundle)
+    try:
+        link = write_outcome_link(
+            bundle,
+            args.out,
+            outcome_ref=args.outcome_ref,
+            link_kind=args.kind,
+            notes=args.notes,
+        )
+    except (ValueError, RuntimeError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    after = compute_bundle_hash(bundle)
+    if before != after:
+        print("ERROR: bundle hash changed during link (immutability violation)", file=sys.stderr)
+        return 1
+    print(f"wrote {args.out}")
+    print(f"bundle_hash unchanged: {before}")
+    print(f"link_id: {link['link_id']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="vsa",
@@ -673,6 +796,77 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8000)
     p_serve.set_defaults(func=cmd_serve)
+
+    p_snap = sub.add_parser(
+        "snapshot-evidence",
+        help=(
+            "Freeze DecisionTimeEvidenceBundle at cutoff "
+            "(does not authorize actions or certify correctness)"
+        ),
+    )
+    p_snap.add_argument("input", type=Path, help="ScientificReport or evidence-bearing JSON")
+    p_snap.add_argument("--cutoff", required=True, help="ISO-8601 decision-time cutoff (UTC)")
+    p_snap.add_argument("--out", "-o", type=Path, required=True)
+    p_snap.add_argument(
+        "--mode",
+        default="retrospective",
+        choices=["retrospective", "shadow", "read_only"],
+        help=(
+            "Pilot mode: retrospective (historical reconstruction), "
+            "shadow (prospective freeze; no tool execution), "
+            "read_only (tagged freeze for decision-support; prefer export-akta-context for AKTA-only). "
+            "VSA does not authorize actions."
+        ),
+    )
+    p_snap.add_argument("--candidate-action-id", default=None)
+    p_snap.add_argument("--question", default=None)
+    p_snap.add_argument("--sign", action="store_true", help="Ed25519-sign integrity.bundle_hash")
+    p_snap.add_argument("--key-file", default=".vsa_signing_key")
+    p_snap.set_defaults(func=cmd_snapshot_evidence)
+
+    p_vdt = sub.add_parser(
+        "verify-decision-time-bundle",
+        help="Verify decision-time bundle schema, cutoff, hashes, optional signature",
+    )
+    p_vdt.add_argument("bundle", type=Path)
+    p_vdt.add_argument("--require-signature", action="store_true")
+    p_vdt.set_defaults(func=cmd_verify_decision_time_bundle)
+
+    p_cc = sub.add_parser(
+        "compare-cutoffs",
+        help=(
+            "Compare two DecisionTimeEvidenceBundle cutoffs "
+            "(informational; does not authorize actions)"
+        ),
+    )
+    p_cc.add_argument("bundle_a", type=Path)
+    p_cc.add_argument("bundle_b", type=Path)
+    p_cc.add_argument("--out", "-o", type=Path, default=None)
+    p_cc.set_defaults(func=cmd_compare_cutoffs)
+
+    p_akta = sub.add_parser(
+        "export-akta-context",
+        help="Export AktaActionContext (authorization=none; evidence context only)",
+    )
+    p_akta.add_argument("--report", type=Path, default=None)
+    p_akta.add_argument("--bundle", type=Path, default=None)
+    p_akta.add_argument("--out", "-o", type=Path, required=True)
+    p_akta.add_argument("--action-id", default="candidate-action")
+    p_akta.add_argument("--action-class", default="evidence_review")
+    p_akta.add_argument("--description", default=None)
+    p_akta.add_argument("--execution-class", default="none")
+    p_akta.set_defaults(func=cmd_export_akta_context)
+
+    p_link = sub.add_parser(
+        "link-outcome",
+        help="Write append-only ScientificOutcomeLink without mutating the bundle",
+    )
+    p_link.add_argument("bundle", type=Path)
+    p_link.add_argument("--outcome-ref", required=True)
+    p_link.add_argument("--out", "-o", type=Path, required=True)
+    p_link.add_argument("--kind", default="outcome", choices=["outcome", "calibration", "follow_up"])
+    p_link.add_argument("--notes", default=None)
+    p_link.set_defaults(func=cmd_link_outcome)
 
     return parser
 

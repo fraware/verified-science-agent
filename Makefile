@@ -1,4 +1,4 @@
-.PHONY: demo validate render hash test ui install benchmark audit sign verify acceptance
+.PHONY: demo validate render hash test ui install benchmark audit sign verify acceptance lint typecheck
 
 install:
 	pip install -e ".[dev,ui,pdf,signing,api]"
@@ -26,6 +26,13 @@ hash:
 
 test:
 	pytest
+
+lint:
+	ruff check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
+	ruff format --check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
+
+typecheck:
+	mypy
 
 benchmark:
 	vsa benchmark --out reports/benchmark_summary.json

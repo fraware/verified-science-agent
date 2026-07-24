@@ -24,8 +24,23 @@ jobs:
       - name: Install package
         run: pip install -e ".[dev,signing,pdf,api]"
 
+      - name: Lint companion modules (warnings as errors)
+        run: |
+          ruff check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
+          ruff format --check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
+
+      - name: Typecheck companion modules
+        run: mypy
+
       - name: CLI smoke test
         run: vsa --help
+
+      - name: Decision-time CLI smoke
+        run: |
+          vsa snapshot-evidence examples/decision_time/source_report.json --cutoff 2024-01-01T00:00:00Z --out /tmp/dt_bundle.json
+          vsa verify-decision-time-bundle /tmp/dt_bundle.json
+          vsa export-akta-context --bundle /tmp/dt_bundle.json --out /tmp/akta.json
+          python -c "import json; c=json.load(open('/tmp/akta.json')); assert c['authorization']=='none'"
 
       - name: Build example report
         run: vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
