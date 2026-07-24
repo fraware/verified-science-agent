@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-science-agent.local/schemas/integration_envelope.schema.json",
+  "title": "IntegrationEnvelope",
+  "description": "Companion identity envelope wrapping or sitting beside a ScientificReport. Additive; does not mutate ScientificReport 1.2.0. VSA does not authorize actions, execute tools, issue grants, or certify scientific correctness.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scientific_question_id",
+    "evidence_report_id",
+    "claim_ids",
+    "source_snapshot_id",
+    "producer",
+    "digests",
+    "non_claims"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "scientific_question_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_report_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Maps to ScientificReport.report_id"
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "candidate_action_id": {
+      "type": ["string", "null"]
+    },
+    "source_snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_time_cutoff": {
+      "type": ["string", "null"],
+      "description": "ISO-8601 UTC timestamp when set"
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package_version", "validation_version"],
+      "properties": {
+        "package_version": { "type": "string", "minLength": 1 },
+        "model_or_checkpoint_id": { "type": ["string", "null"] },
+        "validation_version": { "type": "string", "minLength": 1 },
+        "prompt_template_version": { "type": ["string", "null"] }
+      }
+    },
+    "akta_record_ref": {
+      "type": ["string", "null"]
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_hash", "envelope_schema_digest"],
+      "properties": {
+        "report_hash": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "bundle_hash": { "type": ["string", "null"] },
+        "envelope_schema_digest": { "type": "string", "minLength": 64, "maxLength": 64 },
+        "report_schema_digest": { "type": ["string", "null"] }
+      }
+    },
+    "non_claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorizes_actions",
+        "executes_tools",
+        "issues_grants",
+        "certifies_scientific_correctness"
+      ],
+      "properties": {
+        "authorizes_actions": { "type": "boolean", "const": false },
+        "executes_tools": { "type": "boolean", "const": false },
+        "issues_grants": { "type": "boolean", "const": false },
+        "certifies_scientific_correctness": { "type": "boolean", "const": false }
+      }
+    }
+  }
+}
