@@ -1,0 +1,7 @@
+{
+  "decision_time_evidence_bundle.schema.json": "36884d6c221100e6ce6c16191de890dab468300b7237ef333bea488c06a739a0",
+  "integration_envelope.schema.json": "4d7215de04b41156614e712e1df3dd3d5e1fd87661d20e6f246c3618bb762fee",
+  "akta_action_context.schema.json": "17df1f03a133aa9ae8022f144361c45ce09d8792ac2a3554b50de44504db33b4",
+  "scientific_outcome_link.schema.json": "e45082f86298d1cb436530a88fa589cb408155ded4999d3239130573417b48ec",
+  "note": "Pinned SHA-256 of packaged companion schemas under src/vsa/schemas/. Reuses PCS shape; does not redefine PCS core."
+}

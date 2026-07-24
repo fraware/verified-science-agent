@@ -1,0 +1,9 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "portable_refs_sample.json": "0163e5d5ed718cf2153214ea52ba196a71c284911ceb8e5a323bae030ab644d8",
+    "schema_digests.json": "6a1acdc881f496fe9446f3c005e6f97a3ed9a850e54b54fe33c3d5b94eee23a4",
+    "README.md": "cc640121f0fb1f1c150877dee211feb0d4caf449b62ae664188b68b2f9e3697e"
+  },
+  "note": "Cross-repo consumption pins. No secrets. Reuses PCS shape; does not redefine PCS core."
+}

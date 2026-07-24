@@ -1,0 +1,16 @@
+{
+  "bundle_schema_digest": "36884d6c221100e6ce6c16191de890dab468300b7237ef333bea488c06a739a0",
+  "envelope_schema_digest": "4d7215de04b41156614e712e1df3dd3d5e1fd87661d20e6f246c3618bb762fee",
+  "note": "PCS-shaped portable evidence refs emitted by VSA. Reuses PCS shape; does not redefine PCS core.",
+  "refs": [
+    {
+      "content_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "evidence_id": "E001",
+      "media_type": "application/json",
+      "producer": "ClinVar",
+      "retrieved_at": "2023-01-15T00:00:00Z",
+      "schema_id": "pcs.portable_evidence_ref/1.0.0"
+    }
+  ],
+  "schema_id": "pcs.portable_evidence_ref/1.0.0"
+}
