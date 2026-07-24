@@ -68,3 +68,16 @@ Rebuild pinned reports after schema bumps:
 ```bash
 vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule
 ```
+
+## Companion schemas (additive)
+
+ScientificReport **1.2.0** is unchanged. Integration contracts live beside it:
+
+| Schema | Module | Purpose |
+|--------|--------|---------|
+| `integration_envelope.schema.json` | `vsa.identity` | Stable IDs + digests |
+| `decision_time_evidence_bundle.schema.json` | `vsa.decision_time` | Cutoff-frozen evidence |
+| `akta_action_context.schema.json` | `vsa.export.akta` | AKTA context (`authorization: none`) |
+| `scientific_outcome_link.schema.json` | `vsa.outcome` | Append-only outcome links |
+
+See [operator-decision-time.md](operator-decision-time.md) and [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md).

@@ -60,6 +60,21 @@ Retrieval produces evidence. Generation produces claims. Validation checks claim
 
 `vsa verify-bundle` checks manifest integrity and attestation digest.
 
+## Decision-time companions (additive)
+
+ScientificReport **1.2.0** is unchanged. Companion artifacts integrate VSA with AKTA and Scientific Memory:
+
+| Artifact | Module | Role |
+|----------|--------|------|
+| Integration envelope | `src/vsa/identity/` | Stable IDs + digests beside a report |
+| DecisionTimeEvidenceBundle | `src/vsa/decision_time/` | Cutoff-frozen evidence snapshot |
+| AktaActionContext | `src/vsa/export/akta.py` | Stable export for AKTA (no authorization) |
+| ScientificOutcomeLink | `src/vsa/outcome/` | Append-only outcome/calibration pointer |
+
+Hard boundaries: VSA never authorizes actions, executes tools, issues grants, or certifies scientific correctness. Decision-time bundles are immutable; outcomes append as linked records only. See [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md) and [threat model](threat-model.md).
+
+CLI: `snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`.
+
 ## Continuous integration
 
 GitHub Actions runs the full pipeline on Ubuntu (Python 3.10–3.12) and a macOS smoke job on every push. The test suite (`scripts/acceptance.sh`) builds a sample report, runs pytest, and evaluates all benchmark tasks.
