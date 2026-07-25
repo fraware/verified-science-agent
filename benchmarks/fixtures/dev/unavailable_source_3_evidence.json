@@ -1,0 +1,18 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "PubMed",
+    "source_type": "database",
+    "identifier": "UNAV-003",
+    "retrieval_path": "https://example.com/UNAV-003",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "source record UNAV-003 marked unavailable at retrieval time",
+    "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_role": "supports",
+    "reliability": "medium",
+    "domain_metadata": {
+      "source_availability": "unavailable",
+      "source_unavailable": true
+    }
+  }
+]

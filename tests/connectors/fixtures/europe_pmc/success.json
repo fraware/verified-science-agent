@@ -1,0 +1,17 @@
+{
+  "resultList": {
+    "result": [
+      {
+        "id": "23456789",
+        "pmid": "23456789",
+        "doi": "10.1038/nature12373",
+        "title": "Example Nature paper",
+        "authorString": "Author A",
+        "abstractText": "A short abstract for testing.",
+        "pubYear": "2013",
+        "hasFullText": "N",
+        "isOpenAccess": "Y"
+      }
+    ]
+  }
+}

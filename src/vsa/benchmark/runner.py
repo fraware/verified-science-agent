@@ -7,6 +7,14 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from vsa.benchmark.governance import (
+    DEFAULT_SUITE,
+    MIN_EVALUATION_TASKS,
+    fixtures_dir_for_suite,
+    governance_signal_text,
+    normalize_suite,
+    validate_tasks_document,
+)
 from vsa.llm.verifier import audit_report
 from vsa.pipeline.build import build_report
 from vsa.pipeline.retrieval import retrieve_evidence_with_meta
@@ -22,6 +30,9 @@ REQUIRED_CATEGORY_MINIMUMS = {
     "contradiction": 5,
     "metadata_only_paper": 5,
     "no_evidence": 5,
+    "source_substitution": 5,
+    "unavailable_source": 5,
+    "temporal_cutoff": 5,
 }
 
 
@@ -157,7 +168,7 @@ def score_task(
     from vsa.connectors.cache import EvidenceCache
     from vsa.pipeline.subject_parser import parse_question
 
-    fixtures_dir = fixtures_dir or _benchmarks_dir() / "fixtures"
+    fixtures_dir = fixtures_dir or fixtures_dir_for_suite(_benchmarks_dir(), DEFAULT_SUITE)
     warnings: list[str] = []
     hash_stable = True
     bundle_stable = 1.0
@@ -275,9 +286,16 @@ def score_task(
         task_passed = False
 
     warning_text = _report_warning_text(report).upper()
-    if task.get("expect_ambiguity_surfaced") and "AMBIGUITY" not in warning_text:
+    signal_text = governance_signal_text(report)
+    if task.get("expect_ambiguity_surfaced") and "AMBIGUITY" not in warning_text and "AMBIGUITY" not in signal_text:
         task_passed = False
     if task.get("expect_metadata_warning") and "METADATA-ONLY" not in warning_text and "METADATA ONLY" not in warning_text:
+        task_passed = False
+    if task.get("expect_source_substitution") and "SUBSTITUT" not in signal_text:
+        task_passed = False
+    if task.get("expect_unavailable_source") and "UNAVAILABLE" not in signal_text:
+        task_passed = False
+    if task.get("expect_temporal_cutoff") and "TEMPORAL" not in signal_text and "CUTOFF" not in signal_text:
         task_passed = False
     if task.get("expect_predicted_structure_label"):
         alphafold_ok = all(
@@ -333,12 +351,19 @@ def run_benchmark(
     offline: bool = True,
     cache_dir: str = ".vsa_cache",
     fixtures_dir: Path | None = None,
+    suite: str | None = None,
     min_pass_rate: float | None = CRITICAL_MIN_PASS_RATE,
+    validate_governance: bool = True,
 ) -> dict[str, Any]:
     benchmarks = _benchmarks_dir()
+    suite_name = normalize_suite(suite)
     tasks_path = tasks_path or benchmarks / "tasks.json"
-    fixtures_dir = fixtures_dir or benchmarks / "fixtures"
-    tasks = json.loads(tasks_path.read_text(encoding="utf-8"))["tasks"]
+    fixtures_dir = fixtures_dir or fixtures_dir_for_suite(benchmarks, suite_name)
+    doc = json.loads(tasks_path.read_text(encoding="utf-8"))
+    governance_errors: list[str] = []
+    if validate_governance:
+        governance_errors = validate_tasks_document(doc)
+    tasks = doc["tasks"]
     coverage = category_coverage(tasks)
     category_gaps = {
         name: max(0, minimum - coverage.get(name, 0))
@@ -350,16 +375,26 @@ def run_benchmark(
     passed = sum(1 for r in results if r["passed"])
     total = len(results)
     pass_rate = passed / total if total else 0.0
-    regression = pass_rate < (min_pass_rate or 0.0) or any(category_gaps.values())
+    too_few_tasks = suite_name == DEFAULT_SUITE and total < MIN_EVALUATION_TASKS
+    regression = (
+        pass_rate < (min_pass_rate or 0.0)
+        or any(category_gaps.values())
+        or bool(governance_errors)
+        or too_few_tasks
+    )
     return {
         "mode": "offline" if offline else "live",
+        "suite": suite_name,
+        "fixtures_dir": str(fixtures_dir),
         "total": total,
         "passed": passed,
         "failed": total - passed,
         "pass_rate": round(pass_rate, 3),
         "regression": regression,
         "min_pass_rate": min_pass_rate,
+        "min_evaluation_tasks": MIN_EVALUATION_TASKS,
         "category_coverage": coverage,
         "category_gaps": category_gaps,
+        "governance_errors": governance_errors,
         "results": results,
     }

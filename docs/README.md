@@ -16,6 +16,8 @@ User guide for **Verified Science Agent** (VSA) v0.7.2.
 | [api.md](api.md) | REST API reference |
 | [adr/0001-vsa-akta-scientific-memory-boundaries.md](adr/0001-vsa-akta-scientific-memory-boundaries.md) | VSA / AKTA / Scientific Memory boundaries |
 | [threat-model.md](threat-model.md) | Decision-time threat model |
+| [signing.md](signing.md) | Integrity ≠ identity ≠ approval ≠ scientific truth |
+| [domain_reviews/TEMPLATE.md](domain_reviews/TEMPLATE.md) | Domain pack expert review record template |
 | [../CHANGELOG.md](../CHANGELOG.md) | Version history |
 | [../SECURITY.md](../SECURITY.md) | Security disclosure policy |
 
@@ -43,7 +45,7 @@ vsa export-akta-context --bundle reports/decision_time_bundle.json --out reports
 | Component | Version |
 |-----------|---------|
 | Package | 0.7.2 |
-| ScientificReport schema | 1.2.0 |
+| ScientificReport schema | 1.3.0 |
 | Companion schemas | 1.0.0 (`integration_envelope`, `decision_time_evidence_bundle`, `akta_action_context`, `scientific_outcome_link`) |
 
 ## Claim boundaries

@@ -1,0 +1,7 @@
+{
+  "results": [
+    {"primaryAccession": "P38398", "entryType": "UniProtKB reviewed (Swiss-Prot)"},
+    {"primaryAccession": "A0A024R1R8", "entryType": "UniProtKB unreviewed (TrEMBL)"},
+    {"primaryAccession": "Q7Z569", "entryType": "UniProtKB unreviewed (TrEMBL)"}
+  ]
+}

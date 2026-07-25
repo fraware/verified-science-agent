@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from vsa.claims.normalize import build_claim_evidence_graph, finalize_claims
+from vsa.provenance.source_record import ensure_source_records
 from vsa.version import SCHEMA_VERSION
 
 
@@ -45,7 +47,7 @@ def migrate_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
             {
                 "claim_id": claim.get("claim_id", f"C{len(claims_out)+1:03d}"),
                 "claim_type": claim.get("claim_type", "observation"),
-                "claim_text": claim.get("claim_text", ""),
+                "claim_text": claim.get("claim_text", "") or "Migrated claim placeholder text.",
                 "evidence_ids": eids,
                 "confidence": claim.get("confidence", 0.5),
                 "review_boundary": boundary,
@@ -61,17 +63,56 @@ def migrate_ledger(ledger: dict[str, Any]) -> dict[str, Any]:
             "display_name": subject.get("gene_symbol") or subject.get("entity_type") or "migrated-subject",
         }
 
-    return {
+    evidence = list(evidence_registry.values())
+    if not evidence:
+        evidence = [
+            {
+                "evidence_id": "E000",
+                "source_name": "migration",
+                "source_type": "database",
+                "identifier": "none",
+                "retrieval_path": "migration://none",
+                "retrieved_at": "1970-01-01T00:00:00Z",
+                "summary": "Placeholder evidence for empty ledger migration.",
+                "raw_record_hash": "0" * 64,
+            }
+        ]
+    evidence, source_records = ensure_source_records(evidence, [])
+    if not claims_out:
+        claims_out = [
+            {
+                "claim_id": "C001",
+                "claim_text": "placeholder migrated claim text.",
+                "evidence_ids": [],
+                "claim_type": "observation",
+                "confidence": 0,
+                "review_boundary": "unsupported",
+                "uncertainty_level": "unknown",
+            }
+        ]
+    claims_out = finalize_claims(claims_out, evidence, inference_method="rule")
+
+    report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "report_id": ledger.get("ledger_id", "migrated-report"),
         "created_at": ledger.get("created_at_utc", "1970-01-01T00:00:00Z"),
         "subject": subject,
-        "claims": claims_out or [{"claim_id": "C001", "claim_text": "placeholder", "evidence_ids": [], "claim_type": "observation", "confidence": 0, "review_boundary": "unsupported", "uncertainty_level": "unknown"}],
-        "evidence": list(evidence_registry.values()) or [],
+        "claims": claims_out,
+        "evidence": evidence,
+        "source_records": source_records,
         "methods": [{"method_id": "M000", "name": "ledger_migration", "version": "1.0.0"}],
-        "provenance": {},
+        "provenance": {
+            "source_record_hashes": {},
+            "evidence_bundle_hash": "0" * 64,
+            "claim_hashes": {},
+            "report_hash": "0" * 64,
+            "validation_version": "1.3.0",
+            "renderer_version": "1.3.0",
+        },
         "validation_results": {"status": "pending", "checks": []},
         "human_review": {"required": True, "status": "pending"},
         "generated_outputs": {"formats_available": ["json"]},
         "_migration_note": "Run vsa build or re-stamp to refresh provenance hashes",
     }
+    report["claim_evidence_graph"] = build_claim_evidence_graph(report)
+    return report

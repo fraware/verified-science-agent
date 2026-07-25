@@ -1,0 +1,17 @@
+{
+  "suite": "vsa-06-credibility-red-team",
+  "attack_classes": [
+    "fabricated_citation",
+    "source_title_mismatch",
+    "retracted_paper",
+    "duplicated_evidence",
+    "metadata_as_fulltext",
+    "predicted_as_experimental",
+    "post_cutoff_leakage",
+    "unsupported_span",
+    "different_subject",
+    "prompt_injection",
+    "malicious_render"
+  ],
+  "policy": "Each attack must produce a detection warning, validation fail, or calibrated confidence demotion — never silent acceptance."
+}

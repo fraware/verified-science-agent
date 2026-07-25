@@ -1,0 +1,11 @@
+{
+  "status": "ok",
+  "message": {
+    "DOI": "10.1038/nature12373",
+    "title": ["Example Nature paper"],
+    "author": [{"given": "A", "family": "Author"}],
+    "abstract": "A short abstract for testing.",
+    "publisher": "Nature",
+    "published-print": {"date-parts": [[2013]]}
+  }
+}

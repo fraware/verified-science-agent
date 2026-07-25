@@ -449,4 +449,6 @@ def extract_claims(subject: dict[str, Any], evidence: list[dict[str, Any]]) -> l
                 claim["review_boundary"] = "unsupported"
                 claim["confidence"] = 0.0
 
-    return claims
+    from vsa.claims.normalize import finalize_claims
+
+    return finalize_claims(claims, evidence, inference_method="rule")

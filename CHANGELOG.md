@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Schema versioning
 
-- **ScientificReport schema 1.2.0** — lifecycle fields, `evidence_content_hash`, `validation_run_hash` (compatibility baseline; unchanged by decision-time companions)
+- **ScientificReport schema 1.3.0** — immutable SourceRecord, claim–evidence graph, write barrier, reconstruct path (current public artifact baseline)
+- **ScientificReport schema 1.2.0** — lifecycle fields, `evidence_content_hash`, `validation_run_hash` (still accepted; unchanged by decision-time companions)
 - **ScientificReport schema 1.1.0** — Ed25519 signature, review chain hash, audit metadata
 - **ScientificReport schema 1.0.0** — initial canonical artifact model
 - **Companion schemas 1.0.0** — `integration_envelope`, `decision_time_evidence_bundle`, `akta_action_context`, `scientific_outcome_link` (additive; do not mutate ScientificReport)

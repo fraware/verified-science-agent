@@ -1,0 +1,14 @@
+{
+  "111": {
+    "uid": "111",
+    "title": "BRCA1 c.68_69del",
+    "clinical_significance": {"description": "Pathogenic"},
+    "gene_sort": "BRCA1"
+  },
+  "222": {
+    "uid": "222",
+    "title": "BRCA1 c.68_69del",
+    "clinical_significance": {"description": "Pathogenic"},
+    "gene_sort": "BRCA1"
+  }
+}

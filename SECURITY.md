@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are accepted for the current release line of `verified-science-agent` (0.7.x) while ScientificReport schema 1.2.0 remains the public artifact baseline.
+Security fixes are accepted for the current release line of `verified-science-agent` (0.7.x) while ScientificReport schema 1.3.0 remains the public artifact baseline.
 
 ## Reporting a vulnerability
 
@@ -19,7 +19,7 @@ Include:
 - VSA validates and packages scientific evidence; it does not authorize actions, execute tools, issue grants, or certify scientific correctness.
 - Signing keys (`VSA_SIGNING_PRIVATE_KEY`, `.vsa_signing_key`) and API keys must never appear in fixtures, logs, or CI artifacts.
 - Connector caches and export bundles may contain retrieved scientific records; treat them according to your data-handling policy.
-- Optional Ed25519 signatures are self-attesting (public key embedded). Pin trusted keys out-of-band (`vsa verify-decision-time-bundle --trusted-key` / `--trusted-key-file`) before treating a signature as organizationally trusted.
+- Optional Ed25519 signatures are self-attesting (public key embedded). Pin trusted keys out-of-band (`vsa verify-decision-time-bundle --trusted-key` / `--trusted-key-file`) before treating a signature as organizationally trusted. Signatures and SLSA digest match prove artifact integrity only — not scientific correctness. See [docs/signing.md](docs/signing.md) and [docs/threat-model.md](docs/threat-model.md).
 - Decision-time privacy-safe metrics must remain counts/histograms only — never raw partner payloads or private rationales (re-checked on verify).
 - Never commit `.env`; see `.env.example` for optional configuration keys only.
 

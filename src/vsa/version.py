@@ -1,10 +1,10 @@
 """Package and schema version constants."""
 
 __version__ = "0.7.2"
-SCHEMA_VERSION = "1.2.0"
-SUPPORTED_SCHEMA_VERSIONS = ("1.0.0", "1.1.0", "1.2.0")
-VALIDATION_VERSION = "1.2.0"
-RENDERER_VERSION = "1.2.0"
+SCHEMA_VERSION = "1.3.0"
+SUPPORTED_SCHEMA_VERSIONS = ("1.0.0", "1.1.0", "1.2.0", "1.3.0")
+VALIDATION_VERSION = "1.3.0"
+RENDERER_VERSION = "1.3.0"
 PROMPT_TEMPLATE_VERSION = "claim_extraction_v1"
 
 # Companion integration schemas (additive; do not change SCHEMA_VERSION)

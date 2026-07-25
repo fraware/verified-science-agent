@@ -1,0 +1,19 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "UniProt",
+    "source_type": "database",
+    "identifier": "SUB-002",
+    "retrieval_path": "https://example.com/SUB-002",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "substituted mirror record for SUB-002; original primary source unavailable",
+    "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_role": "supports",
+    "reliability": "medium",
+    "domain_metadata": {
+      "source_availability": "substituted",
+      "source_substituted": true,
+      "substitution_of": "UniProt-primary"
+    }
+  }
+]

@@ -37,6 +37,8 @@
 
 Optional Ed25519 signatures embed the signing public key. Cryptographic validity proves possession of the corresponding private key at signing time; it does **not** by itself establish a trust root. Operators must pin trusted public keys out-of-band (CLI `--trusted-key` / `--trusted-key-file`).
 
+Artifact integrity, signer identity, reviewer approval, and scientific correctness are separate layers — see [signing.md](signing.md).
+
 ## Upstream blockers (explicit)
 
 Not solved in this repository alone (integration pins, not unfinished local features):

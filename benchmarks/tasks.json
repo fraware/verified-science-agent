@@ -3,521 +3,2645 @@
     {
       "task_id": "brca1_variant",
       "input_question": "BRCA1 c.68_69del",
-      "expected_evidence_sources": ["ClinVar", "UniProt"],
-      "expected_claim_types": ["classification", "identity"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar",
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "classification",
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "gold_labels": {
         "min_claims": 2,
         "min_evidence": 2,
-        "required_claim_ids": ["C001"]
-      }
+        "required_claim_ids": [
+          "C001"
+        ]
+      },
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true,
+        "min_claims": 2,
+        "min_evidence": 2
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "tp53_variant",
       "input_question": "TP53 c.524G>A",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review",
+        "requires_domain_review"
+      ],
       "gold_labels": {
         "min_claims": 1,
         "min_evidence": 1,
-        "required_claim_ids": ["C001"]
-      }
+        "required_claim_ids": [
+          "C001"
+        ]
+      },
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true,
+        "min_claims": 1,
+        "min_evidence": 1
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "egfr_target",
       "input_question": "EGFR",
-      "expected_evidence_sources": ["UniProt"],
-      "expected_claim_types": ["summary", "observation"],
-      "required_review_flags": ["requires_domain_review"],
-      "gold_labels": {"min_claims": 1, "min_evidence": 1}
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "summary",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "gold_labels": {
+        "min_claims": 1,
+        "min_evidence": 1
+      },
+      "domain": "drug_target",
+      "provenance": {
+        "origin": "UniProt target offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true,
+        "min_claims": 1,
+        "min_evidence": 1
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "protein_structure",
       "task_class": "predicted_structure_protein",
       "input_question": "P38398",
-      "expected_evidence_sources": ["UniProt", "AlphaFold DB"],
-      "expected_claim_types": ["identity", "structure", "observation"],
-      "required_review_flags": ["requires_domain_review", "safe_summary"]
+      "expected_evidence_sources": [
+        "UniProt",
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "structure",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: predicted_structure_protein. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "paper_doi",
       "input_question": "10.1038/nature12373",
-      "expected_evidence_sources": ["OpenAlex", "Crossref"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary", "requires_domain_review"],
+      "expected_evidence_sources": [
+        "OpenAlex",
+        "Crossref"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "safe_summary",
+        "requires_domain_review"
+      ],
       "gold_labels": {
         "min_claims": 2,
         "min_evidence": 2,
-        "required_claim_ids": ["C001", "C002"]
-      }
+        "required_claim_ids": [
+          "C001",
+          "C002"
+        ]
+      },
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true,
+        "min_claims": 2,
+        "min_evidence": 2
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "materials_candidate",
       "input_question": "LiFePO4 cathode material",
-      "expected_evidence_sources": ["Materials Project", "OpenAlex"],
-      "expected_claim_types": ["property", "observation"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_evidence_sources": [
+        "Materials Project",
+        "OpenAlex"
+      ],
+      "expected_claim_types": [
+        "property",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "domain": "materials",
+      "provenance": {
+        "origin": "Materials Project offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "conflicting_clinical",
-      "task_categories": ["contradiction"],
+      "task_categories": [
+        "contradiction"
+      ],
       "input_question": "BRCA1 c.68_69del",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification", "identity", "observation"],
-      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification",
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review",
+        "requires_domain_review"
+      ],
       "expect_contradictions": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "contradictions detected; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: contradiction. Negative control: pass when validation fails or overall score stays low. Requires contradiction detection."
     },
     {
       "task_id": "no_evidence",
-      "task_categories": ["no_evidence"],
+      "task_categories": [
+        "no_evidence"
+      ],
       "input_question": "ZZZZZ unknown entity probe",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: no_evidence. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "alphafold_only",
       "task_class": "predicted_structure_only",
       "input_question": "P38398",
-      "expected_evidence_sources": ["AlphaFold DB"],
-      "expected_claim_types": ["identity", "structure", "observation"],
-      "required_review_flags": ["requires_domain_review", "safe_summary"]
+      "expected_evidence_sources": [
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "structure",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: predicted_structure_only. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "brca1_hash_stable",
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "brca1_variant",
-      "expected_evidence_sources": ["ClinVar", "UniProt"],
-      "expected_claim_types": ["classification", "identity"],
-      "required_review_flags": ["requires_clinical_review"],
-      "check_hash_stable": true
+      "expected_evidence_sources": [
+        "ClinVar",
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "classification",
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "check_hash_stable": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply). Includes reproducibility checks."
     },
     {
       "task_id": "paper_pmid",
       "input_question": "PMID:12345678",
       "fixture_task_id": "paper_doi",
-      "expected_evidence_sources": ["OpenAlex", "Crossref"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary", "requires_domain_review"]
+      "expected_evidence_sources": [
+        "OpenAlex",
+        "Crossref"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "safe_summary",
+        "requires_domain_review"
+      ],
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "clinvar_exact",
       "input_question": "TP53 c.524G>A",
       "fixture_task_id": "tp53_variant",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"]
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "uniprot_accession",
       "input_question": "P38398",
       "fixture_task_id": "protein_structure",
-      "expected_evidence_sources": ["UniProt"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "structure"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "material_offline",
       "input_question": "LiFePO4 cathode material",
       "fixture_task_id": "materials_candidate",
-      "expected_evidence_sources": ["Materials Project"],
-      "expected_claim_types": ["property"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_evidence_sources": [
+        "Materials Project"
+      ],
+      "expected_claim_types": [
+        "property"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "domain": "materials",
+      "provenance": {
+        "origin": "Materials Project offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "variant_ambiguous",
-      "task_categories": ["ambiguity", "contradiction"],
+      "task_categories": [
+        "ambiguity",
+        "contradiction"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["identity", "classification", "observation"],
-      "required_review_flags": ["requires_clinical_review", "requires_domain_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "classification",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review",
+        "requires_domain_review"
+      ],
       "expect_contradictions": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "contradictions detected; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: ambiguity, contradiction. Negative control: pass when validation fails or overall score stays low. Requires contradiction detection."
     },
     {
       "task_id": "metadata_paper",
-      "task_categories": ["metadata_only_paper"],
+      "task_categories": [
+        "metadata_only_paper"
+      ],
       "task_class": "metadata_only_paper",
       "input_question": "10.1038/nature12373",
       "fixture_task_id": "metadata_only_paper",
-      "expected_evidence_sources": ["Crossref"],
-      "expected_claim_types": ["identity", "observation", "summary"],
-      "required_review_flags": ["requires_domain_review", "safe_summary"],
+      "expected_evidence_sources": [
+        "Crossref"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
       "expect_no_contradictions": true,
-      "expect_metadata_warning": true
+      "expect_metadata_warning": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": true,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "metadata-only warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "METADATA"
+        ]
+      },
+      "scoring_rationale": "Categories: metadata_only_paper. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "low_quality",
       "input_question": "TP53 c.524G>A",
       "fixture_task_id": "tp53_variant",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification", "observation"],
-      "required_review_flags": ["requires_clinical_review"]
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification",
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "egfr_gene",
       "input_question": "EGFR",
       "fixture_task_id": "egfr_target",
-      "expected_evidence_sources": ["UniProt"],
-      "expected_claim_types": ["observation"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "observation"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "domain": "drug_target",
+      "provenance": {
+        "origin": "UniProt target offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "tp53_clinical",
       "input_question": "TP53 c.524G>A",
       "fixture_task_id": "tp53_variant",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"]
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "protein_alphafold",
       "input_question": "P38398",
       "fixture_task_id": "protein_structure",
-      "expected_evidence_sources": ["UniProt", "AlphaFold DB"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"],
-      "expect_no_contradictions": true
+      "expected_evidence_sources": [
+        "UniProt",
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "structure"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "expect_no_contradictions": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "brca1_identity",
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "brca1_variant",
-      "expected_evidence_sources": ["ClinVar", "UniProt"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["requires_domain_review", "safe_summary"]
+      "expected_evidence_sources": [
+        "ClinVar",
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "brca1_classification",
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "brca1_variant",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"]
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "paper_openalex",
       "input_question": "10.1038/nature12373",
       "fixture_task_id": "paper_doi",
-      "expected_evidence_sources": ["OpenAlex"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary", "requires_domain_review"]
+      "expected_evidence_sources": [
+        "OpenAlex"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "safe_summary",
+        "requires_domain_review"
+      ],
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "materials_property",
       "input_question": "LiFePO4 cathode material",
       "fixture_task_id": "materials_candidate",
-      "expected_evidence_sources": ["Materials Project"],
-      "expected_claim_types": ["property"],
-      "required_review_flags": ["requires_domain_review"]
+      "expected_evidence_sources": [
+        "Materials Project"
+      ],
+      "expected_claim_types": [
+        "property"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "domain": "materials",
+      "provenance": {
+        "origin": "Materials Project offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "adversarial_empty_claims",
-      "task_categories": ["adversarial", "no_evidence"],
+      "task_categories": [
+        "adversarial",
+        "no_evidence"
+      ],
       "task_class": "no_result_lookup",
       "input_question": "adversarial probe with no supporting evidence",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
       "fixture_task_id": "no_evidence",
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "adversarial",
+      "provenance": {
+        "origin": "Synthetic adversarial fixture reports",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial, no_evidence. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "fake_evidence_id",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "task_class": "fake_evidence_id",
       "input_question": "adversarial fake evidence probe",
       "use_fixture_report": true,
       "fixture_report_id": "fake_evidence",
-      "expected_evidence_sources": ["Test"],
-      "expected_claim_types": ["observation"],
-      "required_review_flags": ["unsupported"],
+      "expected_evidence_sources": [
+        "Test"
+      ],
+      "expected_claim_types": [
+        "observation"
+      ],
+      "required_review_flags": [
+        "unsupported"
+      ],
       "expect_pass": false,
       "expect_validation_fail": true,
-      "verify_hashes": false
+      "verify_hashes": false,
+      "domain": "adversarial",
+      "provenance": {
+        "origin": "Synthetic adversarial fixture reports",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "validation must fail; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "stale_source",
       "task_class": "stale_source",
       "input_question": "P38398",
       "fixture_task_id": "stale_source",
-      "expected_evidence_sources": ["UniProt"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["requires_domain_review"],
-      "expect_pass": true
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
+      "expect_pass": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: stale_source. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "uniprot_gene_ambiguous",
-      "task_categories": ["ambiguity"],
+      "task_categories": [
+        "ambiguity"
+      ],
       "input_question": "EGFR",
       "fixture_task_id": "gene_ambiguous_uniprot",
-      "expected_evidence_sources": ["UniProt"],
-      "expected_claim_types": ["observation", "identity"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_ambiguity_surfaced": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "drug_target",
+      "provenance": {
+        "origin": "UniProt target offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "ambiguity warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "AMBIGUITY"
+        ]
+      },
+      "scoring_rationale": "Categories: ambiguity. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "clinvar_ambiguous_multi",
-      "task_categories": ["ambiguity"],
+      "task_categories": [
+        "ambiguity"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["identity", "classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_ambiguity_surfaced": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "ambiguity warning surfaced; task overall fail (negative control)",
+        "validation_passed": false,
+        "required_warning_tokens": [
+          "AMBIGUITY"
+        ]
+      },
+      "scoring_rationale": "Categories: ambiguity. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "clinvar_ambiguous_scores",
-      "task_categories": ["ambiguity"],
+      "task_categories": [
+        "ambiguity"
+      ],
       "input_question": "TP53 c.524G>A",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_ambiguity_surfaced": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "ambiguity warning surfaced; task overall fail (negative control)",
+        "validation_passed": false,
+        "required_warning_tokens": [
+          "AMBIGUITY"
+        ]
+      },
+      "scoring_rationale": "Categories: ambiguity. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "hgvs_ambiguous_lookup",
-      "task_categories": ["ambiguity"],
+      "task_categories": [
+        "ambiguity"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_ambiguity_surfaced": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "ambiguity warning surfaced; task overall fail (negative control)",
+        "validation_passed": false,
+        "required_warning_tokens": [
+          "AMBIGUITY"
+        ]
+      },
+      "scoring_rationale": "Categories: ambiguity. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "contradiction_pathogenic_vus",
-      "task_categories": ["contradiction"],
+      "task_categories": [
+        "contradiction"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_contradictions": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "contradictions detected; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: contradiction. Negative control: pass when validation fails or overall score stays low. Requires contradiction detection."
     },
     {
       "task_id": "contradiction_ambiguous_high_conf",
-      "task_categories": ["contradiction"],
+      "task_categories": [
+        "contradiction"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_contradictions": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "contradictions detected; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: contradiction. Negative control: pass when validation fails or overall score stays low. Requires contradiction detection."
     },
     {
       "task_id": "contradiction_alphafold_experimental",
-      "task_categories": ["contradiction", "adversarial"],
+      "task_categories": [
+        "contradiction",
+        "adversarial"
+      ],
       "input_question": "P38398 experimental structure probe",
       "use_fixture_report": true,
       "fixture_report_id": "adversarial_alphafold_experimental",
-      "expected_evidence_sources": ["AlphaFold DB"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "structure"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_contradictions": true,
       "verify_hashes": false,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "contradictions detected; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: contradiction, adversarial. Negative control: pass when validation fails or overall score stays low. Requires contradiction detection."
     },
     {
       "task_id": "metadata_only_openalex",
-      "task_categories": ["metadata_only_paper"],
+      "task_categories": [
+        "metadata_only_paper"
+      ],
       "input_question": "10.1000/metadata.only2",
       "fixture_task_id": "metadata_only_paper_2",
-      "expected_evidence_sources": ["OpenAlex"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary"],
+      "expected_evidence_sources": [
+        "OpenAlex"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "safe_summary"
+      ],
       "expect_metadata_warning": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": true,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "metadata-only warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "METADATA"
+        ]
+      },
+      "scoring_rationale": "Categories: metadata_only_paper. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "metadata_only_semantic",
-      "task_categories": ["metadata_only_paper"],
+      "task_categories": [
+        "metadata_only_paper"
+      ],
       "input_question": "10.1000/metadata.only3",
       "fixture_task_id": "metadata_only_paper_3",
-      "expected_evidence_sources": ["Semantic Scholar"],
-      "expected_claim_types": ["identity", "observation"],
-      "required_review_flags": ["safe_summary"],
+      "expected_evidence_sources": [
+        "Semantic Scholar"
+      ],
+      "expected_claim_types": [
+        "identity",
+        "observation"
+      ],
+      "required_review_flags": [
+        "safe_summary"
+      ],
       "expect_metadata_warning": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": true,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "metadata-only warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "METADATA"
+        ]
+      },
+      "scoring_rationale": "Categories: metadata_only_paper. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "metadata_only_pubmed",
-      "task_categories": ["metadata_only_paper"],
+      "task_categories": [
+        "metadata_only_paper"
+      ],
       "input_question": "PMID:99999901",
       "fixture_task_id": "metadata_only_paper_4",
-      "expected_evidence_sources": ["PubMed"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["safe_summary"],
+      "expected_evidence_sources": [
+        "PubMed"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "safe_summary"
+      ],
       "expect_metadata_warning": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": true,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "metadata-only warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "METADATA"
+        ]
+      },
+      "scoring_rationale": "Categories: metadata_only_paper. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "metadata_only_europe_pmc",
-      "task_categories": ["metadata_only_paper"],
+      "task_categories": [
+        "metadata_only_paper"
+      ],
       "input_question": "PMID:99999902",
       "fixture_task_id": "metadata_only_paper_5",
-      "expected_evidence_sources": ["Europe PMC"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["safe_summary"],
+      "expected_evidence_sources": [
+        "Europe PMC"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "safe_summary"
+      ],
       "expect_metadata_warning": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "OpenAlex/Crossref/PubMed offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": true,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "metadata-only warning surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "METADATA"
+        ]
+      },
+      "scoring_rationale": "Categories: metadata_only_paper. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "no_evidence_unknown_gene",
-      "task_categories": ["no_evidence"],
+      "task_categories": [
+        "no_evidence"
+      ],
       "input_question": "GENE_DOES_NOT_EXIST_XYZ",
       "fixture_task_id": "no_evidence",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: no_evidence. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "no_evidence_gibberish",
-      "task_categories": ["no_evidence"],
+      "task_categories": [
+        "no_evidence"
+      ],
       "input_question": "###invalid@@query%%",
       "fixture_task_id": "no_evidence",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: no_evidence. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "no_evidence_null_accession",
-      "task_categories": ["no_evidence"],
+      "task_categories": [
+        "no_evidence"
+      ],
       "input_question": "protein accession ?????",
       "fixture_task_id": "no_evidence",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: no_evidence. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_unsupported_claim",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "adversarial unsupported claim probe",
       "use_fixture_report": true,
       "fixture_report_id": "adversarial_unsupported",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["unsupported"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "unsupported"
+      ],
       "expect_validation_fail": true,
       "verify_hashes": false,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "validation must fail; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_stale_ambiguous",
-      "task_categories": ["adversarial", "ambiguity"],
+      "task_categories": [
+        "adversarial",
+        "ambiguity"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "conflicting_clinical",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_ambiguity_surfaced": true,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": true,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "ambiguity warning surfaced; task overall fail (negative control)",
+        "validation_passed": false,
+        "required_warning_tokens": [
+          "AMBIGUITY"
+        ]
+      },
+      "scoring_rationale": "Categories: adversarial, ambiguity. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_orphan_evidence",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "adversarial fake evidence probe",
       "use_fixture_report": true,
       "fixture_report_id": "fake_evidence",
-      "expected_evidence_sources": ["Test"],
-      "expected_claim_types": ["observation"],
-      "required_review_flags": ["unsupported"],
+      "expected_evidence_sources": [
+        "Test"
+      ],
+      "expected_claim_types": [
+        "observation"
+      ],
+      "required_review_flags": [
+        "unsupported"
+      ],
       "expect_pass": false,
       "expect_validation_fail": true,
-      "verify_hashes": false
+      "verify_hashes": false,
+      "domain": "adversarial",
+      "provenance": {
+        "origin": "Synthetic adversarial fixture reports",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "validation must fail; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_low_quality_evidence",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "TP53 c.524G>A",
       "fixture_task_id": "tp53_variant",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
-      "expect_pass": true
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
+      "expect_pass": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: adversarial. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "adversarial_materials_no_key",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "LiFePO4 cathode material",
       "fixture_task_id": "materials_no_key",
       "expected_evidence_sources": [],
       "expected_claim_types": [],
       "required_review_flags": [],
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "materials",
+      "provenance": {
+        "origin": "Materials Project offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_missing_retrieval_path",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "adversarial missing retrieval path",
       "use_fixture_report": true,
       "fixture_report_id": "adversarial_missing_path",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["identity"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_validation_fail": true,
       "verify_hashes": false,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "validation must fail; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "adversarial_clinical_premature_approval",
-      "task_categories": ["adversarial"],
+      "task_categories": [
+        "adversarial"
+      ],
       "input_question": "adversarial clinical approval probe",
       "use_fixture_report": true,
       "fixture_report_id": "adversarial_clinical_approved",
-      "expected_evidence_sources": ["ClinVar"],
-      "expected_claim_types": ["classification"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "classification"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "expect_validation_fail": true,
       "verify_hashes": false,
-      "expect_pass": false
+      "expect_pass": false,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "validation must fail; task overall fail (negative control)",
+        "validation_passed": false
+      },
+      "scoring_rationale": "Categories: adversarial. Negative control: pass when validation fails or overall score stays low."
     },
     {
       "task_id": "alphafold_predicted_label",
-      "task_categories": ["standard"],
+      "task_categories": [
+        "standard"
+      ],
       "input_question": "P38398",
       "fixture_task_id": "protein_structure",
-      "expected_evidence_sources": ["AlphaFold DB"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "structure"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_predicted_structure_label": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
     },
     {
       "task_id": "brca1_bundle_reproducible",
-      "task_categories": ["standard"],
+      "task_categories": [
+        "standard"
+      ],
       "input_question": "BRCA1 c.68_69del",
       "fixture_task_id": "brca1_variant",
-      "expected_evidence_sources": ["ClinVar", "UniProt"],
-      "expected_claim_types": ["classification", "identity"],
-      "required_review_flags": ["requires_clinical_review"],
+      "expected_evidence_sources": [
+        "ClinVar",
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "classification",
+        "identity"
+      ],
+      "required_review_flags": [
+        "requires_clinical_review"
+      ],
       "check_bundle_reproducible": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "ClinVar/UniProt offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: standard. Pass when overall>=0.7 and validation passes (unless negative-control flags apply). Includes reproducibility checks."
     },
     {
       "task_id": "contradiction_comp_to_exp_language",
-      "task_categories": ["contradiction"],
+      "task_categories": [
+        "contradiction"
+      ],
       "input_question": "P38398",
       "fixture_task_id": "protein_structure",
-      "expected_evidence_sources": ["AlphaFold DB"],
-      "expected_claim_types": ["structure"],
-      "required_review_flags": ["requires_domain_review"],
+      "expected_evidence_sources": [
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "structure"
+      ],
+      "required_review_flags": [
+        "requires_domain_review"
+      ],
       "expect_predicted_structure_label": true,
-      "expect_pass": true
+      "expect_pass": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "UniProt/AlphaFold offline fixtures",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-05-30"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": true,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "task overall pass",
+        "validation_passed": true
+      },
+      "scoring_rationale": "Categories: contradiction. Pass when overall>=0.7 and validation passes (unless negative-control flags apply)."
+    },
+    {
+      "task_id": "source_substitution_1",
+      "task_categories": [
+        "source_substitution"
+      ],
+      "input_question": "source substitution probe 1",
+      "fixture_task_id": "source_substitution_1",
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_source_substitution": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "Synthetic source_substitution governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": true,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "source_substitution signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "SUBSTITUT"
+        ]
+      },
+      "scoring_rationale": "Categories: source_substitution. Pass when overall>=0.7, validation passes, and source_substitution governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "source_substitution_2",
+      "task_categories": [
+        "source_substitution"
+      ],
+      "input_question": "source substitution probe 2",
+      "fixture_task_id": "source_substitution_2",
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_source_substitution": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "Synthetic source_substitution governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": true,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "source_substitution signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "SUBSTITUT"
+        ]
+      },
+      "scoring_rationale": "Categories: source_substitution. Pass when overall>=0.7, validation passes, and source_substitution governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "source_substitution_3",
+      "task_categories": [
+        "source_substitution"
+      ],
+      "input_question": "source substitution probe 3",
+      "fixture_task_id": "source_substitution_3",
+      "expected_evidence_sources": [
+        "OpenAlex"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_source_substitution": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic source_substitution governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": true,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "source_substitution signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "SUBSTITUT"
+        ]
+      },
+      "scoring_rationale": "Categories: source_substitution. Pass when overall>=0.7, validation passes, and source_substitution governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "source_substitution_4",
+      "task_categories": [
+        "source_substitution"
+      ],
+      "input_question": "source substitution probe 4",
+      "fixture_task_id": "source_substitution_4",
+      "expected_evidence_sources": [
+        "Materials Project"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_source_substitution": true,
+      "domain": "materials",
+      "provenance": {
+        "origin": "Synthetic source_substitution governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": true,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "source_substitution signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "SUBSTITUT"
+        ]
+      },
+      "scoring_rationale": "Categories: source_substitution. Pass when overall>=0.7, validation passes, and source_substitution governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "source_substitution_5",
+      "task_categories": [
+        "source_substitution"
+      ],
+      "input_question": "source substitution probe 5",
+      "fixture_task_id": "source_substitution_5",
+      "expected_evidence_sources": [
+        "Crossref"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_source_substitution": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic source_substitution governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": true,
+        "unavailable_source": false,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "source_substitution signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "SUBSTITUT"
+        ]
+      },
+      "scoring_rationale": "Categories: source_substitution. Pass when overall>=0.7, validation passes, and source_substitution governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "unavailable_source_1",
+      "task_categories": [
+        "unavailable_source"
+      ],
+      "input_question": "unavailable source probe 1",
+      "fixture_task_id": "unavailable_source_1",
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_unavailable_source": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "Synthetic unavailable_source governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": true,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "unavailable_source signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "UNAVAILABLE"
+        ]
+      },
+      "scoring_rationale": "Categories: unavailable_source. Pass when overall>=0.7, validation passes, and unavailable_source governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "unavailable_source_2",
+      "task_categories": [
+        "unavailable_source"
+      ],
+      "input_question": "unavailable source probe 2",
+      "fixture_task_id": "unavailable_source_2",
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_unavailable_source": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "Synthetic unavailable_source governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": true,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "unavailable_source signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "UNAVAILABLE"
+        ]
+      },
+      "scoring_rationale": "Categories: unavailable_source. Pass when overall>=0.7, validation passes, and unavailable_source governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "unavailable_source_3",
+      "task_categories": [
+        "unavailable_source"
+      ],
+      "input_question": "unavailable source probe 3",
+      "fixture_task_id": "unavailable_source_3",
+      "expected_evidence_sources": [
+        "PubMed"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_unavailable_source": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic unavailable_source governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": true,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "unavailable_source signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "UNAVAILABLE"
+        ]
+      },
+      "scoring_rationale": "Categories: unavailable_source. Pass when overall>=0.7, validation passes, and unavailable_source governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "unavailable_source_4",
+      "task_categories": [
+        "unavailable_source"
+      ],
+      "input_question": "unavailable source probe 4",
+      "fixture_task_id": "unavailable_source_4",
+      "expected_evidence_sources": [
+        "Europe PMC"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_unavailable_source": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic unavailable_source governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": true,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "unavailable_source signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "UNAVAILABLE"
+        ]
+      },
+      "scoring_rationale": "Categories: unavailable_source. Pass when overall>=0.7, validation passes, and unavailable_source governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "unavailable_source_5",
+      "task_categories": [
+        "unavailable_source"
+      ],
+      "input_question": "unavailable source probe 5",
+      "fixture_task_id": "unavailable_source_5",
+      "expected_evidence_sources": [
+        "Semantic Scholar"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_unavailable_source": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic unavailable_source governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": true,
+        "temporal_cutoff": false
+      },
+      "expected_outputs": {
+        "summary": "unavailable_source signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "UNAVAILABLE"
+        ]
+      },
+      "scoring_rationale": "Categories: unavailable_source. Pass when overall>=0.7, validation passes, and unavailable_source governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "temporal_cutoff_1",
+      "task_categories": [
+        "temporal_cutoff"
+      ],
+      "input_question": "temporal cutoff probe 1",
+      "fixture_task_id": "temporal_cutoff_1",
+      "expected_evidence_sources": [
+        "ClinVar"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "structure",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_temporal_cutoff": true,
+      "domain": "genomics",
+      "provenance": {
+        "origin": "Synthetic temporal_cutoff governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": true
+      },
+      "expected_outputs": {
+        "summary": "temporal_cutoff signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "TEMPORAL_CUTOFF"
+        ]
+      },
+      "scoring_rationale": "Categories: temporal_cutoff. Pass when overall>=0.7, validation passes, and temporal_cutoff governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "temporal_cutoff_2",
+      "task_categories": [
+        "temporal_cutoff"
+      ],
+      "input_question": "temporal cutoff probe 2",
+      "fixture_task_id": "temporal_cutoff_2",
+      "expected_evidence_sources": [
+        "UniProt"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "structure",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_temporal_cutoff": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "Synthetic temporal_cutoff governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": true
+      },
+      "expected_outputs": {
+        "summary": "temporal_cutoff signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "TEMPORAL_CUTOFF"
+        ]
+      },
+      "scoring_rationale": "Categories: temporal_cutoff. Pass when overall>=0.7, validation passes, and temporal_cutoff governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "temporal_cutoff_3",
+      "task_categories": [
+        "temporal_cutoff"
+      ],
+      "input_question": "temporal cutoff probe 3",
+      "fixture_task_id": "temporal_cutoff_3",
+      "expected_evidence_sources": [
+        "OpenAlex"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "structure",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_temporal_cutoff": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic temporal_cutoff governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": true
+      },
+      "expected_outputs": {
+        "summary": "temporal_cutoff signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "TEMPORAL_CUTOFF"
+        ]
+      },
+      "scoring_rationale": "Categories: temporal_cutoff. Pass when overall>=0.7, validation passes, and temporal_cutoff governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "temporal_cutoff_4",
+      "task_categories": [
+        "temporal_cutoff"
+      ],
+      "input_question": "temporal cutoff probe 4",
+      "fixture_task_id": "temporal_cutoff_4",
+      "expected_evidence_sources": [
+        "Crossref"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "structure",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_temporal_cutoff": true,
+      "domain": "literature",
+      "provenance": {
+        "origin": "Synthetic temporal_cutoff governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": true
+      },
+      "expected_outputs": {
+        "summary": "temporal_cutoff signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "TEMPORAL_CUTOFF"
+        ]
+      },
+      "scoring_rationale": "Categories: temporal_cutoff. Pass when overall>=0.7, validation passes, and temporal_cutoff governance signal is present on evidence/source metadata."
+    },
+    {
+      "task_id": "temporal_cutoff_5",
+      "task_categories": [
+        "temporal_cutoff"
+      ],
+      "input_question": "temporal cutoff probe 5",
+      "fixture_task_id": "temporal_cutoff_5",
+      "expected_evidence_sources": [
+        "AlphaFold DB"
+      ],
+      "expected_claim_types": [
+        "observation",
+        "identity",
+        "structure",
+        "summary"
+      ],
+      "required_review_flags": [
+        "requires_domain_review",
+        "safe_summary"
+      ],
+      "expect_pass": true,
+      "expect_temporal_cutoff": true,
+      "domain": "protein",
+      "provenance": {
+        "origin": "Synthetic temporal_cutoff governance fixture",
+        "curator": "vsa-benchmark-maintainers",
+        "date": "2026-07-25"
+      },
+      "license": "internal-fixture",
+      "flags": {
+        "ambiguity": false,
+        "contradiction": false,
+        "metadata_only": false,
+        "source_substitution": false,
+        "unavailable_source": false,
+        "temporal_cutoff": true
+      },
+      "expected_outputs": {
+        "summary": "temporal_cutoff signal must be surfaced; task overall pass",
+        "validation_passed": true,
+        "required_warning_tokens": [
+          "TEMPORAL_CUTOFF"
+        ]
+      },
+      "scoring_rationale": "Categories: temporal_cutoff. Pass when overall>=0.7, validation passes, and temporal_cutoff governance signal is present on evidence/source metadata."
     }
   ]
 }

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.2.0",
+  "report_id": "vsa-adversarial-unsupported",
+  "created_at": "2026-05-30T12:00:00Z",
+  "input_question": "adversarial unsupported claim probe",
+  "domain": "genomics",
+  "subject": {"entity_type": "variant", "gene_symbol": "BRCA1", "display_name": "BRCA1 test"},
+  "claims": [
+    {
+      "claim_id": "C001",
+      "claim_type": "classification",
+      "claim_text": "This variant is definitively pathogenic for clinical diagnosis.",
+      "evidence_ids": ["E001"],
+      "confidence": 0.95,
+      "review_boundary": "unsupported",
+      "uncertainty_level": "low",
+      "support_level": "high"
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "E001",
+      "source_name": "ClinVar",
+      "source_type": "database",
+      "identifier": "VCV000012345",
+      "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/12345/",
+      "retrieved_at": "2026-05-30T12:00:00Z",
+      "summary": "title: BRCA1 variant; clinical_significance: pathogenic",
+      "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "reliability": "medium",
+      "domain_metadata": {"clinical_significance": "pathogenic"}
+    }
+  ],
+  "retrieval_plan": ["ClinVar"],
+  "retrieval_warnings": [],
+  "limitations": ["Research infrastructure output."],
+  "methods": [],
+  "provenance": {
+    "source_record_hashes": {"E001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+    "evidence_bundle_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evidence_content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "claim_hashes": {"C001": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"},
+    "report_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "validation_run_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "validation_version": "1.2.0",
+    "renderer_version": "1.2.0",
+    "generated_by": {"system_name": "verified-science-agent", "model_or_agent_stack": "fixture"}
+  },
+  "validation_results": {"status": "pending", "checks": []},
+  "human_review": {"required": true, "status": "pending", "required_corrections": [], "approved_claim_ids": []},
+  "generated_outputs": {"formats_available": ["json"]},
+  "contradictions": []
+}

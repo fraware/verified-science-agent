@@ -31,5 +31,18 @@ class EvidenceCache:
         path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
         return path
 
+    def set_by_digest(self, digest: str, record: dict[str, Any]) -> Path:
+        """Retain raw payload keyed by content digest for export/reconstruct."""
+        path = self.cache_dir / "_by_digest" / f"{digest}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+        return path
+
+    def get_by_digest(self, digest: str) -> dict[str, Any] | None:
+        path = self.cache_dir / "_by_digest" / f"{digest}.json"
+        if path.exists():
+            return json.loads(path.read_text(encoding="utf-8"))
+        return None
+
     def snapshot_path(self, connector: str, query: dict[str, Any]) -> str:
         return str(self._key_path(connector, query))

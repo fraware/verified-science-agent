@@ -1,0 +1,10 @@
+{
+  "data": [
+    {
+      "material_id": "mp-19017",
+      "formula_pretty": "LiFePO4",
+      "symmetry": {"crystal_system": "orthorhombic"},
+      "energy_above_hull": 0.0
+    }
+  ]
+}

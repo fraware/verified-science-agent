@@ -13,12 +13,39 @@ ALLOWED_CLAIM_KEYS = {
     "claim_id",
     "claim_type",
     "claim_text",
+    "claim_text_normalized",
     "evidence_ids",
+    "supporting_evidence_ids",
+    "contradicting_evidence_ids",
+    "source_spans",
+    "inference_method",
     "confidence",
+    "confidence_semantics",
     "review_boundary",
     "uncertainty_level",
     "support_level",
+    "validation_result",
+    "reviewer_status",
 }
+
+# Authoritative source fields — LLM output must never invent these.
+FORBIDDEN_SOURCE_KEYS = frozenset(
+    {
+        "content_digest",
+        "canonical_url",
+        "connector",
+        "raw_record_hash",
+        "retrieval_path",
+        "source_name",
+        "identifier",
+        "retrieved_at",
+        "accession",
+        "database_version",
+        "raw_response_retention",
+        "transformation_history",
+        "source_availability",
+    }
+)
 
 VALID_BOUNDARIES = {
     "safe_summary",
@@ -62,10 +89,19 @@ def _evidence_for_prompt(evidence: list[dict[str, Any]]) -> list[dict[str, Any]]
 
 
 def sanitize_claim(raw: dict[str, Any], evidence_ids: set[str], index: int) -> dict[str, Any] | None:
-    """Keep only allowed fields; reject claims referencing unknown evidence."""
-    eids = raw.get("evidence_ids") or []
+    """Keep only allowed fields; reject claims referencing unknown evidence.
+
+    Write barrier: drop any authoritative source fields the model may invent.
+    """
+    for key in FORBIDDEN_SOURCE_KEYS:
+        raw.pop(key, None)
+
+    eids = raw.get("supporting_evidence_ids") or raw.get("evidence_ids") or []
     if not eids or not all(eid in evidence_ids for eid in eids):
         return None
+    contradict = [
+        eid for eid in (raw.get("contradicting_evidence_ids") or []) if eid in evidence_ids
+    ]
 
     boundary = raw.get("review_boundary", "requires_domain_review")
     if boundary not in VALID_BOUNDARIES:
@@ -89,16 +125,22 @@ def sanitize_claim(raw: dict[str, Any], evidence_ids: set[str], index: int) -> d
         "claim_type": claim_type,
         "claim_text": text,
         "evidence_ids": list(eids),
+        "supporting_evidence_ids": list(eids),
+        "contradicting_evidence_ids": contradict,
         "confidence": confidence,
         "review_boundary": boundary,
         "uncertainty_level": raw.get("uncertainty_level", "medium"),
         "support_level": raw.get("support_level", "medium"),
+        "inference_method": "llm",
     }
     if claim["uncertainty_level"] not in ("low", "medium", "high", "unknown"):
         claim["uncertainty_level"] = "medium"
     if claim["support_level"] not in ("high", "medium", "low", "insufficient"):
         claim["support_level"] = "medium"
-    return claim
+
+    from vsa.claims.normalize import finalize_claim
+
+    return finalize_claim(claim, inference_method="llm")
 
 
 def extract_claims_llm(

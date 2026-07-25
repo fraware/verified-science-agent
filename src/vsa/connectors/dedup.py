@@ -3,11 +3,24 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass, field
 from typing import Any
 
 from vsa.connectors.base import NormalizedEvidence
 
 PAPER_SOURCES = frozenset({"OpenAlex", "Crossref", "PubMed", "Europe PMC", "Semantic Scholar"})
+
+
+@dataclass
+class DedupeResult:
+    """Deduped evidence plus provenance of dropped duplicates."""
+
+    items: list[NormalizedEvidence]
+    dropped: list[dict[str, Any]] = field(default_factory=list)
+
+    @property
+    def dropped_ids(self) -> list[str]:
+        return [str(d["dropped_id"]) for d in self.dropped if d.get("dropped_id")]
 
 
 def _normalize_doi(value: str) -> str:
@@ -48,16 +61,42 @@ def _prefer(a: NormalizedEvidence, b: NormalizedEvidence) -> bool:
 
 def dedupe_evidence(items: list[NormalizedEvidence]) -> list[NormalizedEvidence]:
     """Merge duplicate publication records; preserve first-seen order."""
+    return dedupe_evidence_with_meta(items).items
+
+
+def dedupe_evidence_with_meta(items: list[NormalizedEvidence]) -> DedupeResult:
+    """Merge duplicates and retain provenance of dropped identifiers."""
     key_to_index: dict[str, int] = {}
     output: list[NormalizedEvidence] = []
+    dropped: list[dict[str, Any]] = []
 
     for item in items:
         if item.source_name in PAPER_SOURCES:
             keys = _paper_keys(item) or {f"{item.source_name}:{item.identifier}"}
             existing_idx = next((key_to_index[k] for k in keys if k in key_to_index), None)
             if existing_idx is not None:
-                if _prefer(item, output[existing_idx]):
+                kept = output[existing_idx]
+                if _prefer(item, kept):
+                    dropped.append(
+                        {
+                            "dropped_id": kept.identifier,
+                            "dropped_source": kept.source_name,
+                            "kept_id": item.identifier,
+                            "kept_source": item.source_name,
+                            "match_keys": sorted(keys),
+                        }
+                    )
                     output[existing_idx] = item
+                else:
+                    dropped.append(
+                        {
+                            "dropped_id": item.identifier,
+                            "dropped_source": item.source_name,
+                            "kept_id": kept.identifier,
+                            "kept_source": kept.source_name,
+                            "match_keys": sorted(keys),
+                        }
+                    )
                 continue
             idx = len(output)
             output.append(item)
@@ -66,11 +105,21 @@ def dedupe_evidence(items: list[NormalizedEvidence]) -> list[NormalizedEvidence]
         else:
             key = f"{item.source_name}:{item.identifier}"
             if key in key_to_index:
+                kept = output[key_to_index[key]]
+                dropped.append(
+                    {
+                        "dropped_id": item.identifier,
+                        "dropped_source": item.source_name,
+                        "kept_id": kept.identifier,
+                        "kept_source": kept.source_name,
+                        "match_keys": [key],
+                    }
+                )
                 continue
             key_to_index[key] = len(output)
             output.append(item)
 
-    return output
+    return DedupeResult(items=output, dropped=dropped)
 
 
 def collect_ambiguity_warnings(evidence: list[dict[str, Any]]) -> list[str]:

@@ -31,8 +31,89 @@ def hash_source_records(evidence: list[dict[str, Any]]) -> dict[str, str]:
     }
 
 
+REVIEW_CHAIN_GENESIS_DIGEST = "0" * 64
+
+
+def digest_review_event(event: dict[str, Any]) -> str:
+    """Content-addressed digest of one review event for hash-linking.
+
+    Includes chain fields and either signature or unsigned_status so substitution
+    or status flips change the digest and break subsequent prior_event_digest links.
+    """
+    identity = event.get("reviewer_identity") or event.get("reviewer") or ""
+    decision = event.get("decision") or event.get("action") or ""
+    if "rationale" in event:
+        rationale = event.get("rationale") or ""
+    else:
+        rationale = event.get("notes") or ""
+    payload: dict[str, Any] = {
+        "timestamp": event.get("timestamp"),
+        "reviewer_identity": identity,
+        "claim_ids": list(event.get("claim_ids") or []),
+        "decision": decision,
+        "rationale": rationale,
+        "prior_event_digest": event.get("prior_event_digest"),
+    }
+    if event.get("corrections"):
+        payload["corrections"] = list(event["corrections"])
+    if event.get("signature"):
+        payload["signature"] = event["signature"]
+    else:
+        payload["unsigned_status"] = event.get("unsigned_status") or "unsigned"
+    return sha256_hex(canonical_json(payload))
+
+
 def hash_review_chain(events: list[dict[str, Any]]) -> str:
     return sha256_hex(canonical_json(events))
+
+
+def verify_review_event_links(events: list[dict[str, Any]]) -> list[str]:
+    """Verify append-only hash links, uniqueness, and signed|unsigned status."""
+    errors: list[str] = []
+    if not events:
+        return errors
+
+    seen_digests: set[str] = set()
+    expected_prior = REVIEW_CHAIN_GENESIS_DIGEST
+
+    for i, event in enumerate(events):
+        if not isinstance(event, dict):
+            errors.append(f"review event[{i}] is not an object")
+            continue
+
+        prior = event.get("prior_event_digest")
+        if prior != expected_prior:
+            errors.append(
+                f"review event[{i}] prior_event_digest mismatch "
+                "(deletion, reorder, or tamper detected)"
+            )
+
+        has_sig = bool(event.get("signature"))
+        has_unsigned = event.get("unsigned_status") is not None
+        if has_sig and has_unsigned:
+            errors.append(
+                f"review event[{i}] must not set both signature and unsigned_status"
+            )
+        elif not has_sig and not has_unsigned:
+            errors.append(f"review event[{i}] missing signature|unsigned_status")
+        elif has_unsigned and event.get("unsigned_status") != "unsigned":
+            errors.append(f"review event[{i}] unsigned_status must be 'unsigned'")
+
+        identity = event.get("reviewer_identity") or event.get("reviewer")
+        if not identity:
+            errors.append(f"review event[{i}] missing reviewer_identity")
+
+        decision = event.get("decision") or event.get("action")
+        if not decision:
+            errors.append(f"review event[{i}] missing decision")
+
+        digest = digest_review_event(event)
+        if digest in seen_digests:
+            errors.append(f"review event[{i}] duplicate event digest")
+        seen_digests.add(digest)
+        expected_prior = digest
+
+    return errors
 
 
 def hash_evidence_content(evidence: list[dict[str, Any]]) -> str:
@@ -72,6 +153,7 @@ def build_provenance(
         "subject": report.get("subject"),
         "claims": claims,
         "evidence": evidence,
+        "source_records": report.get("source_records") or [],
         "contradictions": report.get("contradictions", []),
         "human_review": report.get("human_review", {}),
     }
@@ -143,6 +225,7 @@ def verify_provenance_hashes(report: dict[str, Any]) -> list[str]:
         "subject": report.get("subject"),
         "claims": claims,
         "evidence": evidence,
+        "source_records": report.get("source_records") or [],
         "contradictions": report.get("contradictions", []),
         "human_review": report.get("human_review", {}),
     }
@@ -155,6 +238,9 @@ def verify_provenance_hashes(report: dict[str, Any]) -> list[str]:
         expected_chain = hash_review_chain(review_events)
         if provenance.get("review_chain_hash") != expected_chain:
             errors.append("provenance.review_chain_hash does not match review events")
+
+    if review_events:
+        errors.extend(verify_review_event_links(list(review_events)))
 
     return errors
 

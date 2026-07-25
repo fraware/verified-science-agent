@@ -1,0 +1,7 @@
+{
+  "id": "https://openalex.org/W123",
+  "title": "Example Nature paper",
+  "doi": "https://doi.org/10.1038/nature12373",
+  "publication_year": 2013,
+  "authorships": [{"author": {"display_name": "A Author"}}]
+}

@@ -15,10 +15,18 @@ def main() -> int:
     parser.add_argument("--live", action="store_true", help="Use live connector retrieval (network required)")
     parser.add_argument("--cache-dir", default=".vsa_cache")
     parser.add_argument("--tasks", type=Path, default=None)
+    parser.add_argument(
+        "--suite",
+        choices=["holdout", "dev"],
+        default="holdout",
+        help="Fixture suite (default: holdout evaluation set)",
+    )
     args = parser.parse_args()
-    summary = run_benchmark(args.tasks, offline=not args.live, cache_dir=args.cache_dir)
+    summary = run_benchmark(
+        args.tasks, offline=not args.live, cache_dir=args.cache_dir, suite=args.suite
+    )
     print(json.dumps(summary, indent=2))
-    return 0 if summary["failed"] == 0 else 1
+    return 0 if summary["failed"] == 0 and not summary.get("regression") else 1
 
 
 if __name__ == "__main__":

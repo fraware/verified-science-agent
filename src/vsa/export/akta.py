@@ -27,6 +27,11 @@ FORBIDDEN_AUTH_PATTERNS = [
     re.compile(r"\bgreen[- ]?light(?:ed)?\s+(?:to\s+)?(?:run|execute)\b", re.I),
     re.compile(r"\bgo[- ]?ahead\s+to\s+(?:run|execute)\b", re.I),
     re.compile(r"\bauthorized\s+to\s+(?:run|execute|proceed)\b", re.I),
+    # Structured field-name smuggling in free text (JSON/YAML-like assignment)
+    re.compile(
+        r"""["']?(?:allowed_tools|grants|authorization_scopes|reviewer_approvals|runtime_permissions)["']?\s*[:=]""",
+        re.I,
+    ),
 ]
 
 # Execution class is informational only; reject values that sound like grants.
@@ -51,12 +56,45 @@ NON_CLAIMS = {
     "certifies_scientific_correctness": False,
 }
 
+# Structured injection deny-list (top-level or nested). Schema additionalProperties
+# also rejects these on known objects; semantic validation covers smuggling paths.
+FORBIDDEN_AUTH_FIELDS = frozenset(
+    {
+        "allowed_tools",
+        "grants",
+        "grant",
+        "authorization_scopes",
+        "reviewer_approvals",
+        "runtime_permissions",
+        "permission",
+        "permissions",
+        "approved",
+        "executable",
+    }
+)
+
 
 def _scan_forbidden(text: str) -> list[str]:
     hits = []
     for pat in FORBIDDEN_AUTH_PATTERNS:
         if pat.search(text):
             hits.append(pat.pattern)
+    return hits
+
+
+def _collect_forbidden_field_paths(obj: Any, *, path: str = "") -> list[str]:
+    """Walk nested dict/list structures for deny-listed authorization field names."""
+    hits: list[str] = []
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            key_s = str(key)
+            child = f"{path}.{key_s}" if path else key_s
+            if key_s in FORBIDDEN_AUTH_FIELDS:
+                hits.append(child)
+            hits.extend(_collect_forbidden_field_paths(value, path=child))
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            hits.extend(_collect_forbidden_field_paths(item, path=f"{path}[{i}]"))
     return hits
 
 
@@ -85,10 +123,13 @@ def semantic_validate_akta_context(context: dict[str, Any]) -> list[str]:
     digests = context.get("digests") or {}
     if not digests.get("report_hash") and not digests.get("bundle_hash"):
         errors.append("digests must include report_hash and/or bundle_hash")
-    # Reject any accidental grant-like fields that might be injected
-    for banned in ("grant", "grants", "permission", "permissions", "approved", "executable"):
-        if banned in context:
-            errors.append(f"forbidden field present on AktaActionContext: {banned}")
+
+    for field_path in _collect_forbidden_field_paths(context):
+        # authorization itself is required and must be "none" — already checked above
+        if field_path == "authorization" or field_path.endswith(".authorization"):
+            continue
+        errors.append(f"forbidden field present on AktaActionContext: {field_path}")
+
     candidate = context.get("candidate_execution") or {}
     if candidate.get("authorization") not in (None, "none"):
         errors.append("candidate_execution.authorization must be absent or 'none'")

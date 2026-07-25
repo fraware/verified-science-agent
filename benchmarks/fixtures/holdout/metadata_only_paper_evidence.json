@@ -1,0 +1,17 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "Crossref",
+    "source_type": "publication",
+    "identifier": "10.1038/nature12373",
+    "retrieval_path": "https://doi.org/10.1038/nature12373",
+    "retrieved_at": "2018-01-01T00:00:00Z",
+    "summary": "title: Metadata-only paper; authors: Author A",
+    "raw_record_hash": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "domain_metadata": {
+      "doi": "10.1038/nature12373",
+      "title": "Metadata-only paper",
+      "content_level": "metadata"
+    }
+  }
+]

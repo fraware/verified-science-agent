@@ -151,6 +151,12 @@ def _credibility_warning_lines(report: dict[str, Any]) -> list[str]:
         "STRUCTURE WARNING",
         "AMBIGUITY ALERT",
         "CONTENT WARNING",
+        "RETRACTION ALERT",
+        "CITATION INTEGRITY",
+        "SOURCE-TITLE MISMATCH",
+        "DUPLICATE EVIDENCE",
+        "PROMPT INJECTION",
+        "SPAN SUPPORT",
     )
     seen: set[str] = set()
     lines: list[str] = []

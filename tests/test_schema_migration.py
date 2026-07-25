@@ -41,6 +41,45 @@ def test_migrate_1_1_to_1_2(brca1_report):
     report = copy.deepcopy(brca1_report)
     report["schema_version"] = "1.1.0"
     report.pop("domain", None)
+    report.pop("source_records", None)
+    report.pop("claim_evidence_graph", None)
+    for claim in report.get("claims") or []:
+        for key in (
+            "claim_text_normalized",
+            "supporting_evidence_ids",
+            "contradicting_evidence_ids",
+            "source_spans",
+            "inference_method",
+            "confidence_semantics",
+            "validation_result",
+            "reviewer_status",
+        ):
+            claim.pop(key, None)
     migrated = migrate_schema(report, target="1.2.0")
     assert migrated["schema_version"] == "1.2.0"
     assert migrated.get("domain") == "genomics"
+
+
+def test_migrate_1_2_to_1_3(brca1_report):
+    report = copy.deepcopy(brca1_report)
+    report["schema_version"] = "1.2.0"
+    report.pop("source_records", None)
+    report.pop("claim_evidence_graph", None)
+    for claim in report.get("claims") or []:
+        for key in (
+            "claim_text_normalized",
+            "supporting_evidence_ids",
+            "contradicting_evidence_ids",
+            "source_spans",
+            "inference_method",
+            "confidence_semantics",
+            "validation_result",
+            "reviewer_status",
+        ):
+            claim.pop(key, None)
+        # leave legacy evidence_ids
+    migrated = migrate_schema(report, target="1.3.0")
+    assert migrated["schema_version"] == "1.3.0"
+    assert migrated.get("source_records")
+    assert migrated["claims"][0].get("supporting_evidence_ids") is not None
+    assert migrated.get("claim_evidence_graph")

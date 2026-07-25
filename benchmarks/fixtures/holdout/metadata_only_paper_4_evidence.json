@@ -1,0 +1,17 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "PubMed",
+    "source_type": "publication",
+    "identifier": "PMID:99999901",
+    "retrieval_path": "https://pubmed.ncbi.nlm.nih.gov/99999901/",
+    "retrieved_at": "2017-01-01T00:00:00Z",
+    "summary": "title: Metadata-only PubMed stub",
+    "raw_record_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "domain_metadata": {
+      "pmid": "99999901",
+      "title": "Metadata-only PubMed stub",
+      "content_level": "metadata"
+    }
+  }
+]

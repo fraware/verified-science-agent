@@ -15,7 +15,7 @@ def test_export_bundle_includes_manifest_and_attestation(brca1_report, tmp_path:
     assert "report_md" in paths
     assert Path(paths["sources"]).exists()
     manifest = json.loads(Path(paths["manifest"]).read_text(encoding="utf-8"))
-    assert manifest["bundle_version"] == "1.1.0"
+    assert manifest["bundle_version"] == "1.2.0"
     assert manifest.get("schema_version")
     assert manifest.get("validation_version")
     assert manifest.get("created_at")

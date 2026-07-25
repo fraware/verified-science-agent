@@ -23,13 +23,13 @@ inputs, source records, claims, validation, provenance, and review status.
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
 ![Version](https://img.shields.io/badge/version-v0.7.2-orange)
-![Schema](https://img.shields.io/badge/ScientificReport-1.2.0-blue)
+![Schema](https://img.shields.io/badge/ScientificReport-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Benchmark](https://img.shields.io/badge/benchmark-50%20tasks-brightgreen)
 
 <br>
 
-[Documentation](docs/README.md) · [Decision-time quick start](docs/decision-time-quickstart.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md)
+[Documentation](docs/README.md) · [Decision-time quick start](docs/decision-time-quickstart.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md) · [Signing](docs/signing.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md)
 
 </div>
 
@@ -80,7 +80,7 @@ Or run the full suite in one step:
 make acceptance
 ```
 
-`make acceptance` runs a demo build, all offline tests, and the 50-task evaluation suite.
+`make acceptance` runs a demo build, all offline tests, and the 50-task evaluation suite. Live connectors are never run in this gate (`VSA_ALLOW_NETWORK` unset; `pytest -m 'not live'`). The run writes `reports/acceptance_baseline.json` listing every skipped live connector.
 
 <details>
 <summary><strong>Typical workflow</strong></summary>
@@ -133,7 +133,7 @@ Guide: [docs/decision-time-quickstart.md](docs/decision-time-quickstart.md) · O
 
 | Area | What you get |
 |------|----------------|
-| **Artifacts** | Canonical `ScientificReport` schema (**1.2.0**), provenance hashes, export bundles |
+| **Artifacts** | Canonical `ScientificReport` schema (**1.3.0**), provenance hashes, export bundles |
 | **Credibility** | ClinVar ambiguity alerts, metadata-only warnings, AlphaFold predicted-structure labeling |
 | **Verification** | Schema + semantic validation, rule/hybrid audit, SLSA/in-toto attestation |
 | **Review** | Human review workflow with verifiable event chains |
@@ -242,7 +242,7 @@ The LLM auditor evaluates only claim text and cited evidence in the payload — 
 
 ## ScientificReport schema
 
-Canonical artifact model (schema **1.2.0**, also accepts **1.0.0** and **1.1.0**):
+Canonical artifact model (schema **1.3.0**, also accepts **1.0.0**, **1.1.0**, and **1.2.0**):
 
 ```
 ScientificReport
@@ -298,7 +298,7 @@ Measures source recall/precision, citation integrity, evidence validity, review 
 verified-science-agent/
 ├── src/vsa/            CLI, pipeline, connectors, validation, API, decision-time
 ├── schemas/            Public JSON Schema mirrors (byte-identical to src/vsa/schemas/)
-├── benchmarks/         50 tasks + offline fixtures
+├── benchmarks/         66 tasks + holdout/dev fixtures
 ├── examples/           Input files, good/bad reports, decision_time examples
 ├── docs/               Architecture, schema, connectors, API, decision-time
 ├── ui/                 Streamlit inspector

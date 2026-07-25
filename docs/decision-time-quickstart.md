@@ -1,6 +1,6 @@
 # Decision-time and AKTA export — quick start
 
-Freeze evidence at a cutoff, verify the bundle, and export AKTA context. Companion schemas are additive; ScientificReport **1.2.0** is unchanged.
+Freeze evidence at a cutoff, verify the bundle, and export AKTA context. Companion schemas are additive; ScientificReport **1.3.0** is unchanged.
 
 **Non-claims:** VSA does not authorize actions, execute tools, issue grants, or certify scientific correctness.
 
