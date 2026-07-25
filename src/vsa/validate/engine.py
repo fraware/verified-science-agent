@@ -10,6 +10,12 @@ from vsa.schema import assert_schema_version, validate_schema
 from vsa.scoring.evidence_quality import score_evidence
 from vsa.validate.contradictions import detect_contradictions
 from vsa.version import VALIDATION_VERSION
+from vsa.claims.normalize import (
+    build_claim_evidence_graph,
+    cited_evidence_ids,
+    supporting_ids,
+    contradicting_ids,
+)
 
 REVIEW_BOUNDARIES = {
     "safe_summary",
@@ -79,30 +85,61 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
     evidence = report.get("evidence", [])
     claims = report.get("claims", [])
     evidence_ids = {e.get("evidence_id") for e in evidence if isinstance(e, dict)}
+    evidence_by_id = {e.get("evidence_id"): e for e in evidence if isinstance(e, dict) and e.get("evidence_id")}
+    source_records = {
+        r.get("source_id"): r
+        for r in (report.get("source_records") or [])
+        if isinstance(r, dict) and r.get("source_id")
+    }
 
-    # Every claim has evidence
-    missing_evidence_claims = [
-        c.get("claim_id", "?")
-        for c in claims
-        if not c.get("evidence_ids")
-    ]
+    # Every claim has explicit support OR unsupported boundary with empty support
+    missing_support: list[str] = []
+    unsupported_with_support: list[str] = []
+    for c in claims:
+        cid = c.get("claim_id", "?")
+        support = supporting_ids(c)
+        boundary = c.get("review_boundary")
+        if boundary == "unsupported":
+            if support:
+                unsupported_with_support.append(cid)
+        elif not support and not c.get("evidence_ids"):
+            missing_support.append(cid)
+        elif not support:
+            missing_support.append(cid)
     _add(
         checks,
         "claim_evidence",
-        "Every claim has evidence",
-        not missing_evidence_claims,
-        f"claims without evidence: {missing_evidence_claims}" if missing_evidence_claims else "all claims cite evidence",
+        "Every claim has evidence support or unsupported boundary",
+        not missing_support and not unsupported_with_support,
+        (
+            f"missing support: {missing_support}; unsupported-with-support: {unsupported_with_support}"
+            if (missing_support or unsupported_with_support)
+            else "all claims have explicit support or unsupported status"
+        ),
     )
-    if missing_evidence_claims:
-        errors.append(f"claims missing evidence_ids: {missing_evidence_claims}")
+    if missing_support:
+        errors.append(f"claims missing supporting evidence: {missing_support}")
+    if unsupported_with_support:
+        errors.append(
+            f"unsupported claims must have empty supporting_evidence_ids: {unsupported_with_support}"
+        )
 
-    # Evidence references exist
+    # Evidence references exist (supporting, contradicting, legacy, spans)
     dangling_refs: list[str] = []
     for claim in claims:
         cid = claim.get("claim_id", "?")
-        for eid in claim.get("evidence_ids", []):
+        for eid in cited_evidence_ids(claim):
             if eid not in evidence_ids:
                 dangling_refs.append(f"{cid}->{eid}")
+        for span in claim.get("source_spans") or []:
+            if not isinstance(span, dict):
+                continue
+            eid = span.get("evidence_id")
+            if eid and eid not in evidence_ids:
+                dangling_refs.append(f"{cid}->span:{eid}")
+            sid = span.get("source_id")
+            if sid and source_records and sid not in source_records:
+                dangling_refs.append(f"{cid}->span_source:{sid}")
     _add(
         checks,
         "evidence_refs",
@@ -112,6 +149,78 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
     )
     if dangling_refs:
         errors.append(f"claims reference missing evidence: {dangling_refs}")
+
+    # Write barrier: evidence authoritative fields must match SourceRecords
+    forged_authority: list[str] = []
+    if source_records:
+        for ev in evidence:
+            if not isinstance(ev, dict):
+                continue
+            eid = ev.get("evidence_id", "?")
+            sid = ev.get("source_id")
+            if not sid or sid not in source_records:
+                forged_authority.append(f"{eid}: missing or unknown source_id")
+                continue
+            sr = source_records[sid]
+            if ev.get("raw_record_hash") and ev["raw_record_hash"] != sr.get("content_digest"):
+                forged_authority.append(f"{eid}: content_digest/raw_record_hash mismatch")
+            if ev.get("retrieval_path") and ev["retrieval_path"] != sr.get("canonical_url"):
+                forged_authority.append(f"{eid}: canonical_url/retrieval_path mismatch")
+            if ev.get("source_name") and ev["source_name"] != sr.get("connector"):
+                forged_authority.append(f"{eid}: connector/source_name mismatch")
+            if ev.get("identifier") and ev["identifier"] != sr.get("accession"):
+                forged_authority.append(f"{eid}: accession/identifier mismatch")
+    _add(
+        checks,
+        "source_authority",
+        "Evidence authoritative fields match SourceRecords",
+        not forged_authority,
+        "; ".join(forged_authority) or "source authority intact",
+    )
+    if forged_authority:
+        errors.append(f"forged or mismatched authoritative source fields: {forged_authority}")
+
+    # Evidence reused outside declared subject scope
+    subject = report.get("subject") or {}
+    subject_key = (
+        subject.get("display_name")
+        or subject.get("gene_symbol")
+        or (subject.get("identifiers") or {}).get("primary")
+    )
+    scope_violations: list[str] = []
+    if subject_key:
+        for claim in claims:
+            cid = claim.get("claim_id", "?")
+            for eid in supporting_ids(claim) + contradicting_ids(claim):
+                ev = evidence_by_id.get(eid) or {}
+                meta = ev.get("domain_metadata") or {}
+                ev_subject = meta.get("subject_key")
+                if ev_subject and str(ev_subject) != str(subject_key):
+                    scope_violations.append(f"{cid}->{eid}: subject_key={ev_subject!r}")
+    _add(
+        checks,
+        "evidence_scope",
+        "Evidence subject scope matches claim subject",
+        not scope_violations,
+        f"out-of-scope evidence: {scope_violations}" if scope_violations else "evidence within subject scope",
+    )
+    if scope_violations:
+        errors.append(f"evidence reused outside declared scope: {scope_violations}")
+
+    # Claim–evidence graph present and free of dangling edges
+    graph = report.get("claim_evidence_graph") or build_claim_evidence_graph(report)
+    dangling_edges = [
+        e for e in (graph.get("edges") or []) if isinstance(e, dict) and not e.get("resolves", True)
+    ]
+    _add(
+        checks,
+        "claim_evidence_graph",
+        "Claim–evidence graph edges resolve",
+        not dangling_edges,
+        f"dangling graph edges: {dangling_edges}" if dangling_edges else "graph edges resolve",
+    )
+    if dangling_edges:
+        errors.append(f"claim_evidence_graph has dangling edges: {dangling_edges}")
 
     # Evidence source type and retrieval path
     bad_evidence: list[str] = []
@@ -309,6 +418,169 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
     )
     errors.extend(alphafold_issues)
 
+    # --- Credibility red-team checks (VSA-06) ---
+    from vsa.scientific.credibility import (
+        detect_duplicate_evidence,
+        detect_fabricated_citations,
+        detect_metadata_as_fulltext,
+        detect_predicted_as_experimental,
+        detect_prompt_injection,
+        detect_retracted_papers,
+        detect_title_mismatches,
+        detect_unsupported_spans,
+    )
+
+    fabricated = detect_fabricated_citations(evidence)
+    _add(
+        checks,
+        "fabricated_citations",
+        "Citation identifier integrity",
+        not fabricated,
+        f"fabricated/malformed citations: {fabricated}" if fabricated else "citation identifiers intact",
+    )
+    if fabricated:
+        errors.append(f"fabricated or malformed citation identifiers: {fabricated}")
+
+    title_mismatch = detect_title_mismatches(evidence)
+    _add(
+        checks,
+        "source_title_mismatch",
+        "Source-title consistency",
+        not title_mismatch,
+        f"title mismatches: {title_mismatch}" if title_mismatch else "titles consistent",
+    )
+    if title_mismatch:
+        errors.append(f"source-title mismatch: {title_mismatch}")
+
+    retracted = detect_retracted_papers(evidence)
+    _add(
+        checks,
+        "retracted_papers",
+        "Retracted publication exclusion",
+        not retracted,
+        f"retracted evidence: {retracted}" if retracted else "no retracted publications",
+    )
+    if retracted:
+        errors.append(f"retracted publications cited: {retracted}")
+
+    dup = detect_duplicate_evidence(evidence)
+    dup_fail = bool(dup["duplicate_ids"])
+    dup_warn = bool(dup["duplicate_digests"]) and not dup_fail
+    _add(
+        checks,
+        "duplicate_evidence",
+        "Duplicate evidence detection",
+        not dup_fail and not dup_warn,
+        (
+            f"duplicate_ids={dup['duplicate_ids']}; duplicate_digests={dup['duplicate_digests']}"
+            if (dup_fail or dup_warn)
+            else "no duplicate evidence"
+        ),
+        warn=dup_warn,
+    )
+    if dup_fail:
+        errors.append(f"duplicate evidence_id: {dup['duplicate_ids']}")
+
+    meta_as_ft = detect_metadata_as_fulltext(evidence)
+    _add(
+        checks,
+        "metadata_as_fulltext",
+        "Metadata-as-fulltext integrity",
+        not meta_as_ft,
+        f"metadata claimed as fulltext: {meta_as_ft}" if meta_as_ft else "content levels consistent",
+        warn=bool(meta_as_ft),
+    )
+    # Soft fail via warn + require limitation/warning visibility when present without demotion path
+    if meta_as_ft:
+        lim_rw = " ".join(
+            str(x) for x in list(report.get("limitations") or []) + list(report.get("retrieval_warnings") or [])
+        )
+        if "CONTENT WARNING" not in lim_rw.upper() and "METADATA" not in lim_rw.upper():
+            errors.append(f"metadata presented as fulltext without CONTENT WARNING: {meta_as_ft}")
+
+    predicted_exp = detect_predicted_as_experimental(evidence, claims)
+    _add(
+        checks,
+        "predicted_as_experimental",
+        "Predicted structures not presented as experimental",
+        not predicted_exp,
+        "; ".join(predicted_exp) or "no predicted→experimental misrepresentation",
+    )
+    if predicted_exp:
+        errors.extend(predicted_exp)
+
+    # Post-cutoff leakage when a decision-time cutoff is attached to the report
+    cutoff = report.get("decision_time_cutoff")
+    post_cutoff: list[str] = []
+    cutoff_ts_errors: list[str] = []
+    if cutoff:
+        from vsa.decision_time.cutoff import apply_cutoff_filter
+
+        included, excluded, cutoff_errs = apply_cutoff_filter(evidence, str(cutoff))
+        cutoff_ts_errors = list(cutoff_errs)
+        # Evidence still present in the report but past cutoff is leakage
+        post_cutoff = [str(e.get("evidence_id") or "?") for e in excluded]
+        # Fail closed if claims support themselves with post-cutoff IDs that remain included wrongly
+        # (included set after filter should be the only admissible set)
+        admissible = {str(e.get("evidence_id")) for e in included}
+        for claim in claims:
+            for eid in supporting_ids(claim):
+                if eid not in admissible and eid in {str(e.get("evidence_id")) for e in evidence}:
+                    leak = f"{claim.get('claim_id')}->{eid}"
+                    if leak not in post_cutoff:
+                        post_cutoff.append(leak)
+    cutoff_ok = not post_cutoff and not cutoff_ts_errors
+    _add(
+        checks,
+        "post_cutoff_leakage",
+        "Post-cutoff evidence leakage",
+        cutoff_ok if cutoff else True,
+        (
+            f"post-cutoff leakage: {post_cutoff}; timestamp errors: {cutoff_ts_errors}"
+            if not cutoff_ok
+            else "no post-cutoff leakage"
+        ),
+    )
+    if post_cutoff:
+        errors.append(f"post-cutoff evidence leakage: {post_cutoff}")
+    errors.extend(cutoff_ts_errors)
+
+    span_bad = detect_unsupported_spans(claims, evidence)
+    _add(
+        checks,
+        "span_support",
+        "Claim text supported by cited span",
+        not span_bad,
+        f"unsupported spans: {span_bad}" if span_bad else "cited spans support claims",
+    )
+    if span_bad:
+        errors.append(f"claim text unsupported by cited span: {span_bad}")
+
+    injections = detect_prompt_injection(evidence)
+    _add(
+        checks,
+        "prompt_injection",
+        "Prompt injection in source content",
+        not injections,
+        f"prompt injection in: {injections}" if injections else "no prompt injection detected",
+        warn=bool(injections),
+    )
+    if injections:
+        lim_rw = " ".join(
+            str(x) for x in list(report.get("limitations") or []) + list(report.get("retrieval_warnings") or [])
+        )
+        demoted = any(
+            (c.get("domain_metadata") or {}).get("confidence_demoted")
+            or (
+                isinstance(c.get("confidence"), (int, float))
+                and float(c["confidence"]) <= 0.35
+                and set(cited_evidence_ids(c)) & set(injections)
+            )
+            for c in claims
+        )
+        if "PROMPT INJECTION" not in lim_rw.upper() and not demoted:
+            errors.append(f"prompt injection accepted silently: {injections}")
+
     # ClinVar ambiguity must surface in report warnings when present
     ambiguous_clinvar = [
         ev.get("evidence_id", "?")
@@ -380,7 +652,7 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
             and "not" not in text
             and "do not" not in text
         ):
-            for eid in claim.get("evidence_ids") or []:
+            for eid in cited_evidence_ids(claim):
                 ev = next((e for e in evidence if e.get("evidence_id") == eid), None)
                 if ev and (ev.get("domain_metadata") or {}).get("structure_type") == "predicted":
                     _add(
@@ -392,6 +664,54 @@ def validate_report(report: dict[str, Any], *, verify_hashes: bool = True) -> Va
                         warn=True,
                     )
                     break
+
+    # Retrieval status must remain visible — failure ≠ silent empty evidence
+    retrieval_status = report.get("retrieval_status") or "complete"
+    rw_joined = " ".join(str(x) for x in report.get("retrieval_warnings", []))
+    outcomes = report.get("connector_outcomes") or []
+    hard_codes = {
+        "connector_timeout",
+        "connector_rate_limited",
+        "connector_failure",
+        "malformed_response",
+    }
+    hard_outcomes = [
+        o
+        for o in outcomes
+        if isinstance(o, dict) and (o.get("code") in hard_codes or o.get("status") in hard_codes)
+    ]
+    if retrieval_status in {"partial", "failed"}:
+        visible = (
+            retrieval_status in rw_joined
+            or "partial_retrieval" in rw_joined
+            or any(code in rw_joined for code in hard_codes)
+            or bool(hard_outcomes)
+        )
+        _add(
+            checks,
+            "retrieval_status_visible",
+            "Retrieval failure visibility",
+            visible,
+            f"retrieval_status={retrieval_status} must appear in warnings/outcomes",
+            warn=True,
+        )
+    elif hard_outcomes:
+        _add(
+            checks,
+            "retrieval_status_visible",
+            "Retrieval failure visibility",
+            False,
+            f"hard connector failures without retrieval_status partial/failed: {[o.get('connector') for o in hard_outcomes]}",
+            warn=True,
+        )
+    else:
+        _add(
+            checks,
+            "retrieval_status_visible",
+            "Retrieval failure visibility",
+            True,
+            f"retrieval_status={retrieval_status}",
+        )
 
     fail_count = sum(1 for c in checks if c.status == "fail")
     warn_count = sum(1 for c in checks if c.status == "warn")
