@@ -1,10 +1,59 @@
-"""Human review workflow for claim-by-claim approval."""
+"""Human review workflow for claim-by-claim approval with hash-linked events."""
 
 from __future__ import annotations
 
 from typing import Any
 
-from vsa.provenance.hashchain import hash_review_chain, now_utc_iso, stamp_report
+from vsa.provenance.hashchain import (
+    REVIEW_CHAIN_GENESIS_DIGEST,
+    digest_review_event,
+    hash_review_chain,
+    now_utc_iso,
+    stamp_report,
+    verify_review_event_links,
+)
+
+
+def _event_identity(event: dict[str, Any]) -> str:
+    return str(event.get("reviewer_identity") or event.get("reviewer") or "")
+
+
+def _build_event(
+    *,
+    reviewer_identity: str,
+    decision: str,
+    claim_ids: list[str] | None = None,
+    rationale: str | None = None,
+    corrections: list[str] | None = None,
+    prior_event_digest: str,
+    signature: str | None = None,
+) -> dict[str, Any]:
+    """Build a hash-linkable review event (signed or explicitly unsigned)."""
+    event: dict[str, Any] = {
+        "timestamp": now_utc_iso(),
+        "reviewer_identity": reviewer_identity,
+        "reviewer": reviewer_identity,  # legacy alias
+        "decision": decision,
+        "action": decision,  # legacy alias
+        "claim_ids": list(claim_ids or []),
+        "prior_event_digest": prior_event_digest,
+    }
+    if rationale:
+        event["rationale"] = rationale
+        event["notes"] = rationale  # legacy alias
+    if corrections:
+        event["corrections"] = corrections
+    if signature:
+        event["signature"] = signature
+    else:
+        event["unsigned_status"] = "unsigned"
+    return event
+
+
+def _prior_digest(events: list[dict[str, Any]]) -> str:
+    if not events:
+        return REVIEW_CHAIN_GENESIS_DIGEST
+    return digest_review_event(events[-1])
 
 
 def _append_event(
@@ -15,21 +64,20 @@ def _append_event(
     claim_ids: list[str] | None = None,
     notes: str | None = None,
     corrections: list[str] | None = None,
+    signature: str | None = None,
 ) -> dict[str, Any]:
     report = dict(report)
     hr = dict(report.get("human_review", {}))
-    event: dict[str, Any] = {
-        "timestamp": now_utc_iso(),
-        "reviewer": reviewer_identity,
-        "action": action,
-        "claim_ids": claim_ids or [],
-    }
-    if notes:
-        event["notes"] = notes
-    if corrections:
-        event["corrections"] = corrections
-
     events = list(hr.get("review_events") or [])
+    event = _build_event(
+        reviewer_identity=reviewer_identity,
+        decision=action,
+        claim_ids=claim_ids,
+        rationale=notes,
+        corrections=corrections,
+        prior_event_digest=_prior_digest(events),
+        signature=signature,
+    )
     events.append(event)
     hr["review_events"] = events
     hr["reviewer_identity"] = reviewer_identity
@@ -145,6 +193,7 @@ def apply_review(
     required_corrections: list[str] | None = None,
     reject: bool = False,
     review_notes: str | None = None,
+    signature: str | None = None,
 ) -> dict[str, Any]:
     """Apply a human review event and update report metadata."""
     report = dict(report)
@@ -176,30 +225,30 @@ def apply_review(
         status = "in_progress"
         action = review_decision
 
-    event = {
-        "timestamp": now_utc_iso(),
-        "reviewer": reviewer_identity,
-        "action": action,
-        "claim_ids": approved,
-    }
-    if review_notes:
-        event["notes"] = review_notes
-
     hr = dict(report.get("human_review", {}))
+    events = list(hr.get("review_events") or [])
+    event = _build_event(
+        reviewer_identity=reviewer_identity,
+        decision=action,
+        claim_ids=approved,
+        rationale=review_notes,
+        prior_event_digest=_prior_digest(events),
+        signature=signature,
+    )
+    events.append(event)
+
     hr.update(
         {
             "required": True,
             "status": status,
             "reviewer_identity": reviewer_identity,
-            "review_timestamp": now_utc_iso(),
+            "review_timestamp": event["timestamp"],
             "review_decision": review_decision,
             "approved_claim_ids": approved,
             "required_corrections": required_corrections or hr.get("required_corrections", []),
+            "review_events": events,
         }
     )
-    events = list(hr.get("review_events") or [])
-    events.append(event)
-    hr["review_events"] = events
     report["human_review"] = hr
 
     prov = dict(report.get("provenance", {}))
@@ -207,16 +256,32 @@ def apply_review(
     prov["review_event_hash"] = hash_review_chain([event])
     report["provenance"] = prov
 
-    report = stamp_report(report)
-    return report
+    return stamp_report(report)
 
 
 def verify_review_chain(report: dict[str, Any]) -> tuple[bool, list[str]]:
-    """Verify review event chain hashes in provenance."""
-    from vsa.provenance.hashchain import verify_provenance_hashes
+    """Verify review event chain hashes and hash-linked integrity."""
+    errors: list[str] = []
+    provenance = report.get("provenance") or {}
+    events = list((report.get("human_review") or {}).get("review_events") or [])
 
-    errors = [e for e in verify_provenance_hashes(report) if "review" in e.lower()]
-    events = (report.get("human_review") or {}).get("review_events") or []
-    if events and not (report.get("provenance") or {}).get("review_chain_hash"):
+    if events and not provenance.get("review_chain_hash"):
         errors.append("review events present but provenance.review_chain_hash missing")
+    elif events and provenance.get("review_chain_hash"):
+        expected_chain = hash_review_chain(events)
+        if provenance.get("review_chain_hash") != expected_chain:
+            errors.append("provenance.review_chain_hash does not match review events")
+
+    errors.extend(verify_review_event_links(events))
+
+    hr = report.get("human_review") or {}
+    if events:
+        last_identity = _event_identity(events[-1])
+        hr_identity = hr.get("reviewer_identity")
+        if hr_identity and last_identity and hr_identity != last_identity:
+            errors.append(
+                "human_review.reviewer_identity does not match latest review event "
+                "(reviewer substitution without new event)"
+            )
+
     return not errors, errors
