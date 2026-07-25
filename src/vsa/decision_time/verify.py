@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from typing import Any
 
 from vsa.companion_schema import schema_digest, validate_companion
 from vsa.decision_time.cutoff import apply_cutoff_filter, parse_timestamp
+from vsa.decision_time.metrics import assert_privacy_safe_metrics
 from vsa.decision_time.pcs import verify_portable_refs
 from vsa.decision_time.snapshot import BUNDLE_SCHEMA_NAME, compute_bundle_hash
 from vsa.provenance.hashchain import hash_source_records
@@ -52,9 +54,14 @@ def verify_decision_time_bundle(
     bundle: dict[str, Any],
     *,
     require_signature: bool = False,
+    trusted_public_keys_b64: Collection[str] | None = None,
 ) -> BundleVerifyResult:
     checks: list[dict[str, str]] = []
     errors: list[str] = []
+
+    if trusted_public_keys_b64 is not None and not require_signature:
+        # Trust pins imply signature must be present and match.
+        require_signature = True
 
     version = bundle.get("schema_version")
     if version != DECISION_TIME_BUNDLE_SCHEMA_VERSION:
@@ -90,11 +97,43 @@ def verify_decision_time_bundle(
     included = list(bundle.get("included_evidence") or [])
     excluded = list(bundle.get("excluded_post_cutoff") or [])
 
+    # Duplicate / overlap evidence IDs (fail closed)
+    included_ids = [
+        str(e.get("evidence_id")) for e in included if isinstance(e, dict) and e.get("evidence_id")
+    ]
+    excluded_ids = [
+        str(e.get("evidence_id")) for e in excluded if isinstance(e, dict) and e.get("evidence_id")
+    ]
+    dup_included = sorted({i for i in included_ids if included_ids.count(i) > 1})
+    overlap = sorted(set(included_ids) & set(excluded_ids))
+    if dup_included:
+        msg = f"duplicate evidence_id in included_evidence: {dup_included}"
+        _check(checks, "evidence_id_unique", "Included evidence IDs unique", False, msg)
+        errors.append(msg)
+    else:
+        _check(
+            checks,
+            "evidence_id_unique",
+            "Included evidence IDs unique",
+            True,
+            f"{len(included_ids)} unique included ids",
+        )
+    if overlap:
+        msg = f"evidence_id present in both included and excluded: {overlap}"
+        _check(checks, "evidence_id_partition", "Included/excluded partition", False, msg)
+        errors.append(msg)
+    else:
+        _check(
+            checks,
+            "evidence_id_partition",
+            "Included/excluded partition",
+            True,
+            "no included/excluded overlap",
+        )
+
     # Re-run cutoff: no post-cutoff in included
     if cutoff_ok:
-        re_included, re_excluded, cutoff_errs = apply_cutoff_filter(
-            included, str(cutoff), require_timestamps=True
-        )
+        re_included, re_excluded, cutoff_errs = apply_cutoff_filter(included, str(cutoff))
         if cutoff_errs:
             _check(
                 checks,
@@ -198,20 +237,34 @@ def verify_decision_time_bundle(
     if not nc_ok:
         errors.append("non_claims must all be false")
 
-    # Signature (optional unless required)
+    # Privacy-safe metrics (counts/histograms only)
+    metric_errors = assert_privacy_safe_metrics(bundle.get("privacy_safe_metrics"))
+    _check(
+        checks,
+        "privacy_safe_metrics",
+        "Privacy-safe metrics shape",
+        not metric_errors,
+        "; ".join(metric_errors) or "counts/histograms only",
+    )
+    errors.extend(metric_errors)
+
+    # Signature (optional unless required or trust-pinned)
     sig = integrity.get("signature")
     if sig:
         from vsa.decision_time.signing import verify_bundle_signature
 
-        ok, msg = verify_bundle_signature(bundle)
+        ok, msg = verify_bundle_signature(bundle, trusted_public_keys_b64=trusted_public_keys_b64)
         _check(checks, "signature", "Ed25519 bundle signature", ok, msg)
         if not ok:
             errors.append(msg)
     elif require_signature:
-        _check(
-            checks, "signature", "Ed25519 bundle signature", False, "signature required but missing"
+        msg = (
+            "signature required but missing"
+            if trusted_public_keys_b64 is None
+            else "trusted key pin requires signature but none present"
         )
-        errors.append("signature required but missing")
+        _check(checks, "signature", "Ed25519 bundle signature", False, msg)
+        errors.append(msg)
     else:
         _check(
             checks,

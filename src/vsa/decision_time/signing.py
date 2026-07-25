@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import base64
 import os
+from collections.abc import Collection, Iterable
+from pathlib import Path
 from typing import Any
 
 from cryptography.exceptions import InvalidSignature
@@ -27,6 +29,40 @@ def _load_private_key(key_path: str | None = None) -> Ed25519PrivateKey:
     raise RuntimeError(
         "No signing key found. Set VSA_SIGNING_PRIVATE_KEY or run `vsa sign --generate-key`."
     )
+
+
+def load_trusted_public_keys(
+    keys_b64: Iterable[str] | None = None,
+    *,
+    key_files: Iterable[str | Path] | None = None,
+) -> list[str]:
+    """Load out-of-band trusted Ed25519 public keys (raw 32-byte, base64)."""
+    trusted: list[str] = []
+    for key in keys_b64 or []:
+        text = str(key).strip()
+        if text:
+            trusted.append(text)
+    for path in key_files or []:
+        p = Path(path)
+        for line in p.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            trusted.append(line)
+    # Validate decodability early (fail closed)
+    for item in trusted:
+        try:
+            raw = base64.b64decode(item, validate=True)
+        except TypeError:
+            # validate= added in 3.11; fall back for 3.10
+            raw = base64.b64decode(item)
+        except Exception as exc:
+            raise ValueError(f"trusted public key is not valid base64: {exc}") from exc
+        if len(raw) != 32:
+            raise ValueError(
+                f"trusted public key must be 32 raw Ed25519 bytes (base64); got {len(raw)} bytes"
+            )
+    return trusted
 
 
 def sign_bundle(bundle: dict[str, Any], *, key_path: str | None = None) -> dict[str, Any]:
@@ -53,11 +89,16 @@ def sign_bundle(bundle: dict[str, Any], *, key_path: str | None = None) -> dict[
     return bundle
 
 
-def verify_bundle_signature(bundle: dict[str, Any]) -> tuple[bool, str]:
+def verify_bundle_signature(
+    bundle: dict[str, Any],
+    *,
+    trusted_public_keys_b64: Collection[str] | None = None,
+) -> tuple[bool, str]:
     """Verify Ed25519 signature over the recomputed bundle_hash (fail closed).
 
     The embedded public key is self-attesting; operators must pin trusted keys
-    out-of-band. Signature alone does not establish a trust root.
+    out-of-band. When ``trusted_public_keys_b64`` is provided, the embedded key
+    must be in that set or verification fails.
     """
     integrity = bundle.get("integrity") or {}
     sig = integrity.get("signature")
@@ -77,10 +118,22 @@ def verify_bundle_signature(bundle: dict[str, Any]) -> tuple[bool, str]:
     if stored_hash != recomputed:
         return False, "bundle_hash mismatch; refusing signature verify on mutated material"
 
+    embedded_pk = sig.get("public_key_b64")
+    if not embedded_pk or not isinstance(embedded_pk, str):
+        return False, "signature missing public_key_b64"
+    if trusted_public_keys_b64 is not None:
+        if embedded_pk not in set(trusted_public_keys_b64):
+            return False, (
+                "signing public key not in trusted set "
+                "(pin keys out-of-band; embedded key is self-attesting only)"
+            )
+
     try:
-        public_key = Ed25519PublicKey.from_public_bytes(base64.b64decode(sig["public_key_b64"]))
+        public_key = Ed25519PublicKey.from_public_bytes(base64.b64decode(embedded_pk))
         public_key.verify(base64.b64decode(sig["signature_b64"]), recomputed.encode("utf-8"))
-        return True, "signature valid over recomputed bundle_hash"
+        if trusted_public_keys_b64 is not None:
+            return True, "signature valid over recomputed bundle_hash (trusted key pin matched)"
+        return True, "signature valid over recomputed bundle_hash (no out-of-band trust pin)"
     except InvalidSignature:
         return False, "signature invalid"
     except Exception as exc:
