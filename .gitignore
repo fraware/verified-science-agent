@@ -4,10 +4,17 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.eggs/
 .vsa_cache/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
+.tox/
+.nox/
+*.cover
+.coverage.*
 
 # Generated outputs (created by make demo / CI)
 reports/*
@@ -18,3 +25,15 @@ reports/*
 .venv/
 venv/
 .vsa_signing_key
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+*.bak
+*.orig
+*.tmp
