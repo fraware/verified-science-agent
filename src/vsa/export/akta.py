@@ -24,7 +24,25 @@ FORBIDDEN_AUTH_PATTERNS = [
     re.compile(r"\bexecution\s+allowed\b", re.I),
     re.compile(r"\bmay\s+execute\b", re.I),
     re.compile(r"\bclearance\s+to\s+(run|execute)\b", re.I),
+    re.compile(r"\bgreen[- ]?light(?:ed)?\s+(?:to\s+)?(?:run|execute)\b", re.I),
+    re.compile(r"\bgo[- ]?ahead\s+to\s+(?:run|execute)\b", re.I),
+    re.compile(r"\bauthorized\s+to\s+(?:run|execute|proceed)\b", re.I),
 ]
+
+# Execution class is informational only; reject values that sound like grants.
+FORBIDDEN_EXECUTION_CLASSES = frozenset(
+    {
+        "authorized",
+        "approved",
+        "grant",
+        "granted",
+        "execute",
+        "executable",
+        "allowed",
+        "permit",
+        "permitted",
+    }
+)
 
 NON_CLAIMS = {
     "authorizes_actions": False,
@@ -74,6 +92,12 @@ def semantic_validate_akta_context(context: dict[str, Any]) -> list[str]:
     candidate = context.get("candidate_execution") or {}
     if candidate.get("authorization") not in (None, "none"):
         errors.append("candidate_execution.authorization must be absent or 'none'")
+    exec_class = str(candidate.get("tool_or_execution_class") or "").strip().lower()
+    if exec_class in FORBIDDEN_EXECUTION_CLASSES:
+        errors.append(
+            f"candidate_execution.tool_or_execution_class {exec_class!r} implies grant/execution; "
+            "use an informational class (e.g. 'none') — VSA does not authorize"
+        )
     return errors
 
 
