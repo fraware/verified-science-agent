@@ -1,0 +1,13 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "ClinVar",
+    "source_type": "database",
+    "identifier": "VCV000003456",
+    "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/3456/",
+    "retrieved_at": "2026-05-30T12:00:00Z",
+    "summary": "title: TP53 c.524G>A; clinical_significance: likely pathogenic",
+    "raw_record_hash": "24b641060fac62e10044131d02e2cc1e642fde69eda081dbbb8b8413ad23dd75",
+    "domain_metadata": {"clinical_significance": "likely pathogenic"}
+  }
+]

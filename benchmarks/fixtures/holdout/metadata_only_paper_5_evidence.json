@@ -1,0 +1,17 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "Europe PMC",
+    "source_type": "publication",
+    "identifier": "PMC999999",
+    "retrieval_path": "https://europepmc.org/article/MED/99999902",
+    "retrieved_at": "2016-01-01T00:00:00Z",
+    "summary": "title: Metadata-only Europe PMC stub",
+    "raw_record_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+    "domain_metadata": {
+      "pmid": "99999902",
+      "title": "Metadata-only Europe PMC stub",
+      "content_level": "metadata"
+    }
+  }
+]

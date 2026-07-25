@@ -1,0 +1,20 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "Crossref",
+    "source_type": "database",
+    "identifier": "CUTOFF-004",
+    "retrieval_path": "https://example.com/CUTOFF-004",
+    "retrieved_at": "2025-06-15T12:00:00Z",
+    "summary": "post-cutoff observation for CUTOFF-004",
+    "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_role": "supports",
+    "reliability": "medium",
+    "domain_metadata": {
+      "temporal_cutoff": "2024-01-01T00:00:00Z",
+      "post_cutoff": true,
+      "beyond_temporal_cutoff": true,
+      "published_at": "2025-06-01T00:00:00Z"
+    }
+  }
+]

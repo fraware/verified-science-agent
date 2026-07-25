@@ -1,0 +1,39 @@
+[
+  {
+    "evidence_id": "E001",
+    "source_name": "ClinVar",
+    "source_type": "database",
+    "identifier": "VCV000012345",
+    "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/12345/",
+    "retrieved_at": "2026-01-01T00:00:00Z",
+    "summary": "title: BRCA1 c.68_69del; clinical_significance: Pathogenic",
+    "raw_record_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "evidence_role": "supports",
+    "reliability": "medium",
+    "domain_metadata": {
+      "clinical_significance": "pathogenic",
+      "candidate_rank": 1,
+      "match_score": 0.52,
+      "retrieval_ambiguity": true,
+      "retrieval_strategy": "gene_hgvs_variant_name"
+    }
+  },
+  {
+    "evidence_id": "E002",
+    "source_name": "ClinVar",
+    "source_type": "database",
+    "identifier": "VCV000054321",
+    "retrieval_path": "https://www.ncbi.nlm.nih.gov/clinvar/variation/54321/",
+    "retrieved_at": "2026-01-01T00:00:00Z",
+    "summary": "title: BRCA1 c.68_69del alt; clinical_significance: Uncertain significance",
+    "raw_record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evidence_role": "supports",
+    "reliability": "low",
+    "domain_metadata": {
+      "clinical_significance": "uncertain significance",
+      "candidate_rank": 2,
+      "match_score": 0.48,
+      "retrieval_ambiguity": true
+    }
+  }
+]
