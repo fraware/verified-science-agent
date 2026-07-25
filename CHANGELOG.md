@@ -24,7 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - PCS-shaped portable evidence refs and signed bundle verification
 - Pilot modes (retrospective / shadow / read_only), privacy-safe metrics, outcome append links
 - CLI: `snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`
-- Operator guide with cutoff precedence and independent reconstruction commands: `docs/operator-decision-time.md`
+- Operator guide, decision-time quick start, and independent reconstruction commands:
+  `docs/operator-decision-time.md`, `docs/decision-time-quickstart.md`
+- Public companion schema mirrors under `schemas/` (byte-identical to `src/vsa/schemas/`)
 - Adversarial decision-time tests (tamper, forged signature, digest mismatch, missing portable refs)
 - Dev quality tooling: Ruff (warnings as errors) and MyPy scoped to companion modules
 
@@ -34,7 +36,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ScientificReport advisory checks now emit `warn` status (stale evidence, entity ambiguity, computational→experimental language)
 - Bundle verify fail-closed on missing portable refs, corrupted non-claims; signatures verified over recomputed hash
 - `privacy_safe_metrics` included in `bundle_hash`; AKTA export rejects evidence digest disagreement with report
+- Missing timestamps fail closed in all snapshot modes (not only retrospective/read_only)
+- Verify fail-closed on included/excluded evidence_id overlap and duplicate included IDs
+- Privacy-safe metrics revalidated on verify (reject digest/secret-shaped keys)
+- Optional out-of-band `--trusted-key` pin for decision-time signature verify
+- `compare-cutoffs --fail-on-verify` and clearer CLI load errors (missing/empty/invalid JSON)
+- AKTA rejects grant-like `tool_or_execution_class` tokens
 
+### Documentation
+
+- README decision-time CLI section, claim boundaries, upstream PCS/AKTA/signing pins
+- Docs index versions table includes companion schemas 1.0.0
+- Schema docs: public mirrors (not symlinks); ClinVar ambiguity → low reliability
 ## [0.7.2] - 2026-05-31
 
 ### Added

@@ -15,20 +15,21 @@
 
 **Evidence-backed scientific AI report infrastructure**
 
-Treat every AI-generated scientific report like a software build artifact —  
+Treat every AI-generated scientific report like a software build artifact —
 inputs, source records, claims, validation, provenance, and review status.
 
 <br>
 
 [![CI](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/fraware/verified-science-agent/actions/workflows/ci.yml)
-![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
 ![Version](https://img.shields.io/badge/version-v0.7.2-orange)
+![Schema](https://img.shields.io/badge/ScientificReport-1.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Benchmark](https://img.shields.io/badge/benchmark-50%20tasks-brightgreen)
 
 <br>
 
-[Documentation](docs/README.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md) · [Changelog](CHANGELOG.md)
+[Documentation](docs/README.md) · [Decision-time quick start](docs/decision-time-quickstart.md) · [API](docs/api.md) · [Benchmark](docs/benchmark.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md)
 
 </div>
 
@@ -52,6 +53,16 @@ flowchart LR
 
 **Core rule:** retrieval → evidence · generation → claims · validation → proof
 
+### Claim boundaries (non-claims)
+
+VSA packages and validates scientific evidence. It does **not**:
+
+- authorize actions;
+- execute tools or issue grants;
+- certify scientific correctness.
+
+Decision-time companions freeze evidence at a cutoff and export AKTA context with `authorization=none`. See [ADR 0001](docs/adr/0001-vsa-akta-scientific-memory-boundaries.md).
+
 ---
 
 ## Quick start
@@ -69,7 +80,7 @@ Or run the full suite in one step:
 make acceptance
 ```
 
-`make acceptance` runs a demo build, all tests, and the 50-task evaluation suite.
+`make acceptance` runs a demo build, all offline tests, and the 50-task evaluation suite.
 
 <details>
 <summary><strong>Typical workflow</strong></summary>
@@ -104,16 +115,29 @@ make demo                      # build + validate + audit + export + verify-bund
 streamlit run ui/app.py        # interactive inspector with credibility warnings
 ```
 
+### Decision-time companion (cutoff freeze + AKTA export)
+
+```bash
+vsa snapshot-evidence examples/decision_time/source_report.json \
+  --cutoff 2024-01-01T00:00:00Z \
+  --out reports/decision_time_bundle.json
+vsa verify-decision-time-bundle reports/decision_time_bundle.json
+vsa export-akta-context --bundle reports/decision_time_bundle.json --out reports/akta_context.json
+```
+
+Guide: [docs/decision-time-quickstart.md](docs/decision-time-quickstart.md) · Operator detail: [docs/operator-decision-time.md](docs/operator-decision-time.md)
+
 ---
 
 ## Features
 
 | Area | What you get |
 |------|----------------|
-| **Artifacts** | Canonical `ScientificReport` schema (v1.2.0), provenance hashes, export bundles |
+| **Artifacts** | Canonical `ScientificReport` schema (**1.2.0**), provenance hashes, export bundles |
 | **Credibility** | ClinVar ambiguity alerts, metadata-only warnings, AlphaFold predicted-structure labeling |
 | **Verification** | Schema + semantic validation, rule/hybrid audit, SLSA/in-toto attestation |
 | **Review** | Human review workflow with verifiable event chains |
+| **Decision-time** | Cutoff-frozen `DecisionTimeEvidenceBundle`, verify/compare, AKTA context export (`authorization=none`), append-only outcome links |
 | **Benchmark** | 50-task evaluation suite with quality checks |
 | **API** | REST server with optional `VSA_API_KEY` auth |
 
@@ -147,6 +171,16 @@ streamlit run ui/app.py        # interactive inspector with credibility warnings
 | `vsa verify-bundle dir/` | Verify manifest hashes and attestation |
 | `vsa attest report.json --out attestation.json` | SLSA/in-toto provenance attestation |
 | `vsa verify-attestation report.json attestation.json` | Verify attestation digest |
+
+### Decision-time and AKTA
+
+| Command | Description |
+|---------|-------------|
+| `vsa snapshot-evidence input.json --cutoff ISO --out bundle.json` | Freeze evidence at cutoff (modes: retrospective / shadow / read_only) |
+| `vsa verify-decision-time-bundle bundle.json` | Verify schema, cutoff, hashes, optional signature / trusted key |
+| `vsa compare-cutoffs bundle_a.json bundle_b.json` | Informational cutoff diff (`--fail-on-verify` optional) |
+| `vsa export-akta-context --bundle bundle.json --out ctx.json` | Export `AktaActionContext` (`authorization=none`) |
+| `vsa link-outcome bundle.json --outcome-ref REF --out link.json` | Append-only outcome/calibration link (does not mutate bundle) |
 
 ### Review
 
@@ -222,9 +256,13 @@ ScientificReport
 └── generated_outputs
 ```
 
-Schema: `src/vsa/schemas/scientific_report.schema.json` · Field reference: [docs/schema.md](docs/schema.md)
+Package schema: `src/vsa/schemas/scientific_report.schema.json`  
+Public mirror (byte-identical): `schemas/scientific_report.schema.json`  
+Field reference: [docs/schema.md](docs/schema.md)
 
 **Domains:** genomics variants, proteins, papers, chemicals, materials, experiments.
+
+Companion schemas (additive, do not mutate ScientificReport): `decision_time_evidence_bundle`, `akta_action_context`, `integration_envelope`, `scientific_outcome_link` — all version **1.0.0**.
 
 ---
 
@@ -258,13 +296,13 @@ Measures source recall/precision, citation integrity, evidence validity, review 
 
 ```
 verified-science-agent/
-├── src/vsa/            CLI, pipeline, connectors, validation, API
-├── schemas/            JSON Schema (symlink to package schema)
+├── src/vsa/            CLI, pipeline, connectors, validation, API, decision-time
+├── schemas/            Public JSON Schema mirrors (byte-identical to src/vsa/schemas/)
 ├── benchmarks/         50 tasks + offline fixtures
-├── examples/           Input files and good/bad report examples
-├── docs/               Architecture, schema, connectors, API
+├── examples/           Input files, good/bad reports, decision_time examples
+├── docs/               Architecture, schema, connectors, API, decision-time
 ├── ui/                 Streamlit inspector
-├── scripts/            Full test suite helper
+├── scripts/            Acceptance / CI helpers
 └── .github/workflows/  CI and release pipelines
 ```
 
@@ -276,9 +314,20 @@ Architecture: [docs/architecture.md](docs/architecture.md)
 
 ```bash
 pip install -e ".[dev,signing,api]"
-pytest
+pytest                 # offline by default (-m 'not live')
 make demo
+make decision-time     # decision-time tests + ruff + mypy (companion modules)
 ```
+
+---
+
+## Upstream integration notes
+
+These are explicit out-of-band dependencies, not incomplete local features:
+
+1. **PCS** — VSA emits PCS-shaped portable refs from existing digests; official PCS schema ID/digest registry pins remain upstream.
+2. **AKTA** — VSA exports `AktaActionContext` with `authorization=none`; AKTA owns admissibility/authorization.
+3. **Signing trust** — optional Ed25519 signatures are self-attesting via the embedded public key; pin organizational trust with `--trusted-key` / `--trusted-key-file`.
 
 ---
 
@@ -288,7 +337,7 @@ Research infrastructure only. Not a medical device, clinical decision system, or
 
 > Research infrastructure output. Not for diagnosis, treatment, or clinical decision-making without qualified expert review.
 
-Human expert review is required before any clinical use.
+Human expert review is required before any clinical use. VSA does not authorize, execute, grant, or certify scientific correctness.
 
 ---
 
