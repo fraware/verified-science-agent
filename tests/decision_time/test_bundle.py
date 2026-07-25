@@ -117,3 +117,19 @@ def test_cli_snapshot_verify_compare(tmp_path, source_report):
         == 0
     )
     assert main(["compare-cutoffs", str(out), str(out2)]) == 0
+
+
+def test_privacy_safe_metrics_shape_on_verify(source_report):
+    bundle = build_decision_time_bundle(source_report, cutoff="2024-01-01T00:00:00Z")
+    result = verify_decision_time_bundle(bundle)
+    assert any(
+        c["check_id"] == "privacy_safe_metrics" and c["status"] == "pass" for c in result.checks
+    )
+    # Inject digest-like histogram key and rehash
+    bundle["privacy_safe_metrics"]["contradiction_severity_histogram"]["a" * 64] = 1
+    bundle["integrity"]["bundle_hash"] = compute_bundle_hash(bundle)
+    result = verify_decision_time_bundle(bundle)
+    assert not result.passed
+    assert any(
+        c["check_id"] == "privacy_safe_metrics" and c["status"] == "fail" for c in result.checks
+    )
