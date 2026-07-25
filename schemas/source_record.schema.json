@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verified-science-agent.org/schemas/source_record/v1.0.0",
+  "title": "SourceRecord",
+  "description": "Immutable authoritative record of a retrieved scientific source. Evidence is a view over SourceRecord digests; generated models must not invent these fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "canonical_url",
+    "accession",
+    "retrieved_at",
+    "content_digest",
+    "media_type",
+    "query",
+    "raw_response_retention",
+    "license",
+    "connector",
+    "transformation_history",
+    "source_availability"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable id (connector + accession)"
+    },
+    "canonical_url": {
+      "type": "string",
+      "description": "Canonical locator URL"
+    },
+    "accession": {
+      "type": "string",
+      "description": "Source-native accession or identifier"
+    },
+    "retrieved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of canonical raw bytes/JSON"
+    },
+    "media_type": {
+      "type": "string",
+      "minLength": 1,
+      "examples": ["application/json", "text/html"]
+    },
+    "database_version": {
+      "type": ["string", "null"],
+      "description": "API/DB version string or null"
+    },
+    "query": {
+      "type": "object",
+      "description": "Exact retrieval query",
+      "additionalProperties": true
+    },
+    "raw_response_retention": {
+      "type": "string",
+      "enum": ["retained", "digest_only", "unavailable"]
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "description": "License URI/label or 'unknown'"
+    },
+    "connector": {
+      "type": "string",
+      "minLength": 1
+    },
+    "transformation_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["op", "at", "digest_in", "digest_out"],
+        "properties": {
+          "op": { "type": "string", "minLength": 1 },
+          "at": { "type": "string" },
+          "digest_in": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "digest_out": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    "source_availability": {
+      "type": "string",
+      "enum": ["available", "cached", "unavailable", "substituted"]
+    }
+  }
+}
