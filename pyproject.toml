@@ -93,6 +93,7 @@ packages = [
     "vsa.export",
     "vsa.outcome",
     "vsa.companion_schema",
+    "vsa.validate.decision_time_checks",
 ]
 mypy_path = "src"
 namespace_packages = true
@@ -101,3 +102,8 @@ explicit_package_bases = true
 [[tool.mypy.overrides]]
 module = ["cryptography.*", "jsonschema.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["vsa.validate.contradictions", "vsa.connectors.content_level"]
+ignore_missing_imports = false
+follow_imports = "skip"

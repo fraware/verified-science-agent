@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Full test suite: demo build, unit tests, and benchmark evaluation.
+# Full test suite: demo build, companion quality gates, unit tests, benchmark.
 set -euo pipefail
 
 pip install -e ".[dev,ui,pdf,signing,api]"
 make demo
+make lint
+make typecheck
 make test
 vsa benchmark --out reports/benchmark_summary.json
 

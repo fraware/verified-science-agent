@@ -41,6 +41,11 @@ jobs:
           vsa verify-decision-time-bundle /tmp/dt_bundle.json
           vsa export-akta-context --bundle /tmp/dt_bundle.json --out /tmp/akta.json
           python -c "import json; c=json.load(open('/tmp/akta.json')); assert c['authorization']=='none'"
+          vsa sign --generate-key --key-file /tmp/dt_sign_key
+          vsa snapshot-evidence examples/decision_time/source_report.json --cutoff 2024-01-01T00:00:00Z --sign --key-file /tmp/dt_sign_key --out /tmp/dt_signed.json
+          PK=$(python -c "from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey; from cryptography.hazmat.primitives import serialization; import base64; k=Ed25519PrivateKey.from_private_bytes(base64.b64decode(open('/tmp/dt_sign_key').read().strip())); print(base64.b64encode(k.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)).decode())")
+          vsa verify-decision-time-bundle /tmp/dt_signed.json --trusted-key "$PK"
+          vsa compare-cutoffs /tmp/dt_bundle.json /tmp/dt_signed.json --fail-on-verify
 
       - name: Build example report
         run: vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode rule

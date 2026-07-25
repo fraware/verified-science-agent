@@ -1,4 +1,4 @@
-.PHONY: demo validate render hash test ui install benchmark audit sign verify acceptance lint typecheck
+.PHONY: demo validate render hash test ui install benchmark audit sign verify acceptance lint typecheck decision-time
 
 install:
 	pip install -e ".[dev,ui,pdf,signing,api]"
@@ -32,6 +32,11 @@ lint:
 	ruff format --check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
 
 typecheck:
+	mypy
+
+decision-time:
+	pytest tests/decision_time -q
+	ruff check src/vsa/decision_time src/vsa/identity src/vsa/export src/vsa/outcome src/vsa/companion_schema.py src/vsa/validate/decision_time_checks.py tests/decision_time
 	mypy
 
 benchmark:
