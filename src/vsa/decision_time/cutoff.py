@@ -6,7 +6,8 @@ Precedence for effective timestamp (first present wins):
 3. retrieved_at (retrieval clock)
 
 Evidence with effective_ts > decision_time_cutoff is excluded and disclosed.
-Missing timestamps in retrospective mode fail closed at snapshot build time.
+Missing timestamps always fail closed (all modes): indeterminate time cannot be
+classified as pre- or post-cutoff.
 """
 
 from __future__ import annotations
@@ -53,13 +54,17 @@ def apply_cutoff_filter(
     evidence: list[dict[str, Any]],
     cutoff: str,
     *,
-    require_timestamps: bool = False,
+    require_timestamps: bool = True,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
     """Split evidence into included and excluded_post_cutoff lists.
 
     Returns (included, excluded_records, errors).
-    When require_timestamps is True (retrospective), missing timestamps are errors.
+
+    Missing timestamps always produce errors (fail closed). The
+    ``require_timestamps`` keyword is retained for call-site compatibility; it
+    does not relax fail-closed behavior (passing False is ignored).
     """
+    del require_timestamps  # always fail closed; kept for API compatibility
     cutoff_dt = parse_timestamp(cutoff)
     if cutoff_dt is None:
         raise ValueError(f"decision_time_cutoff required and must be ISO-8601: {cutoff!r}")
@@ -75,11 +80,10 @@ def apply_cutoff_filter(
         eid = str(item.get("evidence_id") or "?")
         effective, field_name = evidence_effective_timestamp(item)
         if effective is None:
-            msg = f"{eid}: missing source/publication/retrieval timestamp"
-            if require_timestamps:
-                errors.append(msg)
-            else:
-                errors.append(msg + " (indeterminate; fail closed)")
+            errors.append(
+                f"{eid}: missing source/publication/retrieval timestamp "
+                "(indeterminate; fail closed)"
+            )
             continue
         if effective > cutoff_dt:
             excluded.append(

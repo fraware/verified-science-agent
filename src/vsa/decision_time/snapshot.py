@@ -96,12 +96,9 @@ def build_decision_time_bundle(
     """
     if mode not in ("retrospective", "shadow", "read_only"):
         raise ValueError(f"unsupported mode: {mode!r}")
-    # read_only tags a freeze for decision-support consumption; it does not relax
-    # digest/timestamp fail-closed rules. Primary read-only export remains export-akta-context.
-    if mode == "read_only":
-        require_ts = True
-    else:
-        require_ts = mode == "retrospective"
+    # All modes fail closed on missing digests/timestamps. Mode only tags intent:
+    # retrospective (historical), shadow (prospective freeze; no tool execution),
+    # read_only (decision-support tag; prefer export-akta-context for AKTA-only).
 
     evidence = list(source.get("evidence") or [])
     claims = list(source.get("claims") or [])
@@ -115,9 +112,20 @@ def build_decision_time_bundle(
     if missing_digest:
         raise ValueError(f"fail closed: evidence missing raw_record_hash: {missing_digest}")
 
-    included, excluded, cutoff_errors = apply_cutoff_filter(
-        evidence, cutoff, require_timestamps=require_ts
-    )
+    # Fail closed: duplicate evidence_id in source
+    seen_ids: set[str] = set()
+    dup_ids: list[str] = []
+    for e in evidence:
+        if not isinstance(e, dict) or not e.get("evidence_id"):
+            continue
+        eid = str(e["evidence_id"])
+        if eid in seen_ids:
+            dup_ids.append(eid)
+        seen_ids.add(eid)
+    if dup_ids:
+        raise ValueError(f"fail closed: duplicate evidence_id in source: {sorted(set(dup_ids))}")
+
+    included, excluded, cutoff_errors = apply_cutoff_filter(evidence, cutoff)
     if cutoff_errors:
         raise ValueError("fail closed: " + "; ".join(cutoff_errors))
 
