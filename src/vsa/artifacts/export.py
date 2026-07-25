@@ -11,6 +11,7 @@ from vsa import __version__
 from vsa.llm.verifier import AuditResult, audit_report
 from vsa.provenance.attestation import build_slsa_attestation
 from vsa.provenance.hashchain import now_utc_iso
+from vsa.provenance.source_record import ensure_source_records, source_record_from_evidence_view
 from vsa.render import render
 from vsa.version import SCHEMA_VERSION, VALIDATION_VERSION
 
@@ -19,26 +20,96 @@ def _sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _write_sources(report: dict[str, Any], sources_dir: Path) -> list[str]:
+def _raw_for_source(
+    source_record: dict[str, Any],
+    *,
+    cache_dir: str | Path | None,
+) -> dict[str, Any] | None:
+    if source_record.get("raw_response_retention") != "retained":
+        return None
+    digest = source_record.get("content_digest")
+    if not digest or not cache_dir:
+        return None
+    from vsa.connectors.cache import EvidenceCache
+
+    return EvidenceCache(cache_dir).get_by_digest(str(digest))
+
+
+def _write_sources(
+    report: dict[str, Any],
+    sources_dir: Path,
+    *,
+    cache_dir: str | Path | None = None,
+) -> list[str]:
+    """Write SourceRecord artifacts; include raw bodies when retention=retained."""
     sources_dir.mkdir(parents=True, exist_ok=True)
     written: list[str] = []
-    for ev in report.get("evidence", []):
+    evidence = list(report.get("evidence") or [])
+    source_records = list(report.get("source_records") or [])
+    evidence, source_records = ensure_source_records(evidence, source_records)
+
+    by_source: dict[str, dict[str, Any]] = {
+        r["source_id"]: r for r in source_records if r.get("source_id")
+    }
+    # Prefer first evidence view per source_id for reconstruct
+    view_by_source: dict[str, dict[str, Any]] = {}
+    for ev in evidence:
+        sid = ev.get("source_id")
+        if sid and sid not in view_by_source:
+            view_by_source[sid] = ev
+
+    # Also write one file per evidence for backward-compatible naming
+    for ev in evidence:
         eid = ev.get("evidence_id", "unknown")
-        payload = {
-            "evidence_id": eid,
-            "source_name": ev.get("source_name"),
-            "source_type": ev.get("source_type"),
-            "identifier": ev.get("identifier"),
-            "retrieval_path": ev.get("retrieval_path"),
-            "retrieved_at": ev.get("retrieved_at"),
-            "summary": ev.get("summary"),
-            "domain_metadata": ev.get("domain_metadata"),
-            "raw_record_hash": ev.get("raw_record_hash"),
-            "reliability": ev.get("reliability"),
+        sid = ev.get("source_id")
+        sr = by_source.get(sid) if sid else None
+        if sr is None:
+            sr = source_record_from_evidence_view(ev).to_dict()
+        payload: dict[str, Any] = {
+            "source_record": sr,
+            "evidence_view": {
+                k: v
+                for k, v in ev.items()
+                if k
+                in (
+                    "evidence_id",
+                    "source_id",
+                    "source_name",
+                    "source_type",
+                    "identifier",
+                    "retrieval_path",
+                    "retrieved_at",
+                    "summary",
+                    "raw_record_hash",
+                    "evidence_role",
+                    "reliability",
+                    "domain_metadata",
+                    "quality_score",
+                )
+            },
         }
+        raw = _raw_for_source(sr, cache_dir=cache_dir)
+        if raw is not None:
+            payload["raw_response"] = raw
+            # Ensure retention reflects what we actually wrote
+            payload["source_record"] = {**sr, "raw_response_retention": "retained"}
         path = sources_dir / f"{eid}.json"
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         written.append(str(path))
+
+    # Orphan source records without evidence views
+    for sid, sr in by_source.items():
+        if sid in view_by_source:
+            continue
+        safe = "".join(c if c.isalnum() or c in "._-" else "_" for c in sid)
+        path = sources_dir / f"source_{safe}.json"
+        payload = {"source_record": sr}
+        raw = _raw_for_source(sr, cache_dir=cache_dir)
+        if raw is not None:
+            payload["raw_response"] = raw
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        written.append(str(path))
+
     return written
 
 
@@ -69,11 +140,15 @@ def export_report_bundle(
     *,
     audit_mode: str = "rule",
     include_attestation: bool = True,
+    cache_dir: str | Path | None = None,
 ) -> dict[str, str]:
     """Write canonical artifact bundle to out_dir."""
     out_dir.mkdir(parents=True, exist_ok=True)
     paths: dict[str, str] = {}
     created_at = now_utc_iso()
+    cache_dir = cache_dir or (report.get("provenance") or {}).get("reproducibility", {}).get(
+        "cache_dir"
+    )
 
     report_path = out_dir / "report.json"
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -102,7 +177,7 @@ def export_report_bundle(
     paths["review"] = str(review_path)
 
     sources_dir = out_dir / "sources"
-    source_files = _write_sources(report, sources_dir)
+    source_files = _write_sources(report, sources_dir, cache_dir=cache_dir)
     if source_files:
         paths["sources"] = str(sources_dir)
 
@@ -123,7 +198,7 @@ def export_report_bundle(
             artifact_entries[name] = {"path": p.name, "sha256": _sha256_file(p)}
 
     manifest = {
-        "bundle_version": "1.1.0",
+        "bundle_version": "1.2.0",
         "created_at": created_at,
         "generator": f"verified-science-agent/{__version__}",
         "schema_version": SCHEMA_VERSION,
