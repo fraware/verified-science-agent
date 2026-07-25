@@ -33,7 +33,7 @@ These concerns must not blur VSA’s role into authorizing actions, executing to
 - Effective timestamp precedence: `source_timestamp` → `published_at` / `publication_date` → `retrieved_at`.
 - Evidence with effective timestamps after the cutoff is moved to `excluded_post_cutoff` with disclosure.
 - Bundles are **immutable**. Later outcomes and calibration attach only as append-only **ScientificOutcomeLink** records that reference the original `bundle_hash`.
-- Fail closed: unknown schema versions, missing digests/timestamps when required, or post-cutoff evidence left in the included set → explicit fail/indeterminate, never silent pass.
+- Fail closed: unknown schema versions, missing digests/timestamps (all modes), post-cutoff evidence left in the included set, included/excluded ID overlap, or corrupted non-claims → explicit fail/indeterminate, never silent pass.
 
 ### Companion schemas (additive)
 
@@ -58,6 +58,15 @@ VSA:
 - New CLI verbs (`snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`) operate on companion artifacts.
 - Offline deterministic tests cover cutoff, export, signing, and immutability.
 - Rollback of companion features leaves ScientificReport validate/build unchanged.
+- Public consumers start from [decision-time-quickstart.md](../decision-time-quickstart.md); operators use [operator-decision-time.md](../operator-decision-time.md).
+
+## Upstream blockers (explicit, out-of-band)
+
+These are integration pins outside this repository, not unfinished local work:
+
+1. Official PCS schema ID / digest registry pins beyond local PCS-shaped refs and fixture digests.
+2. AKTA upstream acknowledgment that `AktaActionContext` is the consumed contract (`authorization=none`).
+3. Organizational out-of-band Ed25519 trust roots (`--trusted-key` / `--trusted-key-file`).
 
 ## Freeze note
 

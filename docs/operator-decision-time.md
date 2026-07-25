@@ -10,7 +10,7 @@ Effective evidence time (first present wins):
 2. `published_at` / `domain_metadata.publication_date`
 3. `retrieved_at` (retrieval clock)
 
-Evidence with effective time **after** `decision_time_cutoff` is disclosed in `excluded_post_cutoff` and must not appear in `included_evidence`. Missing timestamps fail closed in retrospective and read_only modes.
+Evidence with effective time **after** `decision_time_cutoff` is disclosed in `excluded_post_cutoff` and must not appear in `included_evidence`. Missing timestamps **always fail closed** (all modes): indeterminate time cannot be classified as pre- or post-cutoff.
 
 ## Modes
 
@@ -46,10 +46,13 @@ vsa snapshot-evidence report.json --cutoff 2024-01-01T00:00:00Z --sign --out sig
 ```bash
 vsa verify-decision-time-bundle decision_time_bundle.json
 vsa verify-decision-time-bundle signed_bundle.json --require-signature
+# Out-of-band trust pin (embedded key must match; implies signature required):
+vsa verify-decision-time-bundle signed_bundle.json --trusted-key "$TRUSTED_PK_B64"
 vsa compare-cutoffs bundle_a.json bundle_b.json
+vsa compare-cutoffs bundle_a.json bundle_b.json --fail-on-verify
 ```
 
-Verification covers: companion schema version, cutoff inclusion, source digests, `bundle_hash`, schema digest pin, PCS-shaped portable refs, explicit non-claims, optional signature (over **recomputed** hash), and decision-time semantic checks. `compare-cutoffs` always embeds `verify_a` / `verify_b` results; comparison itself is informational and does not authorize actions.
+Verification covers: companion schema version, cutoff inclusion, included/excluded partition, source digests, `bundle_hash`, schema digest pin, PCS-shaped portable refs, explicit non-claims, privacy-safe metrics shape, optional signature (over **recomputed** hash; optional `--trusted-key` pin), and decision-time semantic checks. `compare-cutoffs` always embeds `verify_a` / `verify_b` results; comparison itself is informational and does not authorize actions. Default exit 0 after a successful diff; `--fail-on-verify` exits 1 if either side failed verification.
 
 ## Export AKTA context (authorization=none)
 
@@ -87,15 +90,17 @@ vsa snapshot-evidence path/to/original_input.json \
   --out reconstructed_bundle.json
 
 # 2) Confirm hash equality against the archived bundle
-python -c "import json; a=json.load(open('archived_bundle.json')); b=json.load(open('reconstructed_bundle.json')); assert a['integrity']['bundle_hash']==b['integrity']['bundle_hash']; print('bundle_hash match', a['integrity']['bundle_hash'])"
+python -c "import json; a=json.load(open('archived_bundle.json', encoding='utf-8')); b=json.load(open('reconstructed_bundle.json', encoding='utf-8')); assert a['integrity']['bundle_hash']==b['integrity']['bundle_hash']; print('bundle_hash match', a['integrity']['bundle_hash'])"
 
 # 3) Verify invariants (and signature if present)
 vsa verify-decision-time-bundle reconstructed_bundle.json
 # If signed at archive time:
 vsa verify-decision-time-bundle archived_bundle.json --require-signature
+# Optional organizational trust pin:
+vsa verify-decision-time-bundle archived_bundle.json --trusted-key "$TRUSTED_PK_B64"
 ```
 
-Pin package version, companion schema digests (`tests/fixtures/pcs/schema_digests.json`), and validation version into your archive metadata.
+Pin package version (`verified-science-agent==0.7.2`), companion schema digests (`tests/fixtures/pcs/schema_digests.json`), and validation version into your archive metadata.
 
 ## Non-claims
 
@@ -103,4 +108,12 @@ Pin package version, companion schema digests (`tests/fixtures/pcs/schema_digest
 - No tool execution or grants
 - No scientific correctness certification
 - Decision-time bundles are immutable; outcomes are append-only links
-- Ed25519 signatures are self-attesting via the embedded public key; pin trusted keys out-of-band
+- Ed25519 signatures are self-attesting via the embedded public key; pin trusted keys out-of-band (`--trusted-key` / `--trusted-key-file`)
+
+## Upstream / human blockers (not faked in-repo)
+
+These require coordination outside this repository:
+
+1. **Official PCS schema ID / digest pins** beyond the local PCS-*shaped* refs and `tests/fixtures/pcs/schema_digests.json` companion pins.
+2. **AKTA upstream schema acknowledgment** that `AktaActionContext` is the consumed contract (VSA only exports `authorization=none`).
+3. **Out-of-band signing trust roots** — organizational pinning of Ed25519 public keys (VSA can enforce a supplied pin set; it does not distribute a global trust root).

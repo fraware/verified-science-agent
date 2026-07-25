@@ -71,9 +71,11 @@ ScientificReport **1.2.0** is unchanged. Companion artifacts integrate VSA with 
 | AktaActionContext | `src/vsa/export/akta.py` | Stable export for AKTA (no authorization) |
 | ScientificOutcomeLink | `src/vsa/outcome/` | Append-only outcome/calibration pointer |
 
-Hard boundaries: VSA never authorizes actions, executes tools, issues grants, or certifies scientific correctness. Decision-time bundles are immutable; outcomes append as linked records only. See [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md) and [threat model](threat-model.md).
+Hard boundaries: VSA never authorizes actions, executes tools, issues grants, or certifies scientific correctness. Decision-time bundles are immutable; outcomes append as linked records only. See [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md), [threat model](threat-model.md), and [decision-time quick start](decision-time-quickstart.md).
 
 CLI: `snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`.
+
+Public schema mirrors under `schemas/` must stay byte-identical to `src/vsa/schemas/`.
 
 ## Continuous integration
 

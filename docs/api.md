@@ -98,3 +98,7 @@ Legacy review flags:
 ```bash
 vsa review reports/brca1_report.json --reviewer reviewer@example.com --approve C001 --out reviewed.json
 ```
+
+## Decision-time companions
+
+Cutoff freeze, AKTA export, and outcome links are **CLI-only** in this release (`snapshot-evidence`, `verify-decision-time-bundle`, `compare-cutoffs`, `export-akta-context`, `link-outcome`). See [decision-time-quickstart.md](decision-time-quickstart.md). The REST API does not yet expose these companions.

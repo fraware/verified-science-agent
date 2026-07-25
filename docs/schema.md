@@ -1,6 +1,8 @@
 # ScientificReport schema (v1.2.0)
 
-Canonical artifact: `src/vsa/schemas/scientific_report.schema.json` (symlinked at `schemas/`)
+Canonical package artifact: `src/vsa/schemas/scientific_report.schema.json`
+
+Public mirror (must stay byte-identical): `schemas/scientific_report.schema.json`
 
 Supported versions: `1.0.0`, `1.1.0`, `1.2.0`
 
@@ -52,7 +54,7 @@ Migrate with: `vsa migrate-schema report.json --out migrated.json`
 | `identifier` | Source-native ID | — |
 | `retrieval_path` | Reproducible URL | Missing fails validation |
 | `raw_record_hash` | Content fingerprint | Mismatch fails provenance check |
-| `reliability` | high/medium/low | Ambiguous ClinVar → medium |
+| `reliability` | high/medium/low | Ambiguous ClinVar → low |
 | `domain_metadata` | Connector-specific | `retrieval_ambiguity: true` needs review |
 
 ## Version history
@@ -71,7 +73,7 @@ vsa build examples/brca1_input.json --out reports/brca1_report.json --claim-mode
 
 ## Companion schemas (additive)
 
-ScientificReport **1.2.0** is unchanged. Integration contracts live beside it:
+ScientificReport **1.2.0** is unchanged. Integration contracts live beside it (each companion `schema_version` **1.0.0**). Files exist under both `src/vsa/schemas/` and `schemas/` and must remain byte-identical:
 
 | Schema | Module | Purpose |
 |--------|--------|---------|
@@ -80,4 +82,6 @@ ScientificReport **1.2.0** is unchanged. Integration contracts live beside it:
 | `akta_action_context.schema.json` | `vsa.export.akta` | AKTA context (`authorization: none`) |
 | `scientific_outcome_link.schema.json` | `vsa.outcome` | Append-only outcome links |
 
-See [operator-decision-time.md](operator-decision-time.md) and [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md).
+See [decision-time-quickstart.md](decision-time-quickstart.md), [operator-decision-time.md](operator-decision-time.md), and [ADR 0001](adr/0001-vsa-akta-scientific-memory-boundaries.md).
+
+**Non-claims:** companion artifacts do not authorize actions, execute tools, issue grants, or certify scientific correctness.
