@@ -1,0 +1,8 @@
+{
+  "primaryAccession": "P38398",
+  "entryType": "UniProtKB reviewed (Swiss-Prot)",
+  "genes": [{"geneName": {"value": "BRCA1"}}],
+  "proteinDescription": {
+    "recommendedName": {"fullName": {"value": "Breast cancer type 1 susceptibility protein"}}
+  }
+}

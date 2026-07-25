@@ -1,0 +1,11 @@
+{
+  "result": {
+    "12345": {
+      "uid": "12345",
+      "title": "BRCA1 c.68_69delAG (p.Glu23Valfs)",
+      "clinical_significance": {"description": "Pathogenic"},
+      "gene_sort": "BRCA1",
+      "variation_set": [{"cdna_change": "c.68_69del"}]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "result": {
+    "23456789": {
+      "uid": "23456789",
+      "title": "Example Nature paper",
+      "authors": ["Author A"],
+      "pubdate": "2013",
+      "articleids": [{"idtype": "doi", "value": "10.1038/nature12373"}]
+    }
+  }
+}

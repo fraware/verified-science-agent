@@ -1,0 +1,8 @@
+{
+  "paperId": "abc123",
+  "title": "Example Nature paper",
+  "authors": [{"name": "A Author"}],
+  "abstract": "A short abstract for testing.",
+  "year": 2013,
+  "externalIds": {"DOI": "10.1038/nature12373"}
+}
