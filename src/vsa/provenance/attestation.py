@@ -27,7 +27,9 @@ def build_slsa_attestation(
     """
     Build an in-toto Statement with SLSA Provenance v1 predicate for a report.
 
-    The subject digest uses provenance.report_hash when present (content-addressable artifact).
+    The subject digest uses provenance.report_hash when present (content-addressable
+    artifact). Attestation verifies subject digest match only — it is not a
+    cryptographic endorsement of scientific correctness. See docs/signing.md.
     """
     provenance = report.get("provenance") or {}
     report_hash = provenance.get("report_hash") or _sha256_file_bytes(
@@ -120,7 +122,11 @@ def verify_attestation(
     *,
     subject_name: str = "scientific_report.json",
 ) -> tuple[bool, str]:
-    """Verify attestation subject digest matches report provenance hash."""
+    """Verify attestation subject digest matches report provenance hash.
+
+    Success means integrity of the subject digest binding only — not scientific
+    correctness or reviewer approval. See docs/signing.md.
+    """
     if attestation.get("_type") != STATEMENT_TYPE:
         return False, "invalid statement _type"
     if attestation.get("predicateType") != PREDICATE_TYPE:

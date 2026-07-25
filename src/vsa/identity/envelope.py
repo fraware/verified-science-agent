@@ -38,7 +38,7 @@ def build_envelope(
     akta_record_ref: str | None = None,
     source_snapshot_id: str | None = None,
 ) -> dict[str, Any]:
-    """Build an IntegrationEnvelope beside a ScientificReport (1.0–1.2).
+    """Build an IntegrationEnvelope beside a ScientificReport (1.0–1.3).
 
     Does not mutate the report. Fail closed if report_id or report_hash cannot be derived.
     """
@@ -47,7 +47,7 @@ def build_envelope(
         raise ValueError("report missing report_id")
 
     schema_version = report.get("schema_version")
-    if schema_version not in ("1.0.0", "1.1.0", "1.2.0"):
+    if schema_version not in ("1.0.0", "1.1.0", "1.2.0", "1.3.0"):
         raise ValueError(
             f"unsupported ScientificReport schema_version for envelope: {schema_version!r}"
         )

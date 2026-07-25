@@ -13,7 +13,7 @@ from vsa.validate.engine import validate_report
 
 
 def test_e2e_pipeline_offline(tmp_path: Path):
-    fixture = Path("benchmarks/fixtures/brca1_variant_evidence.json")
+    fixture = Path("benchmarks/fixtures/dev/brca1_variant_evidence.json")
     evidence = json.loads(fixture.read_text(encoding="utf-8"))
     report = build_report(
         {"question": "BRCA1 c.68_69del", "evidence": evidence},

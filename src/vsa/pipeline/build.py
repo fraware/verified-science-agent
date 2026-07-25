@@ -10,10 +10,12 @@ from typing import Any
 
 from vsa.claims.llm_extraction import extract_claims
 from vsa.claims.extraction import PROMPT_TEMPLATE_VERSION
+from vsa.claims.normalize import build_claim_evidence_graph, finalize_claims
 from vsa.connectors.cache import EvidenceCache
 from vsa.pipeline.retrieval import retrieve_evidence_with_meta
 from vsa.pipeline.subject_parser import parse_input
 from vsa.provenance.hashchain import now_utc_iso, stamp_report
+from vsa.provenance.source_record import ensure_source_records
 from vsa.safety import disclaimer_for_subject
 from vsa.scoring.evidence_quality import apply_quality_scores
 from vsa.validate.contradictions import detect_contradictions
@@ -48,6 +50,7 @@ def build_report(
     claim_mode: str = "auto",
     llm_provider: str | None = None,
     llm_model: str | None = None,
+    domain_pack: str | None = None,
 ) -> dict[str, Any]:
     """Build a complete ScientificReport from input JSON."""
     from vsa.telemetry import span
@@ -60,6 +63,7 @@ def build_report(
             claim_mode=claim_mode,
             llm_provider=llm_provider,
             llm_model=llm_model,
+            domain_pack=domain_pack,
         )
 
 
@@ -71,34 +75,53 @@ def _build_report_impl(
     claim_mode: str = "auto",
     llm_provider: str | None = None,
     llm_model: str | None = None,
+    domain_pack: str | None = None,
 ) -> dict[str, Any]:
+    from vsa.domain_packs import resolve_pack_name
+
     subject = parse_input(input_data)
     cache = EvidenceCache(cache_dir)
     input_question = input_data.get("question") or subject.get("display_name", "")
     retrieval_warnings: list[str] = list(input_data.get("retrieval_warnings") or [])
     retrieval_plan: list[str] = list(input_data.get("retrieval_plan") or [])
+    source_records: list[dict[str, Any]] = list(input_data.get("source_records") or [])
+    pack_name = resolve_pack_name(domain_pack or input_data.get("domain_pack"))
+    retrieval_status = input_data.get("retrieval_status") or "complete"
+    connector_outcomes: list[dict[str, Any]] = list(input_data.get("connector_outcomes") or [])
 
     if offline_evidence is not None:
         evidence = offline_evidence
     elif input_data.get("evidence"):
         evidence = input_data["evidence"]
     else:
-        result = retrieve_evidence_with_meta(subject, cache=cache)
+        result = retrieve_evidence_with_meta(subject, cache=cache, domain_pack=pack_name)
         evidence = result.evidence
         retrieval_warnings.extend(result.warnings)
         retrieval_plan = result.retrieval_plan or retrieval_plan
+        source_records = result.source_records or source_records
+        retrieval_status = result.retrieval_status
+        connector_outcomes = result.outcomes_as_dicts()
 
     evidence = apply_quality_scores({"evidence": evidence})["evidence"]
 
     from vsa.connectors.content_level import infer_content_level
-    from vsa.scientific.credibility import build_credibility_limitations, harden_evidence
+    from vsa.scientific.credibility import (
+        build_credibility_limitations,
+        demote_claim_confidence_for_threats,
+        harden_evidence,
+    )
 
     evidence, credibility_warnings = harden_evidence(evidence)
     retrieval_warnings.extend(credibility_warnings)
 
+    evidence, source_records = ensure_source_records(
+        evidence, source_records, query=dict(subject)
+    )
+
     if input_data.get("claims"):
         claims = input_data["claims"]
         claim_stack = "provided"
+        inference = "human" if claim_stack == "provided" else "rule"
     else:
         mode = input_data.get("claim_mode", claim_mode)
         provider = input_data.get("llm_provider", llm_provider)
@@ -106,6 +129,9 @@ def _build_report_impl(
         claims, claim_stack = extract_claims(
             subject, evidence, mode=mode, provider=provider, model=model
         )
+        inference = "llm" if claim_stack.startswith("llm") else "rule"
+    claims = finalize_claims(claims, evidence, inference_method=inference)
+    claims = demote_claim_confidence_for_threats(claims, evidence)
     contradictions = detect_contradictions({"evidence": evidence, "claims": claims})
 
     speculative = any(c.get("review_boundary") == "speculative" for c in claims)
@@ -120,7 +146,13 @@ def _build_report_impl(
     ]
     pub_evidence = [e for e in evidence if e.get("source_type") == "publication"]
     metadata_only_pubs = bool(pub_evidence) and all(infer_content_level(e) == "metadata" for e in pub_evidence)
-    limitations.extend(build_credibility_limitations(evidence, metadata_only_publications=metadata_only_pubs))
+    limitations.extend(
+        build_credibility_limitations(
+            evidence,
+            metadata_only_publications=metadata_only_pubs,
+            claims=claims,
+        )
+    )
 
     report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -133,6 +165,8 @@ def _build_report_impl(
         "evidence": evidence,
         "retrieval_plan": retrieval_plan,
         "retrieval_warnings": retrieval_warnings,
+        "retrieval_status": retrieval_status,
+        "connector_outcomes": connector_outcomes,
         "evidence_selection_method": "connector_ranking_by_quality_score",
         "claim_generation_method": claim_stack,
         "review_policy": "human_review_required_for_clinical_and_speculative_claims",
@@ -173,7 +207,11 @@ def _build_report_impl(
         },
         "generated_outputs": {"formats_available": ["json", "markdown", "html", "pdf"]},
         "contradictions": contradictions,
+        "source_records": source_records,
     }
+    if pack_name:
+        report["domain_pack"] = pack_name
+    report["claim_evidence_graph"] = build_claim_evidence_graph(report)
 
     inp_hash = _input_hash(input_data)
     report = stamp_report(report, input_hash=inp_hash, cache_dir=cache_dir)
@@ -188,6 +226,7 @@ def build_from_file(
     claim_mode: str = "auto",
     llm_provider: str | None = None,
     llm_model: str | None = None,
+    domain_pack: str | None = None,
 ) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     return build_report(
@@ -196,4 +235,5 @@ def build_from_file(
         claim_mode=claim_mode,
         llm_provider=llm_provider,
         llm_model=llm_model,
+        domain_pack=domain_pack,
     )

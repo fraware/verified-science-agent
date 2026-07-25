@@ -88,11 +88,11 @@
   "producer": {
     "package_version": "0.7.2",
     "model_or_checkpoint_id": "fixture",
-    "validation_version": "1.2.0",
+    "validation_version": "1.3.0",
     "prompt_template_version": "claim_extraction_v1"
   },
   "integrity": {
-    "bundle_hash": "15fe7da3b36615b1dfd31c19f9ea09b233124d434317ee5ec13aafe38e81206f",
+    "bundle_hash": "00f50d84b671d3d01efe50b0e64b053f2a0d9cdab8fa8815de6516f01b0d22d3",
     "source_record_hashes": {
       "E001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     },
