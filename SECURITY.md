@@ -16,11 +16,12 @@ Include:
 
 ## Scope notes
 
-- VSA validates and packages scientific evidence; it does not authorize actions or execute tools.
+- VSA validates and packages scientific evidence; it does not authorize actions, execute tools, issue grants, or certify scientific correctness.
 - Signing keys (`VSA_SIGNING_PRIVATE_KEY`, `.vsa_signing_key`) and API keys must never appear in fixtures, logs, or CI artifacts.
 - Connector caches and export bundles may contain retrieved scientific records; treat them according to your data-handling policy.
-- Optional Ed25519 signatures are self-attesting (public key embedded). Pin trusted keys out-of-band before treating a signature as organizationally trusted.
-- Decision-time privacy-safe metrics must remain counts/histograms only — never raw partner payloads or private rationales.
+- Optional Ed25519 signatures are self-attesting (public key embedded). Pin trusted keys out-of-band (`vsa verify-decision-time-bundle --trusted-key` / `--trusted-key-file`) before treating a signature as organizationally trusted.
+- Decision-time privacy-safe metrics must remain counts/histograms only — never raw partner payloads or private rationales (re-checked on verify).
+- Never commit `.env`; see `.env.example` for optional configuration keys only.
 
 ## Decision-time integrity
 
