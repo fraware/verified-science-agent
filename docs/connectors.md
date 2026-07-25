@@ -1,12 +1,14 @@
 # Connectors
 
-Read-only connectors normalize external records into `NormalizedEvidence`.
+Read-only connectors normalize external records into `NormalizedEvidence`, then emit an immutable `SourceRecord` (authority) plus an evidence *view*.
 
 ## Shared output shape
 
 Every connector returns: `source_name`, `source_type`, `identifier`, `retrieval_path`, `retrieved_at`, `summary`, `raw_record`, `reliability`, `domain_metadata`.
 
-Raw records are cached under `.vsa_cache/` keyed by connector query.
+Each item also produces a `SourceRecord` with `content_digest`, `raw_response_retention`, `query`, `transformation_history`, and `source_availability`. Evidence views link via `source_id` and must not invent digests/URLs/connectors.
+
+Raw records are cached under `.vsa_cache/` keyed by connector query and by content digest (`_by_digest/`) when retained.
 
 ## ClinVar
 
@@ -51,5 +53,16 @@ Mocked unit tests in `tests/connectors/`:
 
 - `test_clinvar.py`, `test_uniprot.py`, `test_alphafold.py`
 - `test_openalex.py`, `test_crossref.py`, `test_europe_pmc.py`, `test_semantic_scholar.py`
+- Hardening matrix: `tests/connectors/hardening/` parametrized over all nine connectors (fixture success, schema drift, malformed JSON, timeout, 429, empty vs failure, duplicates, provenance retention, explicit degradation). JSON fixture packs live under `tests/connectors/fixtures/`.
 
-Live integration tests (optional): `pytest -m live`
+Live integration tests (optional): `pytest -m live` with `VSA_ALLOW_NETWORK=1`.
+
+Default acceptance never runs live connectors. The skip registry (`vsa.acceptance.skip_registry`) enumerates all nine connectors as `skipped_live` when `VSA_ALLOW_NETWORK` is unset; see `reports/acceptance_baseline.json` and [benchmark.md](benchmark.md).
+
+## Retrieval failure visibility
+
+`retrieve_evidence_with_meta` returns typed `connector_outcomes` and report-level `retrieval_status` (`complete` | `partial` | `failed`). Distinct warning codes include `connector_timeout`, `connector_rate_limited`, `connector_failure`, `malformed_response`, `empty_result`, and `schema_drift`. Failed retrieval must not be inferred as “no evidence exists.”
+
+## Domain packs
+
+Selectable packs under `src/vsa/domain_packs/` (`clinical_genetics`, `materials`) override connector routing via `vsa build --domain-pack <name>`. Review records: [domain_reviews](domain_reviews/TEMPLATE.md).

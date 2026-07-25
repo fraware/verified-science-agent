@@ -9,7 +9,7 @@
 
 ## Context
 
-VSA produces immutable, evidence-backed ScientificReport artifacts (schema 1.2.0). Downstream systems need:
+VSA produces immutable, evidence-backed ScientificReport artifacts (schema 1.3.0). Downstream systems need:
 
 1. **AKTA** — action admissibility / authorization decisions that consume scientific context without field-guessing.
 2. **Scientific Memory** — append-only storage of evidence packages and later outcome/calibration links.
@@ -37,7 +37,7 @@ These concerns must not blur VSA’s role into authorizing actions, executing to
 
 ### Companion schemas (additive)
 
-ScientificReport **1.2.0** remains the compatibility baseline. New companion schemas do not mutate required ScientificReport fields:
+ScientificReport **1.3.0** remains the compatibility baseline. New companion schemas do not mutate required ScientificReport fields:
 
 - `integration_envelope.schema.json`
 - `decision_time_evidence_bundle.schema.json`
@@ -70,4 +70,4 @@ These are integration pins outside this repository, not unfinished local work:
 
 ## Freeze note
 
-ScientificReport schema **1.2.0** and the current 50-task offline benchmark remain the compatibility baseline for this hardening track.
+ScientificReport schema **1.3.0** and the current 50-task offline benchmark remain the compatibility baseline for this hardening track.
