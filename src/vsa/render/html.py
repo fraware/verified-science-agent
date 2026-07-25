@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import html
 from typing import Any
 
-from vsa.render.markdown import _credibility_warning_lines, render_markdown
+from vsa.render.markdown import _credibility_warning_lines
+from vsa.render.sanitize import sanitize_render_text
 
 
 def render_html(report: dict[str, Any]) -> str:
@@ -15,7 +15,7 @@ def render_html(report: dict[str, Any]) -> str:
     prov = report.get("provenance", {})
 
     def esc(value: object) -> str:
-        return html.escape(str(value))
+        return sanitize_render_text(value)
 
     claims_rows = ""
     for claim in report.get("claims", []):

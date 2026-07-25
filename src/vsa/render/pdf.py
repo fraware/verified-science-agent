@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from vsa.render.sanitize import sanitize_pdf_text
+
 
 def render_pdf(report: dict[str, Any]) -> bytes:
     try:
@@ -16,7 +18,12 @@ def render_pdf(report: dict[str, Any]) -> bytes:
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Helvetica", "B", 16)
-    pdf.cell(0, 10, f"Scientific Report: {subject.get('display_name', 'Unknown')}", ln=True)
+    pdf.cell(
+        0,
+        10,
+        sanitize_pdf_text(f"Scientific Report: {subject.get('display_name', 'Unknown')}"),
+        ln=True,
+    )
     pdf.set_font("Helvetica", "", 10)
     pdf.multi_cell(0, 6, "Research infrastructure artifact. Human expert review required before clinical use.")
     pdf.ln(4)
@@ -25,14 +32,22 @@ def render_pdf(report: dict[str, Any]) -> bytes:
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(0, 8, "Executive summary", ln=True)
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 6, f"Validation: {vr.get('status', '?')} | Claims: {len(report.get('claims', []))} | Evidence: {len(report.get('evidence', []))}", ln=True)
+    pdf.cell(
+        0,
+        6,
+        sanitize_pdf_text(
+            f"Validation: {vr.get('status', '?')} | Claims: {len(report.get('claims', []))} | "
+            f"Evidence: {len(report.get('evidence', []))}"
+        ),
+        ln=True,
+    )
     pdf.ln(3)
 
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(0, 8, "Claims", ln=True)
     pdf.set_font("Helvetica", "", 9)
     for claim in report.get("claims", []):
-        text = (
+        text = sanitize_pdf_text(
             f"[{claim.get('claim_id')}] ({claim.get('review_boundary')}) "
             f"{claim.get('claim_text', '')[:300]}"
         )
@@ -44,7 +59,9 @@ def render_pdf(report: dict[str, Any]) -> bytes:
     pdf.cell(0, 8, "Evidence", ln=True)
     pdf.set_font("Helvetica", "", 9)
     for ev in report.get("evidence", []):
-        line = f"{ev.get('evidence_id')} | {ev.get('source_name')} | {ev.get('summary', '')[:200]}"
+        line = sanitize_pdf_text(
+            f"{ev.get('evidence_id')} | {ev.get('source_name')} | {ev.get('summary', '')[:200]}"
+        )
         pdf.multi_cell(0, 5, line)
         pdf.ln(1)
 
@@ -53,7 +70,9 @@ def render_pdf(report: dict[str, Any]) -> bytes:
     pdf.set_font("Helvetica", "B", 12)
     pdf.cell(0, 8, "Provenance", ln=True)
     pdf.set_font("Helvetica", "", 9)
-    pdf.multi_cell(0, 5, f"Report hash: {prov.get('report_hash', '?')}")
-    pdf.multi_cell(0, 5, f"Evidence bundle hash: {prov.get('evidence_bundle_hash', '?')}")
+    pdf.multi_cell(0, 5, sanitize_pdf_text(f"Report hash: {prov.get('report_hash', '?')}"))
+    pdf.multi_cell(
+        0, 5, sanitize_pdf_text(f"Evidence bundle hash: {prov.get('evidence_bundle_hash', '?')}")
+    )
 
     return pdf.output()
