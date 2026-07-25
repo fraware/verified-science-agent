@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://verified-science-agent.org/schemas/scientific_report/v1.0.0",
+  "$id": "https://verified-science-agent.org/schemas/scientific_report/v1.3.0",
   "title": "ScientificReport",
   "description": "Canonical artifact model for evidence-backed scientific AI reports.",
   "type": "object",
@@ -75,12 +75,53 @@
       "type": "array",
       "items": { "type": "string" }
     },
+    "retrieval_status": {
+      "type": "string",
+      "enum": ["complete", "partial", "failed"],
+      "description": "Typed retrieval outcome so connector failure is not inferred as empty evidence."
+    },
+    "connector_outcomes": {
+      "type": "array",
+      "description": "Per-connector typed retrieval outcomes (success, empty_result, failures, skips).",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "connector": { "type": "string" },
+          "status": { "type": "string" },
+          "code": { "type": ["string", "null"] },
+          "evidence_count": { "type": "integer" },
+          "warning": { "type": ["string", "null"] },
+          "details": { "type": "object", "additionalProperties": true }
+        }
+      }
+    },
+    "domain_pack": {
+      "type": "string",
+      "description": "Optional domain pack name selecting connector routing and review policy."
+    },
     "evidence_selection_method": { "type": "string" },
     "claim_generation_method": { "type": "string" },
     "review_policy": { "type": "string" },
     "limitations": {
       "type": "array",
       "items": { "type": "string" }
+    },
+    "source_records": {
+      "type": "array",
+      "description": "Immutable SourceRecord authority; evidence is a view over these digests.",
+      "items": { "$ref": "#/$defs/SourceRecord" }
+    },
+    "claim_evidence_graph": {
+      "type": "object",
+      "description": "First-class claim–evidence graph for validation (not render-only).",
+      "additionalProperties": true,
+      "properties": {
+        "schema": { "type": "string" },
+        "nodes": { "type": "array" },
+        "edges": { "type": "array" },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
     }
   },
   "$defs": {
@@ -157,6 +198,11 @@
           "type": "string",
           "pattern": "^[a-f0-9]{64}$"
         },
+        "source_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Link to authoritative SourceRecord.source_id"
+        },
         "evidence_role": {
           "type": "string",
           "enum": ["supports", "contradicts", "contextualizes"]
@@ -169,6 +215,58 @@
         "domain_metadata": {
           "type": "object",
           "additionalProperties": true
+        }
+      }
+    },
+    "SourceRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "canonical_url",
+        "accession",
+        "retrieved_at",
+        "content_digest",
+        "media_type",
+        "query",
+        "raw_response_retention",
+        "license",
+        "connector",
+        "transformation_history",
+        "source_availability"
+      ],
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1 },
+        "canonical_url": { "type": "string" },
+        "accession": { "type": "string" },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "content_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "media_type": { "type": "string", "minLength": 1 },
+        "database_version": { "type": ["string", "null"] },
+        "query": { "type": "object", "additionalProperties": true },
+        "raw_response_retention": {
+          "type": "string",
+          "enum": ["retained", "digest_only", "unavailable"]
+        },
+        "license": { "type": "string", "minLength": 1 },
+        "connector": { "type": "string", "minLength": 1 },
+        "transformation_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["op", "at", "digest_in", "digest_out"],
+            "properties": {
+              "op": { "type": "string" },
+              "at": { "type": "string" },
+              "digest_in": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "digest_out": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
+        },
+        "source_availability": {
+          "type": "string",
+          "enum": ["available", "cached", "unavailable", "substituted"]
         }
       }
     },
@@ -195,10 +293,18 @@
         "claim_id",
         "claim_type",
         "claim_text",
+        "claim_text_normalized",
+        "supporting_evidence_ids",
+        "contradicting_evidence_ids",
         "evidence_ids",
         "confidence",
+        "confidence_semantics",
         "review_boundary",
-        "uncertainty_level"
+        "uncertainty_level",
+        "inference_method",
+        "source_spans",
+        "validation_result",
+        "reviewer_status"
       ],
       "additionalProperties": false,
       "properties": {
@@ -218,12 +324,63 @@
           ]
         },
         "claim_text": { "type": "string", "minLength": 10 },
+        "claim_text_normalized": {
+          "type": "string",
+          "description": "Whitespace/case-normalized claim_text for stable comparison"
+        },
+        "supporting_evidence_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Evidence IDs that support the claim; empty only when review_boundary=unsupported"
+        },
+        "contradicting_evidence_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "evidence_ids": {
           "type": "array",
           "items": { "type": "string" },
-          "minItems": 1
+          "description": "Compatibility union of supporting and contradicting evidence IDs"
+        },
+        "source_spans": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/SourceSpan" }
+        },
+        "inference_method": {
+          "type": "string",
+          "enum": ["direct_extract", "rule", "llm", "aggregation", "human", "unknown"]
         },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "confidence_semantics": {
+          "type": "object",
+          "required": ["scale", "min", "max", "interpretation"],
+          "additionalProperties": true,
+          "properties": {
+            "scale": { "type": "string" },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "interpretation": { "type": "string", "minLength": 1 }
+          }
+        },
+        "validation_result": {
+          "type": "object",
+          "required": ["status", "check_ids"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "pass", "warn", "fail"]
+            },
+            "check_ids": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
+        "reviewer_status": {
+          "type": "string",
+          "enum": ["unreviewed", "approved", "rejected", "needs_revision"]
+        },
         "review_boundary": {
           "type": "string",
           "enum": [
@@ -242,6 +399,18 @@
           "type": "string",
           "enum": ["high", "medium", "low", "insufficient"]
         }
+      }
+    },
+    "SourceSpan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "evidence_id", "start", "end", "quote_hash"],
+      "properties": {
+        "source_id": { "type": "string" },
+        "evidence_id": { "type": "string", "minLength": 1 },
+        "start": { "type": "integer", "minimum": 0 },
+        "end": { "type": "integer", "minimum": 0 },
+        "quote_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
     "Method": {
@@ -352,7 +521,14 @@
         "required": { "type": "boolean" },
         "status": {
           "type": "string",
-          "enum": ["pending", "in_progress", "approved", "rejected", "not_required"]
+          "enum": [
+            "pending",
+            "in_progress",
+            "approved",
+            "rejected",
+            "needs_revision",
+            "not_required"
+          ]
         },
         "reviewer_identity": { "type": "string" },
         "review_timestamp": { "type": "string", "format": "date-time" },
@@ -367,16 +543,57 @@
         },
         "review_events": {
           "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "timestamp": { "type": "string" },
-              "reviewer": { "type": "string" },
-              "action": { "type": "string" },
-              "claim_ids": { "type": "array", "items": { "type": "string" } },
-              "notes": { "type": "string" }
-            }
-          }
+          "items": { "$ref": "#/$defs/ReviewEvent" }
+        }
+      }
+    },
+    "ReviewEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timestamp",
+        "reviewer_identity",
+        "decision",
+        "prior_event_digest"
+      ],
+      "properties": {
+        "timestamp": { "type": "string" },
+        "reviewer_identity": { "type": "string", "minLength": 1 },
+        "reviewer": {
+          "type": "string",
+          "description": "Legacy alias for reviewer_identity"
+        },
+        "claim_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "decision": { "type": "string", "minLength": 1 },
+        "action": {
+          "type": "string",
+          "description": "Legacy alias for decision"
+        },
+        "rationale": { "type": "string" },
+        "notes": {
+          "type": "string",
+          "description": "Legacy alias for rationale"
+        },
+        "corrections": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prior_event_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 of previous event; genesis uses 64 zero hex digits"
+        },
+        "signature": {
+          "type": "string",
+          "description": "Optional detached signature over the event payload"
+        },
+        "unsigned_status": {
+          "type": "string",
+          "const": "unsigned",
+          "description": "Present when the event is intentionally unsigned"
         }
       }
     },
