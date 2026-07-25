@@ -24,6 +24,18 @@ from vsa.pipeline.retrieval import retrieve_evidence
 from vsa.scoring.evidence_quality import apply_quality_scores
 
 
+def _configure_stdio() -> None:
+    """Allow Unicode CLI output on Windows consoles that default to cp1252."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (OSError, ValueError, AttributeError):
+            continue
+
+
 def _load_report(path: Path) -> dict[str, Any]:
     try:
         if not path.exists():
@@ -275,6 +287,7 @@ def cmd_build(args: argparse.Namespace) -> int:
         claim_mode=args.claim_mode,
         llm_provider=args.llm_provider,
         llm_model=args.llm_model,
+        domain_pack=getattr(args, "domain_pack", None),
     )
     out = args.out
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -385,6 +398,34 @@ def cmd_verify_bundle(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_reconstruct(args: argparse.Namespace) -> int:
+    """Rebuild report hashes from retained SourceRecords in an export bundle."""
+    from vsa.artifacts.reconstruct import ReconstructError, reconstruct_report_from_bundle, verify_reconstructed_hash
+
+    if args.verify:
+        ok, report_hash, errors = verify_reconstructed_hash(
+            args.bundle_dir, require_retained=not args.allow_digest_only
+        )
+        if ok:
+            print(f"PASS: reconstructed report_hash={report_hash}")
+            return 0
+        print("FAIL: reconstruct verification errors:", file=sys.stderr)
+        for err in errors:
+            print(f"  - {err}", file=sys.stderr)
+        return 1
+
+    try:
+        report = reconstruct_report_from_bundle(
+            args.bundle_dir, require_retained=not args.allow_digest_only
+        )
+    except ReconstructError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 1
+    text = json.dumps(report, indent=2, ensure_ascii=False) + "\n"
+    _write_output(text, args.out)
+    return 0
+
+
 def cmd_compare_audit(args: argparse.Namespace) -> int:
     from vsa.compare_audit import compare_audits, format_compare_audits
 
@@ -477,7 +518,11 @@ def cmd_migrate(args: argparse.Namespace) -> int:
 def cmd_benchmark(args: argparse.Namespace) -> int:
     from vsa.benchmark.runner import run_benchmark
 
-    summary = run_benchmark(offline=not args.live, cache_dir=args.cache_dir)
+    summary = run_benchmark(
+        offline=not args.live,
+        cache_dir=args.cache_dir,
+        suite=getattr(args, "suite", None),
+    )
     text = json.dumps(summary, indent=2) + "\n"
     _write_output(text, args.out)
     if summary.get("regression"):
@@ -485,14 +530,21 @@ def cmd_benchmark(args: argparse.Namespace) -> int:
         gap_msg = ", ".join(f"{k} missing {v}" for k, v in gaps.items() if v)
         if gap_msg:
             print(f"FAIL: benchmark category gaps: {gap_msg}", file=sys.stderr)
+        gov = summary.get("governance_errors") or []
+        if gov:
+            print(f"FAIL: benchmark governance schema: {gov[0]}", file=sys.stderr)
         print("FAIL: benchmark regression detected", file=sys.stderr)
         return 1
     cov = summary.get("category_coverage") or {}
     print(
-        f"Benchmark OK: {summary['passed']}/{summary['total']} tasks | "
+        f"Benchmark OK ({summary.get('suite', 'holdout')}): "
+        f"{summary['passed']}/{summary['total']} tasks | "
         f"adversarial={cov.get('adversarial', 0)} ambiguity={cov.get('ambiguity', 0)} "
         f"contradiction={cov.get('contradiction', 0)} metadata_only_paper={cov.get('metadata_only_paper', 0)} "
-        f"no_evidence={cov.get('no_evidence', 0)}",
+        f"no_evidence={cov.get('no_evidence', 0)} "
+        f"source_substitution={cov.get('source_substitution', 0)} "
+        f"unavailable_source={cov.get('unavailable_source', 0)} "
+        f"temporal_cutoff={cov.get('temporal_cutoff', 0)}",
         file=sys.stderr,
     )
     return 0 if summary["failed"] == 0 else 1
@@ -695,6 +747,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_build.add_argument("--claim-mode", default="auto", choices=["auto", "rule", "llm"])
     p_build.add_argument("--llm-provider", choices=["openai", "anthropic"], default=None)
     p_build.add_argument("--llm-model", default=None)
+    p_build.add_argument(
+        "--domain-pack",
+        default=None,
+        help="Domain pack name (e.g. clinical_genetics, materials) selecting connector routing",
+    )
     p_build.set_defaults(func=cmd_build)
 
     p_extract = sub.add_parser("extract", help="Extract claims from input JSON (rule or LLM)")
@@ -757,20 +814,35 @@ def build_parser() -> argparse.ArgumentParser:
     p_rj.add_argument("--out", "-o", type=Path, default=None)
     p_rj.set_defaults(func=cmd_review)
 
-    p_rv = review_sub.add_parser("verify", help="Verify review event chain hashes")
+    p_rv = review_sub.add_parser(
+        "verify",
+        help="Verify hash-linked review event chain (reviewer approval layer; see docs/signing.md)",
+    )
     p_rv.add_argument("report", type=Path)
     p_rv.set_defaults(func=cmd_review)
 
     p_review.set_defaults(func=cmd_review)
 
-    p_sign = sub.add_parser("sign", help="Ed25519-sign report provenance hash")
+    p_sign = sub.add_parser(
+        "sign",
+        help=(
+            "Ed25519-sign report provenance hash (artifact integrity only; "
+            "does not certify scientific correctness — see docs/signing.md)"
+        ),
+    )
     p_sign.add_argument("report", type=Path, nargs="?", default=None)
     p_sign.add_argument("--out", "-o", type=Path, default=None)
     p_sign.add_argument("--key-file", default=".vsa_signing_key")
     p_sign.add_argument("--generate-key", action="store_true")
     p_sign.set_defaults(func=cmd_sign)
 
-    p_vsig = sub.add_parser("verify-signature", help="Verify Ed25519 signature on report")
+    p_vsig = sub.add_parser(
+        "verify-signature",
+        help=(
+            "Verify Ed25519 signature on report (integrity only; "
+            "not scientific truth — see docs/signing.md)"
+        ),
+    )
     p_vsig.add_argument("report", type=Path)
     p_vsig.set_defaults(func=cmd_verify_signature)
 
@@ -795,6 +867,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_verify_bundle.add_argument("--skip-attestation", action="store_true")
     p_verify_bundle.set_defaults(func=cmd_verify_bundle)
 
+    p_reconstruct = sub.add_parser(
+        "reconstruct",
+        help="Rebuild report hashes from retained SourceRecords in an export bundle",
+    )
+    p_reconstruct.add_argument("bundle_dir", type=Path)
+    p_reconstruct.add_argument("--out", "-o", type=Path, default=None)
+    p_reconstruct.add_argument(
+        "--verify",
+        action="store_true",
+        help="Compare reconstructed report_hash to the stored report (exit 1 on mismatch)",
+    )
+    p_reconstruct.add_argument(
+        "--allow-digest-only",
+        action="store_true",
+        help="Allow reconstruct when sources are digest_only (skips raw rebuild; for diagnostics)",
+    )
+    p_reconstruct.set_defaults(func=cmd_reconstruct)
+
     p_verify_review = sub.add_parser("verify-review", help="Verify review event chain hashes on a report")
     p_verify_review.add_argument("report", type=Path)
     p_verify_review.set_defaults(func=cmd_verify_review)
@@ -814,17 +904,35 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_bench = sub.add_parser("benchmark", help="Run benchmark task suite")
     p_bench.add_argument("--live", action="store_true")
+    p_bench.add_argument(
+        "--suite",
+        choices=["holdout", "dev"],
+        default="holdout",
+        help="Fixture suite (default: holdout evaluation set)",
+    )
     p_bench.add_argument("--cache-dir", default=".vsa_cache")
     p_bench.add_argument("--out", "-o", type=Path, default=None)
     p_bench.set_defaults(func=cmd_benchmark)
 
-    p_attest = sub.add_parser("attest", help="Generate SLSA/in-toto provenance attestation")
+    p_attest = sub.add_parser(
+        "attest",
+        help=(
+            "Generate SLSA/in-toto provenance attestation (subject digest match only; "
+            "not a scientific endorsement — see docs/signing.md)"
+        ),
+    )
     p_attest.add_argument("report", type=Path)
     p_attest.add_argument("--out", "-o", type=Path, default=None)
     p_attest.add_argument("--subject-name", default="scientific_report.json")
     p_attest.set_defaults(func=cmd_attest)
 
-    p_vattest = sub.add_parser("verify-attestation", help="Verify attestation matches report hash")
+    p_vattest = sub.add_parser(
+        "verify-attestation",
+        help=(
+            "Verify attestation subject digest matches report_hash "
+            "(integrity only; not scientific correctness — see docs/signing.md)"
+        ),
+    )
     p_vattest.add_argument("report", type=Path)
     p_vattest.add_argument("attestation", type=Path)
     p_vattest.add_argument("--subject-name", default="scientific_report.json")
@@ -936,6 +1044,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _configure_stdio()
     parsed_argv = list(argv) if argv is not None else None
     if parsed_argv is not None and len(parsed_argv) >= 2 and parsed_argv[0] == "review":
         subs = {"start", "approve-claim", "request-corrections", "reject", "verify", "apply"}
