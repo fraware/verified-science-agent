@@ -26,7 +26,29 @@ from vsa.scoring.evidence_quality import apply_quality_scores
 
 def _load_report(path: Path) -> dict[str, Any]:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        if not path.exists():
+            print(f"ERROR: file not found: {path}", file=sys.stderr)
+            raise SystemExit(1)
+        if not path.is_file():
+            print(f"ERROR: not a file: {path}", file=sys.stderr)
+            raise SystemExit(1)
+        raw = path.read_text(encoding="utf-8")
+        if not raw.strip():
+            print(f"ERROR: empty file: {path}", file=sys.stderr)
+            raise SystemExit(1)
+        data = json.loads(raw)
+        if not isinstance(data, dict):
+            print(f"ERROR: expected JSON object in {path}, got {type(data).__name__}", file=sys.stderr)
+            raise SystemExit(1)
+        return data
+    except SystemExit:
+        raise
+    except json.JSONDecodeError as exc:
+        print(f"ERROR: invalid JSON in {path}: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
+    except OSError as exc:
+        print(f"ERROR: could not read {path}: {exc}", file=sys.stderr)
+        raise SystemExit(1) from exc
     except Exception as exc:
         print(f"ERROR: could not load {path}: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
@@ -511,10 +533,28 @@ def cmd_snapshot_evidence(args: argparse.Namespace) -> int:
 
 def cmd_verify_decision_time_bundle(args: argparse.Namespace) -> int:
     """Verify schema, cutoff invariants, hashes, optional signature, portable refs."""
+    from vsa.decision_time.signing import load_trusted_public_keys
     from vsa.decision_time.verify import verify_decision_time_bundle
 
+    trusted_flags = bool(args.trusted_key or args.trusted_key_file)
+    try:
+        trusted = load_trusted_public_keys(
+            args.trusted_key or None,
+            key_files=args.trusted_key_file or None,
+        )
+    except (ValueError, OSError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+    if trusted_flags and not trusted:
+        print("ERROR: --trusted-key / --trusted-key-file produced empty trust set", file=sys.stderr)
+        return 1
+
     bundle = _load_report(args.bundle)
-    result = verify_decision_time_bundle(bundle, require_signature=args.require_signature)
+    result = verify_decision_time_bundle(
+        bundle,
+        require_signature=args.require_signature or bool(trusted),
+        trusted_public_keys_b64=trusted or None,
+    )
     status = "PASS" if result.passed else "FAIL"
     print(f"{status}: {args.bundle} [{result.status}]")
     for check in result.checks:
@@ -525,8 +565,8 @@ def cmd_verify_decision_time_bundle(args: argparse.Namespace) -> int:
 def cmd_compare_cutoffs(args: argparse.Namespace) -> int:
     """Compare two cutoffs. Informational only; does not authorize actions.
 
-    Embeds per-bundle verify results. Exit code reflects comparison success
-    (able to load and diff), not semantic pass/fail of either side.
+    Default exit 0 after a successful load+diff (even if either side fails verify).
+    Pass --fail-on-verify to exit 1 when verify_a or verify_b did not pass.
     """
     from vsa.decision_time.verify import compare_cutoffs
 
@@ -535,12 +575,16 @@ def cmd_compare_cutoffs(args: argparse.Namespace) -> int:
     diff = compare_cutoffs(a, b)
     text = json.dumps(diff, indent=2, ensure_ascii=False) + "\n"
     _write_output(text, args.out)
-    if not diff.get("verify_a", {}).get("passed") or not diff.get("verify_b", {}).get("passed"):
+    a_ok = bool(diff.get("verify_a", {}).get("passed"))
+    b_ok = bool(diff.get("verify_b", {}).get("passed"))
+    if not a_ok or not b_ok:
         print(
             "NOTE: one or both bundles failed verification; see verify_a/verify_b "
             "(comparison is informational; VSA does not authorize actions)",
             file=sys.stderr,
         )
+        if getattr(args, "fail_on_verify", False):
+            return 1
     return 0
 
 
@@ -830,6 +874,21 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_vdt.add_argument("bundle", type=Path)
     p_vdt.add_argument("--require-signature", action="store_true")
+    p_vdt.add_argument(
+        "--trusted-key",
+        action="append",
+        default=[],
+        help=(
+            "Out-of-band trusted Ed25519 public key (base64 raw 32 bytes). "
+            "Repeatable. When set, embedded signing key must match (implies --require-signature)."
+        ),
+    )
+    p_vdt.add_argument(
+        "--trusted-key-file",
+        action="append",
+        default=[],
+        help="File with trusted public keys (one base64 key per line; # comments allowed).",
+    )
     p_vdt.set_defaults(func=cmd_verify_decision_time_bundle)
 
     p_cc = sub.add_parser(
@@ -842,6 +901,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_cc.add_argument("bundle_a", type=Path)
     p_cc.add_argument("bundle_b", type=Path)
     p_cc.add_argument("--out", "-o", type=Path, default=None)
+    p_cc.add_argument(
+        "--fail-on-verify",
+        action="store_true",
+        help="Exit 1 if either bundle fails verification (default: exit 0 after diff)",
+    )
     p_cc.set_defaults(func=cmd_compare_cutoffs)
 
     p_akta = sub.add_parser(
