@@ -1,0 +1,20 @@
+{
+  "name": "materials",
+  "description": "Materials pack for formula/material subjects routed through Materials Project with supporting publication connectors for property claims.",
+  "entity_types": ["material"],
+  "connectors": ["Materials Project", "OpenAlex", "PubMed", "Crossref"],
+  "routing": {
+    "material": ["Materials Project", "OpenAlex", "PubMed", "Crossref"]
+  },
+  "warning_policy": {
+    "clinical_review_required": false,
+    "require_api_key_notice": true,
+    "empty_result_distinct_from_failure": true,
+    "property_claim_review": "requires_domain_review"
+  },
+  "review_boundaries": [
+    "requires_domain_review",
+    "unsupported",
+    "speculative"
+  ]
+}

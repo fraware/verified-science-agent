@@ -56,11 +56,11 @@ vsa = "vsa.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-vsa = ["schemas/*.json", "prompts/*.md"]
+vsa = ["schemas/*.json", "prompts/*.md", "domain_packs/*/pack.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 addopts = "-q -m 'not live'"
 markers = [
     "live: live network connector tests (run with pytest -m live)",

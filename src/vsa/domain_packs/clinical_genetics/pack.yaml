@@ -1,0 +1,21 @@
+{
+  "name": "clinical_genetics",
+  "description": "Clinical genetics pack for variant/gene/protein subjects with clinical review boundaries and ambiguity-aware ClinVar/UniProt routing.",
+  "entity_types": ["variant", "gene", "protein"],
+  "connectors": ["ClinVar", "UniProt", "PubMed", "Europe PMC", "AlphaFold DB"],
+  "routing": {
+    "variant": ["ClinVar", "UniProt", "PubMed", "Europe PMC"],
+    "gene": ["UniProt", "ClinVar", "PubMed"],
+    "protein": ["UniProt", "AlphaFold DB"]
+  },
+  "warning_policy": {
+    "clinical_review_required": true,
+    "ambiguity_reliability_cap": "low",
+    "empty_result_distinct_from_failure": true
+  },
+  "review_boundaries": [
+    "requires_clinical_review",
+    "requires_domain_review",
+    "unsupported"
+  ]
+}
