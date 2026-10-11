@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import httpx
 import pytest
 import respx
 
+from vsa.connectors.cache import EvidenceCache
 from vsa.connectors.clinvar import ClinVarConnector
 
 
@@ -80,7 +83,9 @@ def test_clinvar_ambiguous_lowers_reliability():
         assert top.reliability == "low"
 
 @respx.mock
-def test_clinvar_retries_rate_limit_without_discarding_evidence(monkeypatch: pytest.MonkeyPatch):
+def test_clinvar_retries_rate_limit_without_discarding_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
     delays: list[float] = []
     monkeypatch.setattr("vsa.connectors.clinvar.time.sleep", delays.append)
     responses = iter(
@@ -95,20 +100,22 @@ def test_clinvar_retries_rate_limit_without_discarding_evidence(monkeypatch: pyt
     endpoint = respx.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi")
     endpoint.mock(side_effect=lambda request: next(responses))
 
-    results = ClinVarConnector().fetch({"clinvar_id": "12345"})
+    results = ClinVarConnector(cache=EvidenceCache(tmp_path)).fetch({"clinvar_id": "12345"})
     assert endpoint.call_count == 2
     assert any(delay >= 2 for delay in delays)
     assert results[0].raw_record["title"] == "BRCA1 c.68_69del"
 
 
 @respx.mock
-def test_clinvar_exhausted_rate_limit_raises(monkeypatch: pytest.MonkeyPatch):
+def test_clinvar_exhausted_rate_limit_raises(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+):
     monkeypatch.setattr("vsa.connectors.clinvar.time.sleep", lambda _: None)
     endpoint = respx.get("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi")
     endpoint.mock(return_value=httpx.Response(429))
 
     with pytest.raises(httpx.HTTPStatusError) as error:
-        ClinVarConnector().fetch({"clinvar_id": "12345"})
+        ClinVarConnector(cache=EvidenceCache(tmp_path)).fetch({"clinvar_id": "12345"})
 
     assert error.value.response.status_code == 429
     assert endpoint.call_count == 4
