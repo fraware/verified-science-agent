@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import time
 from typing import Any
 
 from vsa.connectors.base import Connector, NormalizedEvidence, now_utc, summarize_record
@@ -13,6 +14,9 @@ MAX_CANDIDATES = 10
 MAX_RETURN = 3
 AMBIGUITY_SCORE_GAP = 0.12
 MIN_CONFIDENT_SCORE = 0.55
+# Stay below NCBI E-utilities three-requests/second limit without an API key.
+MIN_REQUEST_INTERVAL_SECONDS = 0.4
+MAX_RATE_LIMIT_RETRIES = 3
 
 
 class ClinVarConnector(Connector):
@@ -23,6 +27,7 @@ class ClinVarConnector(Connector):
     def __init__(self, cache: EvidenceCache | None = None, client: Any | None = None) -> None:
         self.cache = cache or EvidenceCache()
         self.client = client or make_client(timeout=30.0)
+        self._last_request_started: float | None = None
 
     def fetch(self, query: dict[str, Any]) -> list[NormalizedEvidence]:
         direct = (
@@ -79,12 +84,11 @@ class ClinVarConnector(Connector):
             if cached:
                 uids = cached.get("uids", [])
             else:
-                resp = self.client.get(
+                payload = self._request_json(
                     self.ESEARCH,
                     params={"db": "clinvar", "term": term, "retmode": "json", "retmax": MAX_CANDIDATES},
                 )
-                resp.raise_for_status()
-                uids = resp.json().get("esearchresult", {}).get("idlist", [])
+                uids = payload.get("esearchresult", {}).get("idlist", [])
                 self.cache.set(self.name, cache_query, {"uids": uids})
 
             for uid in uids:
@@ -131,17 +135,44 @@ class ClinVarConnector(Connector):
             return "medium"
         return "low"
 
+    def _request_json(self, url: str, *, params: dict[str, Any]) -> dict[str, Any]:
+        """Apply NCBI rate limits and retry bounded HTTP 429 responses.
+
+        Exhausted retries propagate the original HTTP error; no evidence is
+        fabricated or served from an unrelated request.
+        """
+        for attempt in range(MAX_RATE_LIMIT_RETRIES + 1):
+            if self._last_request_started is not None:
+                remaining = MIN_REQUEST_INTERVAL_SECONDS - (
+                    time.monotonic() - self._last_request_started
+                )
+                if remaining > 0:
+                    time.sleep(remaining)
+            self._last_request_started = time.monotonic()
+            response = self.client.get(url, params=params)
+            if response.status_code != 429:
+                response.raise_for_status()
+                return response.json()
+            if attempt == MAX_RATE_LIMIT_RETRIES:
+                response.raise_for_status()
+            # Honor a numeric Retry-After while enforcing bounded exponential backoff.
+            try:
+                retry_after = float(response.headers.get("retry-after", "0"))
+            except ValueError:
+                retry_after = 0.0
+            time.sleep(max(2.0**attempt, min(30.0, retry_after)))
+        raise AssertionError("unreachable")
+
     def _load_summary(self, uid: str) -> dict[str, Any]:
         cache_query = {"uid": uid}
         cached = self.cache.get(self.name, cache_query)
         if cached:
             return cached
-        resp = self.client.get(
+        payload = self._request_json(
             self.ESUMMARY,
             params={"db": "clinvar", "id": uid, "retmode": "json"},
         )
-        resp.raise_for_status()
-        result = resp.json().get("result", {})
+        result = payload.get("result", {})
         record = result.get(uid, result)
         self.cache.set(self.name, cache_query, record)
         return record
